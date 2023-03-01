@@ -1,0 +1,44 @@
+import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './filters/http-exception.filter';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { NotFoundExceptionFilter } from './filters/not-found-exception.filter';
+
+const DEV_ENV = 'dev';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  app.enableCors();
+
+  // https://docs.nestjs.com/exception-filters#exception-filters-1
+  app.useGlobalFilters(
+    new HttpExceptionFilter(),
+    new NotFoundExceptionFilter(),
+  );
+
+  // https://docs.nestjs.com/techniques/validation
+  app.useGlobalPipes(new ValidationPipe());
+
+  // https://docs.nestjs.com/faq/global-prefix
+  // app.setGlobalPrefix('api');
+
+  // https://docs.nestjs.com/openapi/introduction
+  if (process.env.APP_ENV === DEV_ENV) {
+    const swaggerConfig = buildSwaggerConfig();
+    const swaggerDoc = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api/swagger', app, swaggerDoc);
+  }
+
+  await app.listen(process.env.PORT);
+}
+
+function buildSwaggerConfig() {
+  return new DocumentBuilder()
+    .setTitle('Tools Backend')
+    .setVersion('1.0')
+    .build();
+}
+
+bootstrap();
