@@ -22,7 +22,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   // https://docs.nestjs.com/faq/global-prefix
-  // app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api');
 
   // https://docs.nestjs.com/openapi/introduction
   if (process.env.APP_ENV === DEV_ENV) {
