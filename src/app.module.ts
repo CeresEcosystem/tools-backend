@@ -3,6 +3,7 @@ import { LoggerMiddleware } from './middleware/logger.middleware';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { TradingModule } from './modules/trading/trading.module';
+import { TelegramLoggerModule } from './modules/logger/telegram-logger.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { TradingModule } from './modules/trading/trading.module';
       autoLoadEntities: false,
     }),
     TradingModule,
+    TelegramLoggerModule,
   ],
   controllers: [],
   providers: [],
