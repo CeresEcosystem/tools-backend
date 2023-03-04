@@ -4,11 +4,20 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { NotFoundExceptionFilter } from './filters/not-found-exception.filter';
+import { TelegramLogger } from './modules/logger/telegram-logger';
 
 const DEV_ENV = 'dev';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true, // waits for TelegramLogger to be instantiated
+  });
+
+  // https://docs.nestjs.com/techniques/logger#dependency-injection
+  // Use TelegramLogger only if env variables are set
+  if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
+    app.useLogger(app.get(TelegramLogger));
+  }
 
   app.enableCors();
 
