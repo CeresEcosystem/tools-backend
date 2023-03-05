@@ -3,6 +3,6 @@ export const ICONS_URL =
 
 export const ALLOWED_ICON_TYPE = 'data:image/svg';
 
-export const STORAGE_PATH = 'storage/icons/';
+export const ICONS_STORAGE_PATH = process.env.STORAGE_PATH + '/icons/';
 
 export const SVG_EXTENSION = '.svg';

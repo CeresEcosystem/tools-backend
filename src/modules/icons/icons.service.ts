@@ -6,7 +6,7 @@ import { createFile } from 'src/common/storage.helper';
 import {
   ALLOWED_ICON_TYPE,
   ICONS_URL,
-  STORAGE_PATH,
+  ICONS_STORAGE_PATH,
   SVG_EXTENSION,
 } from './icons.const';
 import { TokenIconDto } from './icons.dto';
@@ -42,7 +42,7 @@ export class IconsService {
 
     const iconFile = this.decodeIconContent(iconContent);
 
-    createFile(STORAGE_PATH, symbol + SVG_EXTENSION, iconFile);
+    createFile(ICONS_STORAGE_PATH, symbol + SVG_EXTENSION, iconFile);
   }
 
   private parseIcon(icon: string) {
