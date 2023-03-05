@@ -17,7 +17,7 @@ export class IconsService {
 
   constructor(private readonly httpService: HttpService) {}
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_3_HOURS)
   async fetchIcons() {
     this.logger.log('Start downloading token icons.');
 
