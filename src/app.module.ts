@@ -4,10 +4,19 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { TradingModule } from './modules/trading/trading.module';
 import { TelegramLoggerModule } from './modules/logger/telegram-logger.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { IconsModule } from './modules/icons/icons.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot(),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'storage'),
+      serveRoot: '/storage',
+    }),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.MYSQL_HOST,
@@ -29,6 +38,7 @@ import { TelegramLoggerModule } from './modules/logger/telegram-logger.module';
     }),
     TradingModule,
     TelegramLoggerModule,
+    IconsModule,
   ],
   controllers: [],
   providers: [],
