@@ -8,6 +8,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { IconsModule } from './modules/icons/icons.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { LiquidityPairsModule } from './modules/liquidity-pairs/liquidity-pairs.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { join } from 'path';
     TradingModule,
     TelegramLoggerModule,
     IconsModule,
+    LiquidityPairsModule,
   ],
   controllers: [],
   providers: [],
