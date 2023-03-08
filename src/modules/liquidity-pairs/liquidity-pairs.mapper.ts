@@ -17,7 +17,7 @@ export class LiquidityPairsMapper extends BaseEntityMapper<
       liquidity: dto.liquidity,
       baseAssetLiquidity: Number(dto.base_asset_liq),
       targetAssetLiquidity: Number(dto.target_asset_liq),
-      volume: Number(dto.volume),
+      volume: dto.volume,
     } as LiquidityPair;
   }
 }
