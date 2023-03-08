@@ -9,6 +9,7 @@ import { IconsModule } from './modules/icons/icons.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { LiquidityPairsModule } from './modules/liquidity-pairs/liquidity-pairs.module';
+import { TrackerSupplyModule } from './modules/tracker-supply/tracker-supply.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { LiquidityPairsModule } from './modules/liquidity-pairs/liquidity-pairs.
     TelegramLoggerModule,
     IconsModule,
     LiquidityPairsModule,
+    TrackerSupplyModule,
   ],
   controllers: [],
   providers: [],
