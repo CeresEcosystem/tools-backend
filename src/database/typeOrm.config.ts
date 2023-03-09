@@ -2,6 +2,7 @@ import { DataSource } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
 import { CreateLiquidityPair1678308272423 } from './migrations/1678308272423-create-liquidity-pair';
+import { CreateTrackerSupply1678311403065 } from './migrations/1678311403065-create-tracker-supply';
 
 config();
 
@@ -15,6 +16,9 @@ export default new DataSource({
   password: configService.get('MYSQL_PASSWORD'),
   database: configService.get('MYSQL_DB_NAME'),
   entities: [],
-  migrations: [CreateLiquidityPair1678308272423],
+  migrations: [
+    CreateLiquidityPair1678308272423,
+    CreateTrackerSupply1678311403065,
+  ],
   migrationsTableName: 'migrations_tools',
 });

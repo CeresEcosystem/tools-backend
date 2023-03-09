@@ -3,9 +3,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { firstValueFrom } from 'rxjs';
 import { CronExpression } from 'src/utils/cron-expression.enum';
-import { LIQUIDITY_PAIRS_URL } from './liquidity-pairs.const';
 import { LiquidityPairDTO } from './liquidity-pairs.dto';
 import { LiquidityPairsService } from './liquidity-pairs.service';
+
+const LIQUIDITY_PAIRS_URL = 'https://api.cerestoken.io/pairs-and-liquidity';
 
 @Injectable()
 export class LiquidityPairsListener {

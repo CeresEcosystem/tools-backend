@@ -28,6 +28,7 @@ export class LiquidityPairsRepository {
 
     if (!existingPair) {
       this.repository.insert(liquidityPair);
+
       return;
     }
 
