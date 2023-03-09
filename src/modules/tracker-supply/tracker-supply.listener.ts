@@ -16,10 +16,8 @@ export class TrackerSupplyListener {
     private readonly trackerSupplyService: TrackerSupplyService,
   ) {}
 
-  // TODO: Phase II - Refactor this class to listen to changes on BC.
-
   @Cron(CronExpression.EVERY_5_MINUTES)
-  async fetchLiquidityPairs(): Promise<void> {
+  async fetchPswapSupply(): Promise<void> {
     this.logger.log('Start downloading PSWAP supply.');
 
     const { data: trackerSupply } = await firstValueFrom(
