@@ -16,7 +16,7 @@ export class TrackerSupplyListener {
     private readonly trackerSupplyService: TrackerSupplyService,
   ) {}
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async fetchPswapSupply(): Promise<void> {
     this.logger.log('Start downloading PSWAP supply.');
 
