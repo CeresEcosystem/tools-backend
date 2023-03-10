@@ -15,8 +15,9 @@ export class TelegramLogger extends ConsoleLogger {
           `🚨 <b>Application:</b> ${process.env.APP_NAME} 🚨\n` +
           `<b>Environment:</b> ${process.env.APP_ENV}\n` +
           `<b>Log Level:</b> ERROR\n` +
-          `<b>Context:</b> ${context}\n` +
-          `<b>Message:</b> <pre>${message}</pre>`,
+          (context ? `<b>Context:</b> ${context}\n` : ``) +
+          `<b>Message:</b> <pre>${message}</pre>\n` +
+          (stack ? `<b>Stack:</b> <pre>${stack}</pre>` : ``),
         parse_mode: 'html',
       })
       .toPromise()
