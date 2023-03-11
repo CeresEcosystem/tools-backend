@@ -10,6 +10,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { LiquidityPairsModule } from './modules/liquidity-pairs/liquidity-pairs.module';
 import { TrackerSupplyModule } from './modules/tracker-supply/tracker-supply.module';
+import { CurrentPriceModule } from './modules/current-price/current-price.module';
 
 @Module({
   imports: [
@@ -36,13 +37,14 @@ import { TrackerSupplyModule } from './modules/tracker-supply/tracker-supply.mod
       username: process.env.PG_USER,
       password: process.env.PG_PASSWORD,
       database: process.env.PG_DB_NAME,
-      autoLoadEntities: false,
+      autoLoadEntities: true,
     }),
     TradingModule,
     TelegramLoggerModule,
     IconsModule,
     LiquidityPairsModule,
     TrackerSupplyModule,
+    CurrentPriceModule,
   ],
   controllers: [],
   providers: [],

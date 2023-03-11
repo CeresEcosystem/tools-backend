@@ -1,6 +1,6 @@
 import { BaseDtoMapper } from 'src/utils/mappers/base-dto-mapper';
 import { SymbolChartSearchDto } from '../dto/symbol-chart-search.dto';
-import { CurrentPrice } from '../entities/current-price.entity';
+import { CurrentPrice } from '../../current-price/entity/current-price.entity';
 
 export class CurrentPriceToSymbolChartSearchMapper extends BaseDtoMapper<
   CurrentPrice,
