@@ -3,6 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
 import { CreateLiquidityPair1678308272423 } from './migrations/1678308272423-create-liquidity-pair';
 import { CreateTrackerSupply1678311403065 } from './migrations/1678311403065-create-tracker-supply';
+import { CreateTokenOrder1678465924600 } from './migrations/1678465924600-create-token-order';
+import { CreateCurrentPrice1678473370293 } from './migrations/1678473370293-create-current-price';
+import { CreateSymbols1678568504333 } from './migrations/1678568504333-create-symbols';
 
 config();
 
@@ -19,6 +22,9 @@ export default new DataSource({
   migrations: [
     CreateLiquidityPair1678308272423,
     CreateTrackerSupply1678311403065,
+    CreateTokenOrder1678465924600,
+    CreateCurrentPrice1678473370293,
+    CreateSymbols1678568504333,
   ],
   migrationsTableName: 'migrations_tools',
 });
