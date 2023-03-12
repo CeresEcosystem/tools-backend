@@ -9,10 +9,7 @@ export class CurrentPrice {
   token: string;
 
   @Column()
-  price: number;
-
-  @Column({ name: 'locked_tokens' })
-  lockedTokens: number;
+  price: string;
 
   @Column({ name: 'asset_id' })
   assetId: string;
@@ -22,6 +19,9 @@ export class CurrentPrice {
 
   @Column()
   order: number;
+
+  @Column({ name: 'locked_tokens' })
+  lockedTokens: number;
 
   @Column()
   deleted: boolean;

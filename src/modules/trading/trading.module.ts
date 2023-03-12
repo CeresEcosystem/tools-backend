@@ -1,20 +1,14 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { CurrentPrice } from './entities/current-price.entity';
-import { TokenSymbol } from './entities/symbol.entity';
+import { CurrentPriceModule } from '../current-price/current-price.module';
+import { SymbolModule } from '../symbol/symbol.module';
 import { CurrentPriceToSymbolChartSearchMapper } from './mapper/current-price-to-symbol-search-chart.mapper';
-import { PriceService } from './price.service';
-import { SymbolService } from './symbol.service';
 import { TradingController } from './trading.controller';
+import { ChronoPriceModule } from '../chrono-price/chrono-price.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([TokenSymbol, CurrentPrice])],
+  imports: [SymbolModule, CurrentPriceModule, ChronoPriceModule],
   controllers: [TradingController],
-  providers: [
-    SymbolService,
-    PriceService,
-    CurrentPriceToSymbolChartSearchMapper,
-  ],
+  providers: [CurrentPriceToSymbolChartSearchMapper],
   exports: [],
 })
 export class TradingModule {}

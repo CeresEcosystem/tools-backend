@@ -1,17 +1,25 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { ChronoPriceDto } from './dto/chrono-price.dto';
+import { ChronoPrice } from './entity/chrono-price.entity';
 
 @Injectable()
-export class PriceService {
-  private readonly logger = new Logger(PriceService.name);
+export class ChronoPriceService {
+  private readonly logger = new Logger(ChronoPriceService.name);
 
   constructor(
     @InjectDataSource('pg')
-    private dataSource: DataSource,
+    private readonly dataSource: DataSource,
+    @InjectRepository(ChronoPrice, 'pg')
+    private readonly repository: Repository<ChronoPrice>,
   ) {}
 
-  async getPriceForChart(
+  public save(chronoPriceDtos: ChronoPriceDto[]) {
+    this.repository.insert(chronoPriceDtos);
+  }
+
+  public async getPriceForChart(
     symbol: string,
     resolution: number,
     from: number,

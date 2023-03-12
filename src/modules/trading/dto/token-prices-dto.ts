@@ -1,6 +1,6 @@
 import { IsNumberString, IsOptional, IsString } from 'class-validator';
 
-export class TokenPricesDto {
+export class TokenPricesQuery {
   @IsString()
   symbol: string;
 
