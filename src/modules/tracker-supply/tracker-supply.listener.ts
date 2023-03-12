@@ -21,7 +21,7 @@ export class TrackerSupplyListener {
     this.logger.log('Start downloading PSWAP supply.');
 
     const { data: trackerSupply } = await firstValueFrom(
-      this.httpService.get(PSWAP_SUPPLY_URL),
+      this.httpService.get<string>(PSWAP_SUPPLY_URL),
     );
 
     this.trackerSupplyService.save(trackerSupply);
