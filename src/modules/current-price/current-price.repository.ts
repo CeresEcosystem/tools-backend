@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, Repository } from 'typeorm';
+import { FindManyOptions, FindOptionsWhere, Repository } from 'typeorm';
 import { CurrentPrice } from './entity/current-price.entity';
 
 @Injectable()
@@ -12,13 +12,17 @@ export class CurrentPriceRepository {
     private readonly repository: Repository<CurrentPrice>,
   ) {}
 
-  public async find(
-    options: FindManyOptions<CurrentPrice>,
-  ): Promise<CurrentPrice[]> {
+  public findOneByOrFail(
+    where: FindOptionsWhere<CurrentPrice> | FindOptionsWhere<CurrentPrice>[],
+  ): Promise<CurrentPrice> {
+    return this.repository.findOneByOrFail(where);
+  }
+
+  public find(options: FindManyOptions<CurrentPrice>): Promise<CurrentPrice[]> {
     return this.repository.find(options);
   }
 
-  public async upsertAll(tokenPrices: CurrentPrice[]) {
+  public upsertAll(tokenPrices: CurrentPrice[]) {
     tokenPrices.forEach((tokenPrice) => {
       this.upsert(tokenPrice);
     });

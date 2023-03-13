@@ -9,6 +9,7 @@ import { CurrentPrice } from './entity/current-price.entity';
 import { SymbolModule } from '../symbol/symbol.module';
 import { TokenOrder } from './entity/token-order.entity';
 import { ChronoPriceModule } from '../chrono-price/chrono-price.module';
+import { CurrentPriceController } from './current-price.controller';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { ChronoPriceModule } from '../chrono-price/chrono-price.module';
     ChronoPriceModule,
     TypeOrmModule.forFeature([CurrentPrice, TokenOrder]),
   ],
-  controllers: [],
+  controllers: [CurrentPriceController],
   providers: [
     CurrentPriceService,
     CurrentPriceListener,

@@ -23,6 +23,10 @@ export class CurrentPriceService {
     private readonly chronoPriceService: ChronoPriceService,
   ) {}
 
+  public findByToken(token: string): Promise<CurrentPrice> {
+    return this.currentPriceRepository.findOneByOrFail({ token });
+  }
+
   public async save(currentPriceDtos: CurrentPriceDTO[]): Promise<void> {
     const currentPrices = this.mapper.toEntities(currentPriceDtos);
     const { tokenOrderBySymbol, defaultOrder } = await this.getTokenOrder();
