@@ -3,7 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { firstValueFrom } from 'rxjs';
 import { CronExpression } from 'src/utils/cron-expression.enum';
-import { CurrentPriceDTO } from './dto/current-price.dto';
+import { CurrentPriceBcDto } from './dto/current-price-bc.dto';
 import { CurrentPriceService } from './current-price.service';
 
 const TOKEN_PRICES_URL = 'https://api.cerestoken.io/prices';
@@ -24,7 +24,7 @@ export class CurrentPriceListener {
     this.logger.log('Start downloading token prices.');
 
     const { data } = await firstValueFrom(
-      this.httpService.get<CurrentPriceDTO[]>(TOKEN_PRICES_URL),
+      this.httpService.get<CurrentPriceBcDto[]>(TOKEN_PRICES_URL),
     );
 
     this.currentPriceService.save(data);

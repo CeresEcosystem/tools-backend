@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { CacheModule, MiddlewareConsumer, Module } from '@nestjs/common';
 import { LoggerMiddleware } from './middleware/logger.middleware';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
@@ -16,6 +16,9 @@ import { CurrentPriceModule } from './modules/current-price/current-price.module
   imports: [
     ScheduleModule.forRoot(),
     ConfigModule.forRoot(),
+    CacheModule.register({
+      isGlobal: true,
+    }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'storage'),
       serveRoot: '/storage',

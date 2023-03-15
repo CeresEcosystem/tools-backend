@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Like, Repository } from 'typeorm';
-import { CurrentPriceDTO } from './dto/current-price.dto';
+import { CurrentPriceBcDto } from './dto/current-price-bc.dto';
 import { CurrentPrice } from './entity/current-price.entity';
-import { CurrentPriceMapper } from './current-price.mapper';
+import { CurrentPriceBcDtoToEntityMapper } from './mapper/current-price.mapper';
 import { CurrentPriceRepository } from './current-price.repository';
 import { TokenOrder } from './entity/token-order.entity';
 import { SymbolService } from '../symbol/symbol.service';
@@ -18,16 +18,20 @@ export class CurrentPriceService {
     private readonly currentPriceRepository: CurrentPriceRepository,
     @InjectRepository(TokenOrder)
     private readonly tokenOrderRepository: Repository<TokenOrder>,
-    private readonly mapper: CurrentPriceMapper,
+    private readonly mapper: CurrentPriceBcDtoToEntityMapper,
     private readonly symbolService: SymbolService,
     private readonly chronoPriceService: ChronoPriceService,
   ) {}
+
+  public findAll(): Promise<CurrentPrice[]> {
+    return this.currentPriceRepository.findAll();
+  }
 
   public findByToken(token: string): Promise<CurrentPrice> {
     return this.currentPriceRepository.findOneByOrFail({ token });
   }
 
-  public async save(currentPriceDtos: CurrentPriceDTO[]): Promise<void> {
+  public async save(currentPriceDtos: CurrentPriceBcDto[]): Promise<void> {
     const currentPrices = this.mapper.toEntities(currentPriceDtos);
     const { tokenOrderBySymbol, defaultOrder } = await this.getTokenOrder();
 
