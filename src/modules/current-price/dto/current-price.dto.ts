@@ -1,6 +1,8 @@
-export interface CurrentPriceDTO {
+export interface CurrentPriceDto {
   token: string;
   price: string;
-  asset_id: string;
-  full_name: string;
+  assetId: string;
+  fullName: string;
+  lockedTokens: number;
+  updatedAt: Date;
 }

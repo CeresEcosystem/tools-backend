@@ -12,6 +12,13 @@ export class CurrentPriceRepository {
     private readonly repository: Repository<CurrentPrice>,
   ) {}
 
+  public findAll(): Promise<CurrentPrice[]> {
+    return this.repository.find({
+      order: { order: 'ASC', fullName: 'ASC' },
+      where: { deleted: false },
+    });
+  }
+
   public findOneByOrFail(
     where: FindOptionsWhere<CurrentPrice> | FindOptionsWhere<CurrentPrice>[],
   ): Promise<CurrentPrice> {
