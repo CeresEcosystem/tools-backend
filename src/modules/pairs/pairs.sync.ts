@@ -80,7 +80,7 @@ export class PairsSync {
     }
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_3_MINUTES)
   async fetchLiquidityPairs(): Promise<void> {
     this.logger.log('Start fetching pairs data.');
 
