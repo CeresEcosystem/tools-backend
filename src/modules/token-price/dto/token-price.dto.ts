@@ -1,4 +1,4 @@
-export interface CurrentPriceDto {
+export interface TokenPriceDto {
   token: string;
   price: string;
   assetId: string;

@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity(`current_price`)
-export class CurrentPrice {
+export class TokenPrice {
   @PrimaryColumn()
   id: string;
 
