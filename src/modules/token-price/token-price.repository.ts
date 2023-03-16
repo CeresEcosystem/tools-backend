@@ -1,18 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOptionsWhere, Repository } from 'typeorm';
-import { CurrentPrice } from './entity/current-price.entity';
+import { TokenPrice } from './entity/token-price.entity';
 
 @Injectable()
-export class CurrentPriceRepository {
-  private readonly logger = new Logger(CurrentPriceRepository.name);
+export class TokenPriceRepository {
+  private readonly logger = new Logger(TokenPriceRepository.name);
 
   constructor(
-    @InjectRepository(CurrentPrice)
-    private readonly repository: Repository<CurrentPrice>,
+    @InjectRepository(TokenPrice)
+    private readonly repository: Repository<TokenPrice>,
   ) {}
 
-  public findAll(): Promise<CurrentPrice[]> {
+  public findAll(): Promise<TokenPrice[]> {
     return this.repository.find({
       order: { order: 'ASC', fullName: 'ASC' },
       where: { deleted: false },
@@ -20,22 +20,22 @@ export class CurrentPriceRepository {
   }
 
   public findOneByOrFail(
-    where: FindOptionsWhere<CurrentPrice> | FindOptionsWhere<CurrentPrice>[],
-  ): Promise<CurrentPrice> {
+    where: FindOptionsWhere<TokenPrice> | FindOptionsWhere<TokenPrice>[],
+  ): Promise<TokenPrice> {
     return this.repository.findOneByOrFail(where);
   }
 
-  public find(options: FindManyOptions<CurrentPrice>): Promise<CurrentPrice[]> {
+  public find(options: FindManyOptions<TokenPrice>): Promise<TokenPrice[]> {
     return this.repository.find(options);
   }
 
-  public upsertAll(tokenPrices: CurrentPrice[]) {
+  public upsertAll(tokenPrices: TokenPrice[]) {
     tokenPrices.forEach((tokenPrice) => {
       this.upsert(tokenPrice);
     });
   }
 
-  private async upsert(tokenPrice: CurrentPrice) {
+  private async upsert(tokenPrice: TokenPrice) {
     tokenPrice.updatedAt = new Date();
 
     const existingPrice = await this.repository.findOneBy({

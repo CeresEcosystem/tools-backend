@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { LiquidityPair } from './liquidity-pairs.entity';
+import { LiquidityPair } from './pairs.entity';
 
 @Injectable()
-export class LiquidityPairsRepository {
-  private readonly logger = new Logger(LiquidityPairsRepository.name);
+export class PairsRepository {
+  private readonly logger = new Logger(PairsRepository.name);
 
   constructor(
     @InjectRepository(LiquidityPair)
