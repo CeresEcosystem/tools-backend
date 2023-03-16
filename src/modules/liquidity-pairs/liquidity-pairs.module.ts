@@ -6,9 +6,14 @@ import { LiquidityPairsListener } from './liquidity-pairs.listener';
 import { LiquidityPairsMapper } from './liquidity-pairs.mapper';
 import { LiquidityPairsRepository } from './liquidity-pairs.repository';
 import { LiquidityPairsService } from './liquidity-pairs.service';
+import { CurrentPriceModule } from '../current-price/current-price.module';
 
 @Module({
-  imports: [HttpModule, TypeOrmModule.forFeature([LiquidityPair])],
+  imports: [
+    HttpModule,
+    CurrentPriceModule,
+    TypeOrmModule.forFeature([LiquidityPair]),
+  ],
   controllers: [],
   providers: [
     LiquidityPairsService,
