@@ -1,10 +1,18 @@
-import { ConsoleLogger, Injectable } from '@nestjs/common';
+import { ConsoleLogger, Injectable, LogLevel } from '@nestjs/common';
 import { TelegramService } from 'nestjs-telegram';
+
+const STANDARD_LOG_LEVELS: LogLevel[] = ['log', 'warn', 'error'];
+const DEBUG_LOG_LEVELS: LogLevel[] = ['debug', 'verbose'];
 
 @Injectable()
 export class TelegramLogger extends ConsoleLogger {
   constructor(private readonly telegram: TelegramService) {
     super();
+    this.setLogLevels(
+      process.env.LOG_DEBUG
+        ? STANDARD_LOG_LEVELS.concat(DEBUG_LOG_LEVELS)
+        : STANDARD_LOG_LEVELS,
+    );
   }
 
   async error(message: any, stack?: string, context?: string) {

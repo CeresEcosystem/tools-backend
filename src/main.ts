@@ -11,10 +11,6 @@ const DEV_ENV = 'dev';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true, // waits for TelegramLogger to be instantiated
-    logger:
-      process.env.APP_ENV === DEV_ENV
-        ? ['log', 'warn', 'error', 'debug', 'verbose']
-        : ['log', 'warn', 'error'],
   });
 
   // https://docs.nestjs.com/techniques/logger#dependency-injection
