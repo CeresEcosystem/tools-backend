@@ -89,9 +89,9 @@ export class PairsSync {
     const xstusdPrice = tokenPrices.find((tp) => tp.token === 'XSTUSD').price;
 
     const { data: volumeData } = await firstValueFrom(
-      this.httpService.get<any>(VOLUME_URL).pipe(
+      this.httpService.get<any>(VOLUME_URL, { timeout: 60_000 }).pipe(
         catchError((error: AxiosError) => {
-          this.logger.error(error.message, error.response.data, PairsSync.name);
+          this.logger.warn(error.message, PairsSync.name);
           throw 'An error happened while fetching pairs from sora stats!';
         }),
       ),
