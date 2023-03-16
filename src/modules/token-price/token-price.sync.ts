@@ -5,8 +5,8 @@ import { WsProvider } from '@polkadot/rpc-provider';
 import { options } from '@sora-substrate/api';
 import { PROVIDER } from '../../constants/constants';
 import { CronExpression } from 'src/utils/cron-expression.enum';
-import { CurrentPriceBcDto } from './dto/current-price-bc.dto';
-import { CurrentPriceService } from './current-price.service';
+import { TokenPriceBcDto } from './dto/token-price-bc.dto';
+import { TokenPriceService } from './token-price.service';
 import * as whitelist from 'src/utils/files/whitelist.json';
 import { FPNumber } from '@sora-substrate/math';
 
@@ -16,12 +16,12 @@ const HUNDREDS = ['HOT', 'UMI', 'SOSHIBA'];
 const BILLIONS = ['MEOW'];
 
 @Injectable()
-export class CurrentPriceListener {
-  private readonly logger = new Logger(CurrentPriceListener.name);
+export class TokenPriceSync {
+  private readonly logger = new Logger(TokenPriceSync.name);
   private soraApi;
-  private tokens;
+  private tokens: TokenPriceBcDto[] = [];
 
-  constructor(private readonly currentPriceService: CurrentPriceService) {
+  constructor(private readonly tokenPriceService: TokenPriceService) {
     const provider = new WsProvider(PROVIDER);
     new ApiPromise(options({ provider, noInitWarn: true })).isReady.then(
       (api) => {
@@ -32,30 +32,34 @@ export class CurrentPriceListener {
   }
 
   async getTokens(): Promise<void> {
-    this.tokens = new Map();
-    let tokens = await this.soraApi.query.assets.assetInfos.entries();
+    const tokens = await this.soraApi.query.assets.assetInfos.entries();
+
     for (let [assetId, token] of tokens) {
       assetId = assetId.toHuman()[0].code;
+
       if (!whitelist.includes(assetId)) {
         continue;
       }
+
       token = token.toHuman();
-      let assetSymbol = token[0];
-      let fullName = token[1] + ' (' + assetSymbol + ')';
-      this.tokens.set(assetSymbol, {
-        asset_id: assetId,
-        full_name: fullName,
-      });
+      const assetSymbol = token[0];
+      const fullName = token[1] + ' (' + assetSymbol + ')';
+
+      this.tokens.push({
+        symbol: assetSymbol,
+        assetId,
+        fullName,
+      } as TokenPriceBcDto);
     }
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
   async fetchTokenPrices(): Promise<void> {
     this.logger.log('Start fetching tokens prices.');
-    let prices: CurrentPriceBcDto[] = [];
-    for (let entry of this.tokens) {
-      let symbol = entry[0];
-      let token = entry[1];
+    const pricesToUpsert: TokenPriceBcDto[] = [];
+
+    for (const token of this.tokens) {
+      const symbol = token.symbol;
       let amount = 1;
 
       if (HUNDREDS.includes(symbol)) {
@@ -66,7 +70,7 @@ export class CurrentPriceListener {
 
       await this.soraApi.rpc.liquidityProxy.quote(
         0,
-        token['asset_id'],
+        token.assetId,
         DAI_ADDRESS,
         FPNumber.fromNatural(amount).bnToString(),
         'WithDesiredInput',
@@ -76,23 +80,24 @@ export class CurrentPriceListener {
           const value = !result.isNone
             ? result.unwrap()
             : { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0 };
+
           let price: any = new FPNumber(value.amount).toNumber();
           price = HUNDREDS.includes(symbol) ? (price / 100).toFixed(8) : price;
           price = BILLIONS.includes(symbol)
             ? (price / 1000000000).toFixed(12)
             : price;
 
-          prices.push({
-            token: symbol.toUpperCase(),
+          pricesToUpsert.push({
+            ...token,
             price: symbol === 'DAI' ? '1' : price.toString(),
-            asset_id: token['asset_id'],
-            full_name: token['full_name'],
           });
         },
       );
     }
 
-    this.currentPriceService.save(prices);
+    if (pricesToUpsert.length > 0) {
+      this.tokenPriceService.save(pricesToUpsert);
+    }
 
     this.logger.log('Fetching of tokens prices was successful!');
   }

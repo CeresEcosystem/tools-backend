@@ -1,12 +1,12 @@
 import { BaseDtoMapper } from 'src/utils/mappers/base-dto-mapper';
 import { SymbolChartSearchDto } from '../dto/symbol-chart-search.dto';
-import { CurrentPrice } from '../../current-price/entity/current-price.entity';
+import { TokenPrice } from '../../token-price/entity/token-price.entity';
 
-export class CurrentPriceToSymbolChartSearchMapper extends BaseDtoMapper<
-  CurrentPrice,
+export class TokenPriceToSymbolChartSearchMapper extends BaseDtoMapper<
+  TokenPrice,
   SymbolChartSearchDto
 > {
-  toDto(entity: CurrentPrice): SymbolChartSearchDto {
+  toDto(entity: TokenPrice): SymbolChartSearchDto {
     const { token, fullName } = entity;
 
     return {

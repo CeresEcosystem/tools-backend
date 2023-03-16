@@ -8,9 +8,9 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { IconsModule } from './modules/icons/icons.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { LiquidityPairsModule } from './modules/liquidity-pairs/liquidity-pairs.module';
+import { PairsModule } from './modules/pairs/pairs.module';
 import { TrackerSupplyModule } from './modules/tracker-supply/tracker-supply.module';
-import { CurrentPriceModule } from './modules/current-price/current-price.module';
+import { TokenPriceModule } from './modules/token-price/token-price.module';
 
 @Module({
   imports: [
@@ -45,9 +45,9 @@ import { CurrentPriceModule } from './modules/current-price/current-price.module
     TradingModule,
     TelegramLoggerModule,
     IconsModule,
-    LiquidityPairsModule,
+    PairsModule,
     TrackerSupplyModule,
-    CurrentPriceModule,
+    TokenPriceModule,
   ],
   controllers: [],
   providers: [],
