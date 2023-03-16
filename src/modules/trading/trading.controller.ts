@@ -5,17 +5,17 @@ import { SymbolChartSearchDto } from './dto/symbol-chart-search.dto';
 import { ChronoPriceService } from '../chrono-price/chrono-price.service';
 import { TokenPricesQuery } from './dto/token-prices-dto';
 import { SymbolService } from '../symbol/symbol.service';
-import { CurrentPriceService } from '../current-price/current-price.service';
-import { CurrentPriceToSymbolChartSearchMapper } from './mapper/current-price-to-symbol-search-chart.mapper';
+import { TokenPriceService } from '../token-price/token-price.service';
+import { TokenPriceToSymbolChartSearchMapper } from './mapper/token-price-to-symbol-search-chart.mapper';
 
 @Controller('trading')
 @ApiTags('Trading Controller')
 export class TradingController {
   constructor(
     private readonly symbolService: SymbolService,
-    private readonly currentPriceService: CurrentPriceService,
+    private readonly tokenPriceService: TokenPriceService,
     private readonly chronoPriceService: ChronoPriceService,
-    private readonly mapper: CurrentPriceToSymbolChartSearchMapper,
+    private readonly mapper: TokenPriceToSymbolChartSearchMapper,
   ) {}
 
   @Get('config')
@@ -42,7 +42,7 @@ export class TradingController {
     @Query('query') query: string,
   ): Promise<SymbolChartSearchDto[]> {
     const searchTerms = query.split(' ');
-    const prices = this.currentPriceService.searchByFullNameTerms(searchTerms);
+    const prices = this.tokenPriceService.searchByFullNameTerms(searchTerms);
 
     return this.mapper.toDtosAsync(prices);
   }

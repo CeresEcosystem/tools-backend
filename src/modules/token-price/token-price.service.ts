@@ -1,61 +1,61 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Like, Repository } from 'typeorm';
-import { CurrentPriceBcDto } from './dto/current-price-bc.dto';
-import { CurrentPrice } from './entity/current-price.entity';
-import { CurrentPriceBcDtoToEntityMapper } from './mapper/current-price.mapper';
-import { CurrentPriceRepository } from './current-price.repository';
+import { TokenPriceBcDto } from './dto/token-price-bc.dto';
+import { TokenPrice } from './entity/token-price.entity';
+import { TokenPriceBcDtoToEntityMapper } from './mapper/token-price.mapper';
+import { TokenPriceRepository } from './token-price.repository';
 import { TokenOrder } from './entity/token-order.entity';
 import { SymbolService } from '../symbol/symbol.service';
 import { ChronoPriceService } from '../chrono-price/chrono-price.service';
 import { ChronoPriceDto } from '../chrono-price/dto/chrono-price.dto';
 
 @Injectable()
-export class CurrentPriceService {
-  private readonly logger = new Logger(CurrentPriceService.name);
+export class TokenPriceService {
+  private readonly logger = new Logger(TokenPriceService.name);
 
   constructor(
-    private readonly currentPriceRepository: CurrentPriceRepository,
+    private readonly tokenPriceRepository: TokenPriceRepository,
     @InjectRepository(TokenOrder)
     private readonly tokenOrderRepository: Repository<TokenOrder>,
-    private readonly mapper: CurrentPriceBcDtoToEntityMapper,
+    private readonly mapper: TokenPriceBcDtoToEntityMapper,
     private readonly symbolService: SymbolService,
     private readonly chronoPriceService: ChronoPriceService,
   ) {}
 
-  public findAll(): Promise<CurrentPrice[]> {
-    return this.currentPriceRepository.findAll();
+  public findAll(): Promise<TokenPrice[]> {
+    return this.tokenPriceRepository.findAll();
   }
 
-  public findByToken(token: string): Promise<CurrentPrice> {
-    return this.currentPriceRepository.findOneByOrFail({ token });
+  public findByToken(token: string): Promise<TokenPrice> {
+    return this.tokenPriceRepository.findOneByOrFail({ token });
   }
 
-  public async save(currentPriceDtos: CurrentPriceBcDto[]): Promise<void> {
-    const currentPrices = this.mapper.toEntities(currentPriceDtos);
+  public async save(tokenPriceDtos: TokenPriceBcDto[]): Promise<void> {
+    const tokenPrices = this.mapper.toEntities(tokenPriceDtos);
     const { tokenOrderBySymbol, defaultOrder } = await this.getTokenOrder();
 
-    currentPrices.forEach((tokenPrice) => {
+    tokenPrices.forEach((tokenPrice) => {
       const { token, price, fullName } = tokenPrice;
       tokenPrice.order = tokenOrderBySymbol[token] ?? defaultOrder;
 
       this.symbolService.createSymbolIfMissing({ token, fullName, price });
     });
 
-    this.currentPriceRepository.upsertAll(currentPrices);
-    this.saveChronoPrices(currentPrices);
+    this.tokenPriceRepository.upsertAll(tokenPrices);
+    this.saveChronoPrices(tokenPrices);
   }
 
-  public searchByFullNameTerms(searchTerms: string[]): Promise<CurrentPrice[]> {
+  public searchByFullNameTerms(searchTerms: string[]): Promise<TokenPrice[]> {
     const whereStatements = searchTerms.map(
       (term) =>
         ({
           fullName: Like('%' + term + '%'),
           deleted: false,
-        } as FindOptionsWhere<CurrentPrice>),
+        } as FindOptionsWhere<TokenPrice>),
     );
 
-    return this.currentPriceRepository.find({
+    return this.tokenPriceRepository.find({
       where: whereStatements,
       order: { order: 'asc' },
     });
@@ -79,12 +79,12 @@ export class CurrentPriceService {
     };
   }
 
-  private saveChronoPrices(currentPrices: CurrentPrice[]) {
-    const chronoPrices = currentPrices.map(
-      (currentPrice) =>
+  private saveChronoPrices(tokenPrices: TokenPrice[]) {
+    const chronoPrices = tokenPrices.map(
+      (tokenPrice) =>
         ({
-          token: currentPrice.token,
-          price: currentPrice.price,
+          token: tokenPrice.token,
+          price: tokenPrice.price,
         } as ChronoPriceDto),
     );
 

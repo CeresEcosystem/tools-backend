@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
-import { CurrentPriceModule } from '../current-price/current-price.module';
+import { TokenPriceModule } from '../token-price/token-price.module';
 import { SymbolModule } from '../symbol/symbol.module';
-import { CurrentPriceToSymbolChartSearchMapper } from './mapper/current-price-to-symbol-search-chart.mapper';
+import { TokenPriceToSymbolChartSearchMapper } from './mapper/token-price-to-symbol-search-chart.mapper';
 import { TradingController } from './trading.controller';
 import { ChronoPriceModule } from '../chrono-price/chrono-price.module';
 
 @Module({
-  imports: [SymbolModule, CurrentPriceModule, ChronoPriceModule],
+  imports: [SymbolModule, TokenPriceModule, ChronoPriceModule],
   controllers: [TradingController],
-  providers: [CurrentPriceToSymbolChartSearchMapper],
+  providers: [TokenPriceToSymbolChartSearchMapper],
   exports: [],
 })
 export class TradingModule {}
