@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { catchError, firstValueFrom } from 'rxjs';
+import { catchError, firstValueFrom, retry } from 'rxjs';
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import { LiquidityPairDTO } from './pairs.dto';
 import { PairsService } from './pairs.service';
@@ -80,7 +80,7 @@ export class PairsSync {
     }
   }
 
-  @Cron(CronExpression.EVERY_3_MINUTES)
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async fetchLiquidityPairs(): Promise<void> {
     this.logger.log('Start fetching pairs data.');
 
@@ -89,12 +89,15 @@ export class PairsSync {
     const xstusdPrice = tokenPrices.find((tp) => tp.token === 'XSTUSD').price;
 
     const { data: volumeData } = await firstValueFrom(
-      this.httpService.get<any>(VOLUME_URL, { timeout: 60_000 }).pipe(
-        catchError((error: AxiosError) => {
-          this.logger.warn(error.message, PairsSync.name);
-          throw 'An error happened while fetching pairs from sora stats!';
-        }),
-      ),
+      this.httpService
+        .get<any>(VOLUME_URL, { timeout: 30_000 })
+        .pipe(retry({ count: 3, delay: 1000 }))
+        .pipe(
+          catchError((error: AxiosError) => {
+            this.logger.warn(error.message, PairsSync.name);
+            throw 'An error happened while fetching pairs from sora stats!';
+          }),
+        ),
     );
 
     const pairsToUpsert: LiquidityPairDTO[] = [];
