@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
-import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { catchError, firstValueFrom, retry } from 'rxjs';
+import { catchError, firstValueFrom, of, retry } from 'rxjs';
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import { LiquidityPairDTO } from './pairs.dto';
 import { PairsService } from './pairs.service';
@@ -53,10 +53,16 @@ export class PairsSync {
   async fetchLiquidityPairs(): Promise<void> {
     this.logger.log('Start fetching pairs data.');
 
+    const volumeData = await this.fetchSoraPairs();
+
+    if (!volumeData) {
+      this.logger.log('Cancel updating pairs data.');
+      return;
+    }
+
     const tokenPrices = await this.tokenPriceService.findAll();
     const xorPrice = tokenPrices.find((tp) => tp.token === 'XOR').price;
     const xstusdPrice = tokenPrices.find((tp) => tp.token === 'XSTUSD').price;
-    const volumeData = await this.fetchSoraPairs();
 
     const pairsToUpsert: LiquidityPairDTO[] = [];
 
@@ -147,13 +153,13 @@ export class PairsSync {
 
   private async fetchSoraPairs() {
     const { data } = await firstValueFrom(
-      this.httpService.get<any>(VOLUME_URL, { timeout: 1000 }).pipe(
-        retry({ count: 30, delay: 2000 }),
+      this.httpService.get<any>(VOLUME_URL, { timeout: 2000 }).pipe(
+        retry({ count: 30, delay: 1000 }),
         catchError((error: AxiosError) => {
-          throw new BadGatewayException(
-            'An error happened while fetching pairs from sora stats!',
-            { cause: error },
+          this.logger.warn(
+            `An error happened while fetching pairs from sora stats! msg: ${error.message}, code: ${error.code}, cause: ${error.cause}`,
           );
+          return of({ data: undefined });
         }),
       ),
     );

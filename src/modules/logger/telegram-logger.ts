@@ -15,26 +15,6 @@ export class TelegramLogger extends ConsoleLogger {
     );
   }
 
-  async warn(message: any, context?: string) {
-    await this.telegram
-      .sendMessage({
-        chat_id: process.env.TELEGRAM_CHAT_ID,
-        text:
-          `⚠️ <b>Application:</b> ${process.env.APP_NAME} ⚠️\n` +
-          `<b>Environment:</b> ${process.env.APP_ENV}\n` +
-          `<b>Log Level:</b> WARN\n` +
-          (context ? `<b>Context:</b> ${context}\n` : ``) +
-          `<b>Message:</b> <pre>${message}</pre>\n`,
-        parse_mode: 'html',
-      })
-      .toPromise()
-      .catch((reason) => {
-        super.error('Error sending warning msg to telegram: ' + reason);
-      });
-
-    super.warn(message, context);
-  }
-
   async error(message: any, stack?: string, context?: string) {
     await this.telegram
       .sendMessage({
