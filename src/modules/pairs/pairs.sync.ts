@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger } from '@nestjs/common';
+import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { catchError, firstValueFrom, retry } from 'rxjs';
 import { CronExpression } from 'src/utils/cron-expression.enum';
@@ -49,37 +49,6 @@ export class PairsSync {
     );
   }
 
-  async getPairs(): Promise<void> {
-    for (const [index, baseAsset] of BASE_ASSETS.entries()) {
-      await this.soraApi.rpc.tradingPair.listEnabledPairs(index, (pairList) => {
-        pairList = pairList.toHuman();
-
-        for (const pair of pairList) {
-          const assetId = pair['targetAssetId'];
-
-          if (!whitelist.includes(assetId)) {
-            continue;
-          }
-
-          this.soraApi.rpc.assets.getAssetInfo(assetId, (info) => {
-            info = info.toHuman();
-            const assetSymbol = info['symbol'];
-            const fullName = `${info['name']} (${assetSymbol})`;
-
-            this.pairs.push({
-              token: assetSymbol,
-              tokenFullName: fullName,
-              tokenAssetId: assetId,
-              baseAsset: baseAsset.symbol,
-              baseAssetFullName: baseAsset.name,
-              baseAssetId: baseAsset.address,
-            } as LiquidityPairDTO);
-          });
-        }
-      });
-    }
-  }
-
   @Cron(CronExpression.EVERY_3_MINUTES)
   async fetchLiquidityPairs(): Promise<void> {
     this.logger.log('Start fetching pairs data.');
@@ -87,18 +56,7 @@ export class PairsSync {
     const tokenPrices = await this.tokenPriceService.findAll();
     const xorPrice = tokenPrices.find((tp) => tp.token === 'XOR').price;
     const xstusdPrice = tokenPrices.find((tp) => tp.token === 'XSTUSD').price;
-
-    const { data: volumeData } = await firstValueFrom(
-      this.httpService
-        .get<any>(VOLUME_URL, { timeout: 30_000 })
-        .pipe(retry({ count: 3, delay: 1000 }))
-        .pipe(
-          catchError((error: AxiosError) => {
-            this.logger.warn(error.message, PairsSync.name);
-            throw 'An error happened while fetching pairs from sora stats!';
-          }),
-        ),
-    );
+    const volumeData = await this.fetchSoraPairs();
 
     const pairsToUpsert: LiquidityPairDTO[] = [];
 
@@ -154,6 +112,53 @@ export class PairsSync {
     }
 
     this.logger.log('Fetching of pairs data was successful!');
+  }
+
+  private async getPairs(): Promise<void> {
+    for (const [index, baseAsset] of BASE_ASSETS.entries()) {
+      await this.soraApi.rpc.tradingPair.listEnabledPairs(index, (pairList) => {
+        pairList = pairList.toHuman();
+
+        for (const pair of pairList) {
+          const assetId = pair['targetAssetId'];
+
+          if (!whitelist.includes(assetId)) {
+            continue;
+          }
+
+          this.soraApi.rpc.assets.getAssetInfo(assetId, (info) => {
+            info = info.toHuman();
+            const assetSymbol = info['symbol'];
+            const fullName = `${info['name']} (${assetSymbol})`;
+
+            this.pairs.push({
+              token: assetSymbol,
+              tokenFullName: fullName,
+              tokenAssetId: assetId,
+              baseAsset: baseAsset.symbol,
+              baseAssetFullName: baseAsset.name,
+              baseAssetId: baseAsset.address,
+            } as LiquidityPairDTO);
+          });
+        }
+      });
+    }
+  }
+
+  private async fetchSoraPairs() {
+    const { data } = await firstValueFrom(
+      this.httpService.get<any>(VOLUME_URL, { timeout: 1000 }).pipe(
+        retry({ count: 30, delay: 2000 }),
+        catchError((error: AxiosError) => {
+          throw new BadGatewayException(
+            'An error happened while fetching pairs from sora stats!',
+            { cause: error },
+          );
+        }),
+      ),
+    );
+
+    return data;
   }
 
   private getLiquidityOfPair(
