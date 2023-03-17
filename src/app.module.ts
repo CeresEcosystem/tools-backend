@@ -11,6 +11,7 @@ import { join } from 'path';
 import { PairsModule } from './modules/pairs/pairs.module';
 import { TrackerSupplyModule } from './modules/tracker-supply/tracker-supply.module';
 import { TokenPriceModule } from './modules/token-price/token-price.module';
+import { RewardsModule } from './modules/rewards/rewards.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { TokenPriceModule } from './modules/token-price/token-price.module';
     PairsModule,
     TrackerSupplyModule,
     TokenPriceModule,
+    RewardsModule,
   ],
   controllers: [],
   providers: [],
