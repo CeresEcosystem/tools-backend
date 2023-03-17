@@ -1,12 +1,9 @@
 import { BaseEntityMapper } from 'src/utils/mappers/base-entity-mapper';
-import { LiquidityPairDTO } from './pairs.dto';
-import { LiquidityPair } from './pairs.entity';
+import { PairBcDto } from '../dto/pair-bc.dto';
+import { Pair } from '../entity/pairs.entity';
 
-export class PairsMapper extends BaseEntityMapper<
-  LiquidityPair,
-  LiquidityPairDTO
-> {
-  toEntity(dto: LiquidityPairDTO): LiquidityPair {
+export class PairsMapper extends BaseEntityMapper<Pair, PairBcDto> {
+  toEntity(dto: PairBcDto): Pair {
     return {
       token: dto.token,
       tokenFullName: dto.tokenFullName,
@@ -15,9 +12,9 @@ export class PairsMapper extends BaseEntityMapper<
       baseAssetFullName: dto.baseAssetFullName,
       baseAssetId: dto.baseAssetId,
       liquidity: dto.liquidity,
-      baseAssetLiquidity: Number(dto.baseAssetLiq),
-      targetAssetLiquidity: Number(dto.targetAssetLiq),
+      baseAssetLiq: Number(dto.baseAssetLiq),
+      targetAssetLiq: Number(dto.targetAssetLiq),
       volume: Number(dto.volume),
-    } as LiquidityPair;
+    } as Pair;
   }
 }

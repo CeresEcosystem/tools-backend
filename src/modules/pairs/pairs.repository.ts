@@ -1,24 +1,31 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { LiquidityPair } from './pairs.entity';
+import { MoreThan, Repository } from 'typeorm';
+import { Pair } from './entity/pairs.entity';
 
 @Injectable()
 export class PairsRepository {
   private readonly logger = new Logger(PairsRepository.name);
 
   constructor(
-    @InjectRepository(LiquidityPair)
-    private readonly repository: Repository<LiquidityPair>,
+    @InjectRepository(Pair)
+    private readonly repository: Repository<Pair>,
   ) {}
 
-  public async upsertAll(liquidityPairs: LiquidityPair[]) {
+  public findAll(): Promise<Pair[]> {
+    return this.repository.find({
+      order: { order: 'ASC', tokenFullName: 'ASC' },
+      where: { deleted: false, liquidity: MoreThan(0) },
+    });
+  }
+
+  public async upsertAll(liquidityPairs: Pair[]) {
     liquidityPairs.forEach((liquidityPair) => {
       this.upsert(liquidityPair);
     });
   }
 
-  private async upsert(liquidityPair: LiquidityPair) {
+  private async upsert(liquidityPair: Pair) {
     liquidityPair.updatedAt = new Date();
 
     const existingPair = await this.repository.findOneBy({

@@ -1,4 +1,4 @@
-export interface LiquidityPairDTO {
+export interface PairBcDto {
   token: string;
   tokenFullName: string;
   tokenAssetId: string;
