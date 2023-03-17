@@ -31,28 +31,6 @@ export class TokenPriceSync {
     );
   }
 
-  async getTokens(): Promise<void> {
-    const tokens = await this.soraApi.query.assets.assetInfos.entries();
-
-    for (let [assetId, token] of tokens) {
-      assetId = assetId.toHuman()[0].code;
-
-      if (!whitelist.includes(assetId)) {
-        continue;
-      }
-
-      token = token.toHuman();
-      const assetSymbol = token[0];
-      const fullName = token[1] + ' (' + assetSymbol + ')';
-
-      this.tokens.push({
-        symbol: assetSymbol,
-        assetId,
-        fullName,
-      } as TokenPriceBcDto);
-    }
-  }
-
   @Cron(CronExpression.EVERY_MINUTE)
   async fetchTokenPrices(): Promise<void> {
     this.logger.log('Start fetching tokens prices.');
@@ -100,5 +78,27 @@ export class TokenPriceSync {
     }
 
     this.logger.log('Fetching of tokens prices was successful!');
+  }
+
+  private async getTokens(): Promise<void> {
+    const tokens = await this.soraApi.query.assets.assetInfos.entries();
+
+    for (let [assetId, token] of tokens) {
+      assetId = assetId.toHuman()[0].code;
+
+      if (!whitelist.includes(assetId)) {
+        continue;
+      }
+
+      token = token.toHuman();
+      const assetSymbol = token[0];
+      const fullName = token[1] + ' (' + assetSymbol + ')';
+
+      this.tokens.push({
+        symbol: assetSymbol,
+        assetId,
+        fullName,
+      } as TokenPriceBcDto);
+    }
   }
 }
