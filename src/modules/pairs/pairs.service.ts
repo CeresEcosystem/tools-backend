@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { LiquidityPairDTO } from './pairs.dto';
-import { LiquidityPair } from './pairs.entity';
-import { PairsMapper } from './pairs.mapper';
+import { PairBcDto } from './dto/pair-bc.dto';
+import { Pair } from './entity/pairs.entity';
+import { PairsMapper } from './mapper/pairs.mapper';
 import { PairsRepository } from './pairs.repository';
 
 @Injectable()
@@ -13,7 +13,11 @@ export class PairsService {
     private readonly mapper: PairsMapper,
   ) {}
 
-  public save(dtos: LiquidityPairDTO[]): void {
+  public findAll(): Promise<Pair[]> {
+    return this.pairsRepository.findAll();
+  }
+
+  public save(dtos: PairBcDto[]): void {
     const entities = this.mapper.toEntities(dtos);
 
     this.resolveOrdering(entities);
@@ -21,7 +25,7 @@ export class PairsService {
     this.pairsRepository.upsertAll(entities);
   }
 
-  private resolveOrdering(liquidityPairs: LiquidityPair[]) {
+  private resolveOrdering(liquidityPairs: Pair[]) {
     liquidityPairs.sort((a, b) => (a.liquidity < b.liquidity ? 1 : -1));
 
     liquidityPairs.forEach((liquidityPair, index) => {

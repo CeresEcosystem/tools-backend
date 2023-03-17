@@ -2,7 +2,7 @@ import { Column, Entity, PrimaryColumn, Unique } from 'typeorm';
 
 @Entity(`liquidity_pair`)
 @Unique(['baseAsset', 'token'])
-export class LiquidityPair {
+export class Pair {
   @PrimaryColumn({ name: 'id' })
   id: number;
 
@@ -28,10 +28,10 @@ export class LiquidityPair {
   liquidity: number;
 
   @Column({ name: 'base_asset_liq' })
-  baseAssetLiquidity: number;
+  baseAssetLiq: number;
 
   @Column({ name: 'target_asset_liq' })
-  targetAssetLiquidity: number;
+  targetAssetLiq: number;
 
   @Column({ name: 'locked_liquidity' })
   lockedLiquidity: number;

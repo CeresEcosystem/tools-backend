@@ -3,7 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { catchError, firstValueFrom, of, retry } from 'rxjs';
 import { CronExpression } from 'src/utils/cron-expression.enum';
-import { LiquidityPairDTO } from './pairs.dto';
+import { PairBcDto } from './dto/pair-bc.dto';
 import { PairsService } from './pairs.service';
 import { WsProvider } from '@polkadot/rpc-provider';
 import {
@@ -33,7 +33,7 @@ const DENOMINATOR = FPNumber.fromNatural(Math.pow(10, 18));
 export class PairsSync {
   private readonly logger = new Logger(PairsSync.name);
   private soraApi;
-  private pairs: LiquidityPairDTO[] = [];
+  private pairs: PairBcDto[] = [];
 
   constructor(
     private readonly pairsService: PairsService,
@@ -64,7 +64,7 @@ export class PairsSync {
     const xorPrice = tokenPrices.find((tp) => tp.token === 'XOR').price;
     const xstusdPrice = tokenPrices.find((tp) => tp.token === 'XSTUSD').price;
 
-    const pairsToUpsert: LiquidityPairDTO[] = [];
+    const pairsToUpsert: PairBcDto[] = [];
 
     for (const pair of this.pairs) {
       const { token, baseAsset, baseAssetId, tokenAssetId } = pair;
@@ -144,7 +144,7 @@ export class PairsSync {
               baseAsset: baseAsset.symbol,
               baseAssetFullName: baseAsset.name,
               baseAssetId: baseAsset.address,
-            } as LiquidityPairDTO);
+            } as PairBcDto);
           });
         }
       });
