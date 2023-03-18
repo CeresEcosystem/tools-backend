@@ -20,6 +20,6 @@ import { PairToDtoMapper } from './mapper/pair-to-dto.mapper';
     PairsRepository,
     PairsSync,
   ],
-  exports: [],
+  exports: [PairsService],
 })
 export class PairsModule {}
