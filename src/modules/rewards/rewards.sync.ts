@@ -1,13 +1,10 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { AxiosError } from 'axios';
-import { catchError, firstValueFrom, of, retry } from 'rxjs';
 import { CronExpression } from 'src/utils/cron-expression.enum';
-import { RewardsDto } from './rewards.dto';
 import { RewardsService } from './rewards.service';
-
-const LP_URL = 'https://api.cerestoken.io/lp';
+import { PairsService } from '../pairs/pairs.service';
+import { TokenPriceService } from '../token-price/token-price.service';
 
 @Injectable()
 export class RewardsSync {
@@ -15,31 +12,42 @@ export class RewardsSync {
 
   constructor(
     private readonly httpService: HttpService,
+    private readonly tokenPriceService: TokenPriceService,
+    private readonly pairsService: PairsService,
     private readonly rewardsService: RewardsService,
   ) {}
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async fetchFarmingRewards(): Promise<void> {
-    this.logger.log('Start downloading farming rewards.');
-
-    const { data: rewards } = await firstValueFrom(
-      this.httpService.get<RewardsDto>(LP_URL, { timeout: 2000 }).pipe(
-        retry({ count: 30, delay: 1000 }),
-        catchError((error: AxiosError) => {
-          this.logger.warn(
-            `An error happened while fetching farming rewards! msg: ${error.message}, code: ${error.code}, cause: ${error.cause}`,
-          );
-          return of({ data: undefined });
-        }),
-      ),
+    this.logger.log('Start calculating farming rewards.');
+    const pairs = await this.pairsService.findAll();
+    const { price: xorPrice } = await this.tokenPriceService.findByToken('XOR');
+    const { price: pswapPrice } = await this.tokenPriceService.findByToken(
+      'PSWAP',
     );
+    const doublePools = ['DAI', 'PSWAP', 'ETH', 'VAL', 'XST'];
 
-    if (!rewards) {
-      return;
+    let baseAssetLiquidity = 0;
+    for (let pair of pairs) {
+      if (pair.baseAsset === 'XOR' && doublePools.includes(pair.token)) {
+        baseAssetLiquidity += pair.baseAssetLiq;
+      }
     }
+
+    const pswapRewards = 2500000 / baseAssetLiquidity;
+    const apr =
+      (365 * 2500000 * parseFloat(pswapPrice) * 100) /
+      (baseAssetLiquidity * parseFloat(xorPrice) * 2);
+
+    const rewards = {
+      apr: apr.toFixed(2),
+      rewards: pswapRewards.toFixed(2),
+      aprDouble: (apr * 2).toFixed(2),
+      rewardsDouble: (pswapRewards * 2).toFixed(2),
+    };
 
     this.rewardsService.save(rewards);
 
-    this.logger.log('Downloading of farming rewards was successful!');
+    this.logger.log('Calculating of farming rewards was successful!');
   }
 }
