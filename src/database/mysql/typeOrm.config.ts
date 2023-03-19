@@ -7,6 +7,7 @@ import { CreateTokenOrder1678465924600 } from './migrations/1678465924600-create
 import { CreateCurrentPrice1678473370293 } from './migrations/1678473370293-create-current-price';
 import { CreateSymbols1678568504333 } from './migrations/1678568504333-create-symbols';
 import { CreateKeyValueData1679067199053 } from './migrations/1679067199053-create-key-value-data';
+import { CreateTracker1679212716812 } from './migrations/1679212716812-create-tracker';
 
 config();
 
@@ -27,6 +28,7 @@ export default new DataSource({
     CreateCurrentPrice1678473370293,
     CreateSymbols1678568504333,
     CreateKeyValueData1679067199053,
+    CreateTracker1679212716812,
   ],
   migrationsTableName: 'migrations_tools',
 });
