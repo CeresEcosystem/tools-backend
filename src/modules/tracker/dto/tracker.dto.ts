@@ -5,7 +5,7 @@ import { TrackerSupplyGraphPointDto } from './tracker-supply-graph-point.dto';
 
 export interface TrackerDto {
   blocks: TrackerBlockDto[];
-  burn: [string, TrackerBurnDto];
+  burn: Map<string, TrackerBurnDto>;
   graphBurning: TrackerBurningGraphPointDto[];
   graphSupply: TrackerSupplyGraphPointDto[];
   last: number;
