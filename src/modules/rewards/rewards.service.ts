@@ -1,13 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { KeyValueData } from './key-value-data.entity';
-import {
-  FARMING_APR_KEY,
-  FARMING_APR_DOUBLE_KEY,
-  FARMING_REWARDS_KEY,
-  FARMING_REWARDS_DOUBLE_KEY,
-} from './rewards.constants';
+import { FARMING_APR_KEY, FARMING_REWARDS_KEY } from './rewards.constants';
 import { RewardsDto } from './rewards.dto';
 
 @Injectable()
@@ -20,31 +15,24 @@ export class RewardsService {
   ) {}
 
   public async getRewards(): Promise<RewardsDto> {
-    const rewards = await this.keyValueRepository.findBy({
-      id: In([
-        FARMING_APR_KEY,
-        FARMING_REWARDS_KEY,
-        FARMING_APR_DOUBLE_KEY,
-        FARMING_REWARDS_DOUBLE_KEY,
-      ]),
+    const { value: apr } = await this.keyValueRepository.findOneBy({
+      id: FARMING_APR_KEY,
     });
-    const rewardsById = new Map(
-      rewards.map((reward) => [reward.id, reward.value]),
-    );
+    const { value: rewards } = await this.keyValueRepository.findOneBy({
+      id: FARMING_REWARDS_KEY,
+    });
 
     return {
-      apr: rewardsById.get(FARMING_APR_KEY),
-      rewards: rewardsById.get(FARMING_REWARDS_KEY),
-      aprDouble: rewardsById.get(FARMING_APR_DOUBLE_KEY),
-      rewardsDouble: rewardsById.get(FARMING_REWARDS_DOUBLE_KEY),
+      apr,
+      rewards,
+      aprDouble: (Number(apr) * 2).toFixed(2),
+      rewardsDouble: (Number(rewards) * 2).toFixed(2),
     };
   }
 
-  public async save(rewards: RewardsDto): Promise<void> {
-    this.upsertKeyValue(FARMING_APR_KEY, rewards.apr);
-    this.upsertKeyValue(FARMING_REWARDS_KEY, rewards.rewards);
-    this.upsertKeyValue(FARMING_APR_DOUBLE_KEY, rewards.aprDouble);
-    this.upsertKeyValue(FARMING_REWARDS_DOUBLE_KEY, rewards.rewardsDouble);
+  public async save(apr: string, rewards: string): Promise<void> {
+    this.upsertKeyValue(FARMING_APR_KEY, apr);
+    this.upsertKeyValue(FARMING_REWARDS_KEY, rewards);
   }
 
   private async upsertKeyValue(key: string, value: string) {
