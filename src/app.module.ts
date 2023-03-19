@@ -9,7 +9,7 @@ import { IconsModule } from './modules/icons/icons.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { PairsModule } from './modules/pairs/pairs.module';
-import { TrackerSupplyModule } from './modules/tracker-supply/tracker-supply.module';
+import { TrackerModule } from './modules/tracker/tracker.module';
 import { TokenPriceModule } from './modules/token-price/token-price.module';
 import { RewardsModule } from './modules/rewards/rewards.module';
 
@@ -47,7 +47,7 @@ import { RewardsModule } from './modules/rewards/rewards.module';
     TelegramLoggerModule,
     IconsModule,
     PairsModule,
-    TrackerSupplyModule,
+    TrackerModule,
     TokenPriceModule,
     RewardsModule,
   ],

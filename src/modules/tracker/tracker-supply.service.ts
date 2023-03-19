@@ -2,7 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { getTodayFormatted } from 'src/utils/date-utils';
 import { Repository } from 'typeorm';
-import { TrackerSupply } from './tracker-supply.entity';
+import { TrackerSupplyGraphPointDto } from './dto/tracker-supply-graph-point.dto';
+import { TrackerSupply } from './entity/tracker-supply.entity';
 
 @Injectable()
 export class TrackerSupplyService {
@@ -13,7 +14,7 @@ export class TrackerSupplyService {
     private readonly trackerSupplyRepository: Repository<TrackerSupply>,
   ) {}
 
-  async save(trackerSupply: string): Promise<void> {
+  public async save(trackerSupply: string): Promise<void> {
     const today = getTodayFormatted();
 
     const existingSupply = await this.trackerSupplyRepository.findOneBy({
@@ -40,5 +41,14 @@ export class TrackerSupplyService {
         },
       );
     }
+  }
+
+  public async calculateSupplyGraph(): Promise<TrackerSupplyGraphPointDto[]> {
+    return this.trackerSupplyRepository.query(
+      `SELECT DATE_FORMAT(date_raw, '%Y-%m-%d') as x, \
+            supply as y \
+            FROM tracker_supply \
+            ORDER BY date_raw`,
+    );
   }
 }
