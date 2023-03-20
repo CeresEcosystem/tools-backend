@@ -3,11 +3,13 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TrackerSupply } from './entity/tracker-supply.entity';
 import { TrackerSupplySync } from './tracker-supply.sync';
-import { TrackerSupplyService } from './tracker-supply.service';
+import { TrackerSupplyRepository } from './tracker-supply.repository';
 import { TrackerController } from './tracker.controller';
 import { TrackerService } from './tracker.service';
 import { TrackerToBlockDtoMapper } from './mapper/tracker-to-block-dto.mapper';
 import { Tracker } from './entity/tracker.entity';
+import { TrackerSync } from './tracker.sync';
+import { TrackerBlockBcToEntityMapper } from './mapper/tracker-block-bc-to-entity.mapper';
 
 @Module({
   imports: [HttpModule, TypeOrmModule.forFeature([Tracker, TrackerSupply])],
@@ -15,8 +17,10 @@ import { Tracker } from './entity/tracker.entity';
   providers: [
     TrackerService,
     TrackerToBlockDtoMapper,
-    TrackerSupplyService,
+    TrackerSupplyRepository,
     TrackerSupplySync,
+    TrackerSync,
+    TrackerBlockBcToEntityMapper,
   ],
   exports: [],
 })

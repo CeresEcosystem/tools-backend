@@ -1,12 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { getTodayFormatted } from 'src/utils/date-utils';
 import { Repository } from 'typeorm';
 import { TrackerBurnDto } from './dto/tracker-burn.dto';
 import { TrackerBurningGraphPointDto } from './dto/tracker-burning-graph-point.dto';
 import { TrackerDto } from './dto/tracker.dto';
 import { Tracker } from './entity/tracker.entity';
 import { TrackerToBlockDtoMapper } from './mapper/tracker-to-block-dto.mapper';
-import { TrackerSupplyService } from './tracker-supply.service';
+import { TrackerSupplyRepository } from './tracker-supply.repository';
 
 const BURN_PERIODS = [
   { type: '-1' }, // Total
@@ -22,9 +23,18 @@ export class TrackerService {
   constructor(
     @InjectRepository(Tracker)
     private readonly trackerRepository: Repository<Tracker>,
-    private readonly trackerSupplyService: TrackerSupplyService,
+    private readonly trackerSupplyRepository: TrackerSupplyRepository,
     private readonly trackerToBlockMapper: TrackerToBlockDtoMapper,
   ) {}
+
+  public async findMaxBlockNumber(): Promise<string> {
+    const result = await this.trackerRepository
+      .createQueryBuilder('tracker')
+      .select('MAX(block_num)', 'lastBlock')
+      .getRawOne<{ lastBlock: string }>();
+
+    return result.lastBlock;
+  }
 
   public async getTrackerData(): Promise<TrackerDto> {
     const blocks = await this.getAll();
@@ -34,9 +44,21 @@ export class TrackerService {
       blocks: this.trackerToBlockMapper.toDtos(blocks),
       last: lastBlock,
       burn: this.calculateBurningData(blocks, lastBlock),
-      graphBurning: await this.calculateBurningGraph(),
-      graphSupply: await this.trackerSupplyService.calculateSupplyGraph(),
+      graphBurning: await this.getBurningGraphData(),
+      graphSupply: await this.trackerSupplyRepository.getSupplyGraphData(),
     };
+  }
+
+  public save(trackers: Tracker[]): void {
+    trackers.forEach((tracker) => {
+      tracker.createdAt = new Date();
+      tracker.updatedAt = new Date();
+      tracker.dateRaw = getTodayFormatted();
+    });
+
+    this.trackerRepository.upsert(trackers, {
+      conflictPaths: { blockNum: true },
+    });
   }
 
   private getAll(): Promise<Tracker[]> {
@@ -84,9 +106,7 @@ export class TrackerService {
       .reduce((partialSum, burned) => partialSum + burned, 0);
   }
 
-  private async calculateBurningGraph(): Promise<
-    TrackerBurningGraphPointDto[]
-  > {
+  private async getBurningGraphData(): Promise<TrackerBurningGraphPointDto[]> {
     return await this.trackerRepository.query(
       `SELECT DATE_FORMAT(date_raw, '%Y-%m-%d') as x, \
             SUM(pswap_gross_burn) as y, \

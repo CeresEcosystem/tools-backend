@@ -4,7 +4,7 @@ import { Cron } from '@nestjs/schedule';
 import { AxiosError } from 'axios';
 import { catchError, firstValueFrom, of, retry } from 'rxjs';
 import { CronExpression } from 'src/utils/cron-expression.enum';
-import { TrackerSupplyService } from './tracker-supply.service';
+import { TrackerSupplyRepository } from './tracker-supply.repository';
 
 const PSWAP_SUPPLY_URL = 'https://mof.sora.org/qty/pswap';
 
@@ -14,7 +14,7 @@ export class TrackerSupplySync {
 
   constructor(
     private readonly httpService: HttpService,
-    private readonly trackerSupplyService: TrackerSupplyService,
+    private readonly trackerSupplyRepository: TrackerSupplyRepository,
   ) {}
 
   @Cron(CronExpression.EVERY_10_MINUTES)
@@ -37,7 +37,7 @@ export class TrackerSupplySync {
       return;
     }
 
-    this.trackerSupplyService.save(trackerSupply);
+    this.trackerSupplyRepository.save(trackerSupply);
 
     this.logger.log('Downloading of PSWAP supply was successful!');
   }
