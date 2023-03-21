@@ -19,7 +19,7 @@ export class TrackerSupplySync {
 
   @Cron(CronExpression.EVERY_10_MINUTES)
   async fetchPswapSupply(): Promise<void> {
-    this.logger.log('Start downloading PSWAP supply.');
+    this.logger.log('Start fetching PSWAP supply.');
 
     const { data: trackerSupply } = await firstValueFrom(
       this.httpService.get<string>(PSWAP_SUPPLY_URL, { timeout: 2000 }).pipe(
@@ -39,6 +39,6 @@ export class TrackerSupplySync {
 
     this.trackerSupplyRepository.save(trackerSupply);
 
-    this.logger.log('Downloading of PSWAP supply was successful!');
+    this.logger.log('Fetching of PSWAP supply was successful!');
   }
 }
