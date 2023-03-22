@@ -15,12 +15,10 @@ export class MailerController {
     @Body() contactUsDto: ContactUsDto,
   ): Promise<void> {
     this.mailerService.sendMail({
-      replyTo: contactUsDto.emailAddress,
+      replyTo: contactUsDto.email,
       text: `Contact form data: \n
-       First name: ${contactUsDto.firstName} \n
-       Last name: ${contactUsDto.lastName} \n
-       Company: ${contactUsDto.company} \n
-       Email: ${contactUsDto.emailAddress} \n
+       Name: ${contactUsDto.name} \n
+       Email: ${contactUsDto.email} \n
        Message: ${contactUsDto.message}`,
     });
   }

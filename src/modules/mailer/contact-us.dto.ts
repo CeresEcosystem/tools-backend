@@ -1,7 +1,5 @@
 export interface ContactUsDto {
-  firstName: string;
-  lastName: string;
-  company: string;
-  emailAddress: string;
+  name: string;
+  email: string;
   message: string;
 }
