@@ -10,7 +10,7 @@ export interface PairDto {
   liquidity: number;
   baseAssetLiq: number;
   targetAssetLiq: number;
-  lockedLiquidity: number;
+  lockedLiquidity: string;
   volume: number;
 
   updatedAt: Date;

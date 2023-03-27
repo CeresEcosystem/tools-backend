@@ -34,7 +34,7 @@ export class Pair {
   targetAssetLiq: number;
 
   @Column({ name: 'locked_liquidity' })
-  lockedLiquidity: number;
+  lockedLiquidity: string;
 
   @Column({ name: 'volume' })
   volume: number;
