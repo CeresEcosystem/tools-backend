@@ -14,7 +14,7 @@ export class PairsRepository {
 
   public findAll(): Promise<Pair[]> {
     return this.repository.find({
-      order: { order: 'ASC', tokenFullName: 'ASC' },
+      order: { liquidity: 'DESC', tokenFullName: 'ASC' },
       where: { deleted: false, liquidity: MoreThan(0) },
     });
   }
