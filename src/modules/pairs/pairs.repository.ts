@@ -19,9 +19,9 @@ export class PairsRepository {
     });
   }
 
-  public async upsertAll(liquidityPairs: Pair[]) {
-    liquidityPairs.forEach((liquidityPair) => {
-      this.upsert(liquidityPair);
+  public upsertAll(liquidityPairs: Pair[]) {
+    liquidityPairs.forEach(async (liquidityPair) => {
+      await this.upsert(liquidityPair);
     });
   }
 
