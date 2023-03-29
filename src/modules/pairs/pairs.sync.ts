@@ -74,7 +74,6 @@ export class PairsSync {
         tokenAssetId,
         async (liqArray) => {
           liqArray = liqArray.toHuman();
-
           if (new FPNumber(liqArray[0]).toNumber() === 0) {
             return;
           }
