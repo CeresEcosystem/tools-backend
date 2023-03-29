@@ -64,8 +64,6 @@ export class PairsSync {
     const xorPrice = tokenPrices.find((tp) => tp.token === 'XOR').price;
     const xstusdPrice = tokenPrices.find((tp) => tp.token === 'XSTUSD').price;
 
-    const pairsToUpsert: PairBcDto[] = [];
-
     for (const pair of this.pairs) {
       const { token, baseAsset, baseAssetId, tokenAssetId } = pair;
 
@@ -100,20 +98,18 @@ export class PairsSync {
               volume = 0;
             }
 
-            pairsToUpsert.push({
-              ...pair,
-              liquidity: liqData.liquidity,
-              baseAssetLiq: liqData.baseAssetLiq.toFixed(2),
-              targetAssetLiq: liqData.targetAssetLiq.toFixed(2),
-              volume: volume.toFixed(2),
-            });
+            this.pairsService.save([
+              {
+                ...pair,
+                liquidity: liqData.liquidity,
+                baseAssetLiq: liqData.baseAssetLiq.toFixed(2),
+                targetAssetLiq: liqData.targetAssetLiq.toFixed(2),
+                volume: volume.toFixed(2),
+              },
+            ]);
           }
         },
       );
-    }
-
-    if (pairsToUpsert.length > 0) {
-      this.pairsService.save(pairsToUpsert);
     }
 
     this.logger.log('Fetching of pairs data was successful!');
