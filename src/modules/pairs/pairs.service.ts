@@ -20,16 +20,6 @@ export class PairsService {
   public save(dtos: PairBcDto[]): void {
     const entities = this.mapper.toEntities(dtos);
 
-    this.resolveOrdering(entities);
-
     this.pairsRepository.upsertAll(entities);
-  }
-
-  private resolveOrdering(liquidityPairs: Pair[]) {
-    liquidityPairs.sort((a, b) => (a.liquidity < b.liquidity ? 1 : -1));
-
-    liquidityPairs.forEach((liquidityPair, index) => {
-      liquidityPair.order = index + 1;
-    });
   }
 }

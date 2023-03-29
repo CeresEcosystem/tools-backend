@@ -39,9 +39,6 @@ export class Pair {
   @Column({ name: 'volume' })
   volume: number;
 
-  @Column({ name: 'order' })
-  order: number;
-
   @Column({ name: 'deleted' })
   deleted: boolean;
 
