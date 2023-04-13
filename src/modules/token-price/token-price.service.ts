@@ -46,6 +46,10 @@ export class TokenPriceService {
     this.saveChronoPrices(tokenPrices);
   }
 
+  public update(tokenPrice: TokenPrice): void {
+    this.tokenPriceRepository.update(tokenPrice);
+  }
+
   public searchByFullNameTerms(searchTerms: string[]): Promise<TokenPrice[]> {
     const whereStatements = searchTerms.map(
       (term) =>

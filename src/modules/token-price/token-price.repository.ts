@@ -29,6 +29,10 @@ export class TokenPriceRepository {
     return this.repository.find(options);
   }
 
+  public update(tokenPrice: TokenPrice) {
+    this.repository.update({ id: tokenPrice.id }, tokenPrice);
+  }
+
   public upsertAll(tokenPrices: TokenPrice[]) {
     tokenPrices.forEach((tokenPrice) => {
       this.upsert(tokenPrice);

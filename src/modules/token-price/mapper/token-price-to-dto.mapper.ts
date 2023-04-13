@@ -14,7 +14,7 @@ export class TokenPriceToDtoMapper extends BaseDtoMapper<
       price,
       assetId,
       fullName,
-      lockedTokens,
+      lockedTokens: Number(lockedTokens),
       updatedAt,
     };
   }

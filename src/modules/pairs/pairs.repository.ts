@@ -12,11 +12,19 @@ export class PairsRepository {
     private readonly repository: Repository<Pair>,
   ) {}
 
+  public findOne(baseAsset: string, token: string): Promise<Pair> {
+    return this.repository.findOneByOrFail({ baseAsset, token });
+  }
+
   public findAll(): Promise<Pair[]> {
     return this.repository.find({
       order: { liquidity: 'DESC', tokenFullName: 'ASC' },
       where: { deleted: false, liquidity: MoreThan(0) },
     });
+  }
+
+  public update(pair: Pair) {
+    this.repository.update({ id: pair.id }, pair);
   }
 
   public upsertAll(liquidityPairs: Pair[]) {
