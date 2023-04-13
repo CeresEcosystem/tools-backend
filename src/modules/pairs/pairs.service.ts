@@ -13,6 +13,10 @@ export class PairsService {
     private readonly mapper: PairsMapper,
   ) {}
 
+  public findOne(baseAsset: string, token: string): Promise<Pair> {
+    return this.pairsRepository.findOne(baseAsset, token);
+  }
+
   public findAll(): Promise<Pair[]> {
     return this.pairsRepository.findAll();
   }
@@ -21,5 +25,9 @@ export class PairsService {
     const entities = this.mapper.toEntities(dtos);
 
     this.pairsRepository.upsertAll(entities);
+  }
+
+  public update(pair: Pair): void {
+    this.pairsRepository.update(pair);
   }
 }

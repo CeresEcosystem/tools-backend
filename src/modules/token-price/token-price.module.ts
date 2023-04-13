@@ -11,12 +11,15 @@ import { TokenOrder } from './entity/token-order.entity';
 import { ChronoPriceModule } from '../chrono-price/chrono-price.module';
 import { TokenPriceController } from './token-price.controller';
 import { TokenPriceToDtoMapper } from './mapper/token-price-to-dto.mapper';
+import { CeresClientModule } from '../ceres-client/ceres-client.module';
+import { TokenLockerSync } from './token-locker.sync';
 
 @Module({
   imports: [
     HttpModule,
     SymbolModule,
     ChronoPriceModule,
+    CeresClientModule,
     TypeOrmModule.forFeature([TokenPrice, TokenOrder]),
   ],
   controllers: [TokenPriceController],
@@ -26,6 +29,7 @@ import { TokenPriceToDtoMapper } from './mapper/token-price-to-dto.mapper';
     TokenPriceRepository,
     TokenPriceBcDtoToEntityMapper,
     TokenPriceToDtoMapper,
+    TokenLockerSync,
   ],
   exports: [TokenPriceService],
 })

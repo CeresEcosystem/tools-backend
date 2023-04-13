@@ -21,7 +21,7 @@ export class TokenPrice {
   order: number;
 
   @Column({ name: 'locked_tokens' })
-  lockedTokens: number;
+  lockedTokens: string;
 
   @Column()
   deleted: boolean;

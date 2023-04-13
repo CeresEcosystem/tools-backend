@@ -9,9 +9,16 @@ import { PairsService } from './pairs.service';
 import { TokenPriceModule } from '../token-price/token-price.module';
 import { PairsController } from './pairs.controller';
 import { PairToDtoMapper } from './mapper/pair-to-dto.mapper';
+import { CeresClientModule } from '../ceres-client/ceres-client.module';
+import { PairsLockerSync } from './pairs-locker.sync';
 
 @Module({
-  imports: [HttpModule, TokenPriceModule, TypeOrmModule.forFeature([Pair])],
+  imports: [
+    HttpModule,
+    TokenPriceModule,
+    CeresClientModule,
+    TypeOrmModule.forFeature([Pair]),
+  ],
   controllers: [PairsController],
   providers: [
     PairsService,
@@ -19,6 +26,7 @@ import { PairToDtoMapper } from './mapper/pair-to-dto.mapper';
     PairToDtoMapper,
     PairsRepository,
     PairsSync,
+    PairsLockerSync,
   ],
   exports: [PairsService],
 })
