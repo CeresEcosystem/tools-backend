@@ -1,7 +1,6 @@
 import { DataSource } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
-import { CreatePrices1678473271465 } from './migrations/1678473271465-create-prices';
 
 config();
 
@@ -15,6 +14,6 @@ export default new DataSource({
   password: configService.get('PG_PASSWORD'),
   database: configService.get('PG_DB_NAME'),
   entities: [],
-  migrations: [CreatePrices1678473271465],
+  migrations: ['src/database/pg/migrations/*'],
   migrationsTableName: 'migrations',
 });
