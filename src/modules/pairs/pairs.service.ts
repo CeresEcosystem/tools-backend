@@ -30,4 +30,11 @@ export class PairsService {
   public update(pair: Pair): void {
     this.pairsRepository.update(pair);
   }
+
+  public async calculateTVL(): Promise<number> {
+    let pairs: Pair[] = await this.pairsRepository.findAll();
+    let tvl = 0;
+    pairs.map((pair) => (tvl += pair.liquidity));
+    return tvl;
+  }
 }
