@@ -1,7 +1,10 @@
-export function getTodayFormatted(): string {
-  const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  const todayFormatted = now.toISOString().slice(0, 10);
+export function getDateFormatted(date: Date): string {
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+  const dateFormatted = date.toISOString().slice(0, 10);
 
-  return todayFormatted;
+  return dateFormatted;
+}
+
+export function getTodayFormatted(): string {
+  return getDateFormatted(new Date());
 }

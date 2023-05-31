@@ -9,20 +9,27 @@ export class TrackerToBlockDtoMapper extends BaseDtoMapper<
   toDto(entity: Tracker): TrackerBlockDto {
     const {
       blockNum,
-      pswapGrossBurn,
-      pswapNetBurn,
-      pswapRemintedLp,
-      pswapRemintedParliament,
+      grossBurn,
+      netBurn,
+      remintedLp,
+      remintedParliament,
       xorSpent,
+      xorDedicatedForBuyBack,
     } = entity;
 
     return {
       blockNum,
-      pswapGrossBurn,
-      pswapNetBurn,
-      pswapRemintedLp,
-      pswapRemintedParliament,
+      grossBurn,
+      netBurn,
+      remintedLp,
+      remintedParliament,
       xorSpent,
+      xorDedicatedForBuyBack,
+      //FIXME: Deprecated fields
+      pswapGrossBurn: grossBurn,
+      pswapNetBurn: netBurn,
+      pswapRemintedLp: remintedLp,
+      pswapRemintedParliament: remintedParliament,
     };
   }
 }

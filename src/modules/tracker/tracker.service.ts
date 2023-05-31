@@ -27,42 +27,44 @@ export class TrackerService {
     private readonly trackerToBlockMapper: TrackerToBlockDtoMapper,
   ) {}
 
-  public async findMaxBlockNumber(): Promise<string> {
+  public async findMaxBlockNumber(token: string): Promise<string> {
     const result = await this.trackerRepository
       .createQueryBuilder('tracker')
       .select('MAX(block_num)', 'lastBlock')
+      .where({ token })
       .getRawOne<{ lastBlock: string }>();
 
     return result.lastBlock;
   }
 
-  public async getTrackerData(): Promise<TrackerDto> {
-    const blocks = await this.getAll();
-    const lastBlock = blocks[0].blockNum;
+  public async getTrackerData(token: string): Promise<TrackerDto> {
+    const blocks = await this.getAll(token);
+    const lastBlock = blocks[0]?.blockNum || 0;
 
     return {
       blocks: this.trackerToBlockMapper.toDtos(blocks),
       last: lastBlock,
       burn: this.calculateBurningData(blocks, lastBlock),
-      graphBurning: await this.getBurningGraphData(),
-      graphSupply: await this.trackerSupplyRepository.getSupplyGraphData(),
+      graphBurning: await this.getBurningGraphData(token),
+      graphSupply: await this.trackerSupplyRepository.getSupplyGraphData(token),
     };
   }
 
-  public save(trackers: Tracker[]): void {
+  public async insert(trackers: Tracker[]): Promise<void> {
     trackers.forEach((tracker) => {
       tracker.createdAt = new Date();
       tracker.updatedAt = new Date();
-      tracker.dateRaw = getTodayFormatted();
+      tracker.dateRaw = tracker.dateRaw || getTodayFormatted();
     });
 
-    this.trackerRepository.upsert(trackers, {
-      conflictPaths: { blockNum: true },
-    });
+    await this.trackerRepository.insert(trackers);
   }
 
-  private getAll(): Promise<Tracker[]> {
-    return this.trackerRepository.find({ order: { blockNum: 'DESC' } });
+  private getAll(token: string): Promise<Tracker[]> {
+    return this.trackerRepository.find({
+      where: { token },
+      order: { blockNum: 'DESC' },
+    });
   }
 
   private calculateBurningData(
@@ -75,16 +77,11 @@ export class TrackerService {
       burn[period.type] = {
         gross: this.calculateBurn(
           blocks,
-          'pswapGrossBurn',
+          'grossBurn',
           lastBlock,
           period.lookBack,
         ),
-        net: this.calculateBurn(
-          blocks,
-          'pswapNetBurn',
-          lastBlock,
-          period.lookBack,
-        ),
+        net: this.calculateBurn(blocks, 'netBurn', lastBlock, period.lookBack),
       };
     });
 
@@ -93,7 +90,7 @@ export class TrackerService {
 
   private calculateBurn(
     blocks: Tracker[],
-    burnField: 'pswapGrossBurn' | 'pswapNetBurn',
+    burnField: 'grossBurn' | 'netBurn',
     lastBlock: number,
     lookBack?: number,
   ): number {
@@ -106,18 +103,23 @@ export class TrackerService {
       .reduce((partialSum, burned) => partialSum + burned, 0);
   }
 
-  private async getBurningGraphData(): Promise<TrackerBurningGraphPointDto[]> {
+  private async getBurningGraphData(
+    token: string,
+  ): Promise<TrackerBurningGraphPointDto[]> {
     return await this.trackerRepository.query(
       `SELECT DATE_FORMAT(date_raw, '%Y-%m-%d') as x, \
-            SUM(pswap_gross_burn) as y, \
+            SUM(gross_burn) as y, \
             SUM(xor_spent) as spent, \
-            SUM(pswap_reminted_lp) as lp, \
-            SUM(pswap_reminted_parliament) as parl, \
-            SUM(IF(pswap_net_burn <= 0, 0, pswap_net_burn)) AS net \
+            SUM(reminted_lp) as lp, \
+            SUM(reminted_parliament) as parl, \
+            SUM(IF(net_burn <= 0, 0, net_burn)) as net, \
+            SUM(xor_dedicated_for_buy_back) as back \
             FROM tracker \
             WHERE date_raw is not null \
+            AND token = ? \
             GROUP BY date_raw \
             ORDER BY date_raw`,
+      [token],
     );
   }
 }
