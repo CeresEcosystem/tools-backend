@@ -29,6 +29,10 @@ export class PairsController {
 
   @Get('/tvl')
   public getTVL(): Promise<number> {
-    return this.pairsService.calculateTVL();
+    return this.cacheManager.wrap(
+      CACHE_KEYS.PAIRS,
+      () => this.pairsService.calculateTVL(),
+      CACHE_TTL.ONE_MINUTE,
+    );
   }
 }

@@ -8,8 +8,10 @@ import { TrackerController } from './tracker.controller';
 import { TrackerService } from './tracker.service';
 import { TrackerToBlockDtoMapper } from './mapper/tracker-to-block-dto.mapper';
 import { Tracker } from './entity/tracker.entity';
-import { TrackerSync } from './tracker.sync';
-import { TrackerBlockBcToEntityMapper } from './mapper/tracker-block-bc-to-entity.mapper';
+import { TrackerPswapSync } from './tracker-pswap.sync';
+import { PSWAPTrackerBlockBcToEntityMapper } from './mapper/pswap-tracker-block-bc-to-entity.mapper';
+import { TrackerValSync } from './tracker-val.sync';
+import { VALTrackerBlockBcToEntityMapper } from './mapper/val-tracker-block-bc-to-entity.mapper';
 
 @Module({
   imports: [HttpModule, TypeOrmModule.forFeature([Tracker, TrackerSupply])],
@@ -19,9 +21,11 @@ import { TrackerBlockBcToEntityMapper } from './mapper/tracker-block-bc-to-entit
     TrackerToBlockDtoMapper,
     TrackerSupplyRepository,
     TrackerSupplySync,
-    TrackerSync,
-    TrackerBlockBcToEntityMapper,
+    TrackerPswapSync,
+    TrackerValSync,
+    PSWAPTrackerBlockBcToEntityMapper,
+    VALTrackerBlockBcToEntityMapper,
   ],
-  exports: [],
+  exports: [TrackerService, VALTrackerBlockBcToEntityMapper],
 })
 export class TrackerModule {}
