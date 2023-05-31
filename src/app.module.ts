@@ -14,7 +14,8 @@ import { TokenPriceModule } from './modules/token-price/token-price.module';
 import { RewardsModule } from './modules/rewards/rewards.module';
 import { MailerModule } from './modules/mailer/mailer.module';
 import { ConsoleModule } from 'nestjs-console';
-import { ValBurningSeeder } from './modules/tracker/val-burning-dump/val-burning-seeder';
+import { ValBurningSeeder } from './modules/tracker/val-seed/val-burning-seeder';
+import { ValSupplySeeder } from './modules/tracker/val-seed/val-supply-seeder';
 
 @Module({
   imports: [
@@ -57,7 +58,7 @@ import { ValBurningSeeder } from './modules/tracker/val-burning-dump/val-burning
     ConsoleModule,
   ],
   controllers: [],
-  providers: [ValBurningSeeder],
+  providers: [ValBurningSeeder, ValSupplySeeder],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

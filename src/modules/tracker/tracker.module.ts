@@ -26,6 +26,10 @@ import { VALTrackerBlockBcToEntityMapper } from './mapper/val-tracker-block-bc-t
     PSWAPTrackerBlockBcToEntityMapper,
     VALTrackerBlockBcToEntityMapper,
   ],
-  exports: [TrackerService, VALTrackerBlockBcToEntityMapper],
+  exports: [
+    TrackerService,
+    VALTrackerBlockBcToEntityMapper,
+    TrackerSupplyRepository,
+  ],
 })
 export class TrackerModule {}
