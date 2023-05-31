@@ -14,18 +14,22 @@ export class TrackerSupplyRepository {
     private readonly repository: Repository<TrackerSupply>,
   ) {}
 
-  public async save(token: string, trackerSupply: string): Promise<void> {
-    const today = getTodayFormatted();
+  public async save(
+    token: string,
+    trackerSupply: string,
+    dateFormatted?: string,
+  ): Promise<void> {
+    const dateRaw = dateFormatted || getTodayFormatted();
 
     const existingSupply = await this.repository.findOneBy({
       token,
-      dateRaw: today,
+      dateRaw,
     });
 
     if (!existingSupply) {
       this.repository.insert({
         token,
-        dateRaw: today,
+        dateRaw,
         supply: trackerSupply,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -36,7 +40,7 @@ export class TrackerSupplyRepository {
 
     if (existingSupply.supply != trackerSupply) {
       this.repository.update(
-        { token, dateRaw: today },
+        { token, dateRaw },
         {
           supply: trackerSupply,
           updatedAt: new Date(),

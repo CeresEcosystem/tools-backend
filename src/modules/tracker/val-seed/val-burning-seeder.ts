@@ -19,7 +19,7 @@ export class ValBurningSeeder {
   ) {}
 
   @Command({
-    command: 'setDateRaw',
+    command: 'setBurningDateRaw',
   })
   public async setDateRaw(): Promise<void> {
     const spin = createSpinner();
