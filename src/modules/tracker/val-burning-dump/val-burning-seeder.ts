@@ -7,6 +7,8 @@ import { VALTrackerBlockBcToEntityMapper } from '../mapper/val-tracker-block-bc-
 import { ValTrackerBlockDto } from '../dto/val-tracker-bc-block';
 import { getDateFormatted } from 'src/utils/date-utils';
 
+export const CSV_STORAGE_PATH = 'storage/csv/';
+
 @Console()
 export class ValBurningSeeder {
   private readonly logger = new Logger(ValBurningSeeder.name);
@@ -31,7 +33,7 @@ export class ValBurningSeeder {
     }
 
     const valBurningDataFile = fs.readFileSync(
-      'storage/csv/val-burning-data.csv',
+      `${CSV_STORAGE_PATH}/val-burning-data.csv`,
       'utf8',
     );
 
@@ -47,7 +49,7 @@ export class ValBurningSeeder {
     });
 
     fs.writeFileSync(
-      'storage/csv/val-burning-data-complete.json',
+      `${CSV_STORAGE_PATH}/val-burning-data-complete.json`,
       Papa.unparse(valBurningData.data, { header: true }),
     );
 
@@ -69,14 +71,14 @@ export class ValBurningSeeder {
 
   private async seedValBurningData() {
     const valBurningDataFile = fs.readFileSync(
-      'storage/csv/val-burning-data-complete.json',
+      `${CSV_STORAGE_PATH}/val-burning-data-complete.json`,
       'utf8',
     );
 
     const valBurningData = Papa.parse(valBurningDataFile, { header: true });
 
     fs.writeFileSync(
-      'storage/csv/val-parse-result.json',
+      `${CSV_STORAGE_PATH}/val-parse-result.json`,
       JSON.stringify(valBurningData),
     );
 

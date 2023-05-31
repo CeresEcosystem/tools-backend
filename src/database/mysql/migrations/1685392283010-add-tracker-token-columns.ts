@@ -13,7 +13,6 @@ export class AddTrackerTokenColumns1685392283010 implements MigrationInterface {
       `ALTER TABLE tracker_supply \
        ADD COLUMN token VARCHAR(16),
        ADD INDEX token_idx(token),
-       DROP INDEX date_raw,
        ADD CONSTRAINT tracker_supply_unique UNIQUE KEY (token, date_raw)`,
     );
 
@@ -40,8 +39,7 @@ export class AddTrackerTokenColumns1685392283010 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE tracker_supply \
        DROP COLUMN token,
-       DROP INDEX tracker_supply_unique,
-       ADD INDEX date_raw(date_raw)`,
+       DROP INDEX tracker_supply_unique`,
     );
   }
 }
