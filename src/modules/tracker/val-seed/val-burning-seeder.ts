@@ -49,7 +49,7 @@ export class ValBurningSeeder {
     });
 
     fs.writeFileSync(
-      `${CSV_STORAGE_PATH}/val-burning-data-complete.json`,
+      `${CSV_STORAGE_PATH}/val-burning-data-complete.csv`,
       Papa.unparse(valBurningData.data, { header: true }),
     );
 
@@ -71,7 +71,7 @@ export class ValBurningSeeder {
 
   private async seedValBurningData() {
     const valBurningDataFile = fs.readFileSync(
-      `${CSV_STORAGE_PATH}/val-burning-data-complete.json`,
+      `${CSV_STORAGE_PATH}/val-burning-data-complete.csv`,
       'utf8',
     );
 
