@@ -88,6 +88,7 @@ export class TrackerService {
     return burn;
   }
 
+  //FIXME: lookBack should be deducted from the current block
   private calculateBurn(
     blocks: Tracker[],
     burnField: 'grossBurn' | 'netBurn',
@@ -106,6 +107,8 @@ export class TrackerService {
   private async getBurningGraphData(
     token: string,
   ): Promise<TrackerBurningGraphPointDto[]> {
+    const initBlock = this.getBurningGraphInitBlock(token);
+
     return await this.trackerRepository.query(
       `SELECT DATE_FORMAT(date_raw, '%Y-%m-%d') as x, \
             SUM(gross_burn) as y, \
@@ -117,9 +120,19 @@ export class TrackerService {
             FROM tracker \
             WHERE date_raw is not null \
             AND token = ? \
+            AND block_num > ? \
             GROUP BY date_raw \
             ORDER BY date_raw`,
-      [token],
+      [token, initBlock],
     );
+  }
+
+  private getBurningGraphInitBlock(token: string) {
+    switch (token) {
+      case 'VAL':
+        return '1243341'; //Burning mechanism was upgraded starting with this block
+      default:
+        return '0';
+    }
   }
 }
