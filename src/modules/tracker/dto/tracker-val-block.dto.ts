@@ -5,7 +5,6 @@ export interface TrackerBlockDto {
   remintedLp: string;
   remintedParliament: string;
   xorSpent: string;
-  xorDedicatedForBuyBack: string;
 
   //FIXME: Deprecated fields
   pswapGrossBurn: string;

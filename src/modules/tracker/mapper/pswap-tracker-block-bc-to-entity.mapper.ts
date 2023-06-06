@@ -1,7 +1,7 @@
 import { BaseEntityMapper } from 'src/utils/mappers/base-entity-mapper';
 import { Tracker } from '../entity/tracker.entity';
 
-export class TrackerBlockBcToEntityMapper extends BaseEntityMapper<
+export class PSWAPTrackerBlockBcToEntityMapper extends BaseEntityMapper<
   Tracker,
   string
 > {
@@ -9,12 +9,13 @@ export class TrackerBlockBcToEntityMapper extends BaseEntityMapper<
     const parts = trackerRow.split(',');
 
     return {
+      token: 'PSWAP',
       blockNum: Number(parts[0]),
       xorSpent: parts[1],
-      pswapGrossBurn: parts[2],
-      pswapRemintedLp: parts[3],
-      pswapRemintedParliament: parts[4],
-      pswapNetBurn: parts[5],
+      grossBurn: parts[2],
+      remintedLp: parts[3],
+      remintedParliament: parts[4],
+      netBurn: parts[5],
     } as Tracker;
   }
 }

@@ -32,9 +32,8 @@ export class PairsService {
   }
 
   public async calculateTVL(): Promise<number> {
-    let pairs: Pair[] = await this.pairsRepository.findAll();
-    let tvl = 0;
-    pairs.map((pair) => (tvl += pair.liquidity));
-    return tvl;
+    const pairs = await this.pairsRepository.findAll();
+
+    return pairs.reduce((partialSum, pair) => partialSum + pair.liquidity, 0);
   }
 }

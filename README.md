@@ -25,6 +25,16 @@ $ yarn start:dev
 $ yarn start:prod
 ```
 
+## Migrations
+
+```bash
+# generate migration file
+$ yarn typeorm migration:create ./src/database/mysql/migrations/<<file_name>>
+
+# reverting the last migration
+$ yarn run typeorm:revert-migration
+```
+
 ## Test
 
 ```bash

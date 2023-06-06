@@ -2,8 +2,11 @@ import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity(`tracker`)
 export class Tracker {
-  @PrimaryColumn({ name: 'id' })
+  @PrimaryColumn()
   id: number;
+
+  @Column()
+  token: string;
 
   @Column({ name: 'block_num' })
   blockNum: number;
@@ -11,17 +14,20 @@ export class Tracker {
   @Column({ name: 'xor_spent' })
   xorSpent: string;
 
-  @Column({ name: 'pswap_gross_burn' })
-  pswapGrossBurn: string;
+  @Column({ name: 'gross_burn' })
+  grossBurn: string;
 
-  @Column({ name: 'pswap_net_burn' })
-  pswapNetBurn: string;
+  @Column({ name: 'net_burn' })
+  netBurn: string;
 
-  @Column({ name: 'pswap_reminted_lp' })
-  pswapRemintedLp: string;
+  @Column({ name: 'reminted_lp' })
+  remintedLp: string;
 
-  @Column({ name: 'pswap_reminted_parliament' })
-  pswapRemintedParliament: string;
+  @Column({ name: 'reminted_parliament' })
+  remintedParliament: string;
+
+  @Column({ name: 'xor_dedicated_for_buy_back' })
+  xorDedicatedForBuyBack: string;
 
   @Column(`timestamp`, { name: `created_at` })
   createdAt: Date;

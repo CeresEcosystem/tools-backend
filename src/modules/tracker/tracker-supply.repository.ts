@@ -14,16 +14,22 @@ export class TrackerSupplyRepository {
     private readonly repository: Repository<TrackerSupply>,
   ) {}
 
-  public async save(trackerSupply: string): Promise<void> {
-    const today = getTodayFormatted();
+  public async save(
+    token: string,
+    trackerSupply: string,
+    dateFormatted?: string,
+  ): Promise<void> {
+    const dateRaw = dateFormatted || getTodayFormatted();
 
     const existingSupply = await this.repository.findOneBy({
-      dateRaw: today,
+      token,
+      dateRaw,
     });
 
     if (!existingSupply) {
       this.repository.insert({
-        dateRaw: today,
+        token,
+        dateRaw,
         supply: trackerSupply,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -34,7 +40,7 @@ export class TrackerSupplyRepository {
 
     if (existingSupply.supply != trackerSupply) {
       this.repository.update(
-        { dateRaw: today },
+        { token, dateRaw },
         {
           supply: trackerSupply,
           updatedAt: new Date(),
@@ -43,12 +49,16 @@ export class TrackerSupplyRepository {
     }
   }
 
-  public async getSupplyGraphData(): Promise<TrackerSupplyGraphPointDto[]> {
+  public async getSupplyGraphData(
+    token: string,
+  ): Promise<TrackerSupplyGraphPointDto[]> {
     return this.repository.query(
       `SELECT DATE_FORMAT(date_raw, '%Y-%m-%d') as x, \
             supply as y \
             FROM tracker_supply \
+            WHERE token = ? \
             ORDER BY date_raw`,
+      [token],
     );
   }
 }
