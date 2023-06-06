@@ -13,6 +13,7 @@ import { TrackerModule } from './modules/tracker/tracker.module';
 import { TokenPriceModule } from './modules/token-price/token-price.module';
 import { RewardsModule } from './modules/rewards/rewards.module';
 import { MailerModule } from './modules/mailer/mailer.module';
+import { PortfolioModule } from './modules/portfolio/portfolio.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { MailerModule } from './modules/mailer/mailer.module';
     TokenPriceModule,
     RewardsModule,
     MailerModule,
+    PortfolioModule,
   ],
   controllers: [],
   providers: [],
