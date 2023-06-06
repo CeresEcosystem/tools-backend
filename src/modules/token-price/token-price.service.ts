@@ -31,6 +31,10 @@ export class TokenPriceService {
     return this.tokenPriceRepository.findOneByOrFail({ token });
   }
 
+  public findByAssetId(assetId: string): Promise<TokenPrice> {
+    return this.tokenPriceRepository.findOneByOrFail({ assetId });
+  }
+
   public async save(tokenPriceDtos: TokenPriceBcDto[]): Promise<void> {
     const tokenPrices = this.mapper.toEntities(tokenPriceDtos);
     const { tokenOrderBySymbol, defaultOrder } = await this.getTokenOrder();
