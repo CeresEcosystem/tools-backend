@@ -1,4 +1,11 @@
-import { CACHE_MANAGER, Controller, Get, Inject, Logger } from '@nestjs/common';
+import {
+  CACHE_MANAGER,
+  Controller,
+  Get,
+  Inject,
+  Logger,
+  Param,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { TrackerDto } from './dto/tracker.dto';
@@ -16,12 +23,18 @@ export class TrackerController {
     private readonly cacheManager: Cache,
   ) {}
 
-  @Get()
-  public getTrackerData(): Promise<TrackerDto> {
+  @Get('/:token')
+  public getTrackerData(@Param('token') token: string): Promise<TrackerDto> {
     return this.cacheManager.wrap(
-      CACHE_KEYS.TRACKER,
-      () => this.trackerService.getTrackerData(),
+      `${CACHE_KEYS.TRACKER}-${token}`,
+      () => this.trackerService.getTrackerData(token),
       CACHE_TTL.FIVE_MINUTES,
     );
+  }
+
+  //FIXME: Deprecated
+  @Get()
+  public getTrackerDataPSWAP(): Promise<TrackerDto> {
+    return this.getTrackerData('PSWAP');
   }
 }
