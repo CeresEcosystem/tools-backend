@@ -13,7 +13,7 @@ export class PairsRepository {
   ) {}
 
   public findOne(baseAsset: string, token: string): Promise<Pair> {
-    return this.repository.findOneByOrFail({ baseAsset, token });
+    return this.repository.findOneBy({ baseAsset, token });
   }
 
   public findAll(): Promise<Pair[]> {

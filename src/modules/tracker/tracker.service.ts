@@ -29,7 +29,7 @@ export class TrackerService {
 
   public async findMaxBlockNumber(token: string): Promise<string> {
     const result = await this.trackerRepository
-      .createQueryBuilder('tracker')
+      .createQueryBuilder()
       .select('MAX(block_num)', 'lastBlock')
       .where({ token })
       .getRawOne<{ lastBlock: string }>();
