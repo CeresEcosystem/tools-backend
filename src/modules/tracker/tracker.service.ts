@@ -8,6 +8,10 @@ import { TrackerDto } from './dto/tracker.dto';
 import { Tracker } from './entity/tracker.entity';
 import { TrackerToBlockDtoMapper } from './mapper/tracker-to-block-dto.mapper';
 import { TrackerSupplyRepository } from './tracker-supply.repository';
+import { WsProvider } from '@polkadot/rpc-provider';
+import { PROVIDER } from '../../constants/constants';
+import { ApiPromise } from '@polkadot/api/promise';
+import { options } from '@sora-substrate/api';
 
 const BURN_PERIODS = [
   { type: '-1' }, // Total
@@ -19,13 +23,21 @@ const BURN_PERIODS = [
 @Injectable()
 export class TrackerService {
   private readonly logger = new Logger(TrackerService.name);
+  private soraApi;
 
   constructor(
     @InjectRepository(Tracker)
     private readonly trackerRepository: Repository<Tracker>,
     private readonly trackerSupplyRepository: TrackerSupplyRepository,
     private readonly trackerToBlockMapper: TrackerToBlockDtoMapper,
-  ) {}
+  ) {
+    const provider = new WsProvider(PROVIDER);
+    new ApiPromise(options({ provider, noInitWarn: true })).isReady.then(
+      (api) => {
+        this.soraApi = api;
+      },
+    );
+  }
 
   public async findMaxBlockNumber(token: string): Promise<string> {
     const result = await this.trackerRepository
@@ -134,5 +146,10 @@ export class TrackerService {
       default:
         return '0';
     }
+  }
+
+  private async getCurrentBlock(): Promise<number> {
+    let block_number = await this.soraApi.query?.system?.number();
+    return block_number.toNumber();
   }
 }
