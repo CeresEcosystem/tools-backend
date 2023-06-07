@@ -39,12 +39,12 @@ export class TrackerService {
     );
   }
 
-  public async findMaxBlockNumber(token: string): Promise<string> {
+  public async findLastBlockNumber(token: string): Promise<number> {
     const result = await this.trackerRepository
       .createQueryBuilder()
       .select('MAX(block_num)', 'lastBlock')
       .where({ token })
-      .getRawOne<{ lastBlock: string }>();
+      .getRawOne<{ lastBlock: number }>();
 
     return result.lastBlock;
   }
@@ -149,7 +149,8 @@ export class TrackerService {
   }
 
   private async getCurrentBlock(): Promise<number> {
-    let block_number = await this.soraApi.query?.system?.number();
-    return block_number.toNumber();
+    const blockNumber = await this.soraApi.query?.system?.number();
+
+    return blockNumber.toNumber();
   }
 }
