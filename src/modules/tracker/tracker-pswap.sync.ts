@@ -34,18 +34,14 @@ export class TrackerPswapSync {
     this.logger.log('Start fetching burning data.');
 
     const burningData = [];
-    const lastBlock = parseInt(
-      await this.trackerService.findMaxBlockNumber('PSWAP'),
-    );
-    const headNum = await this.soraApi.query.system.number();
+    const startBlock = await this.trackerService.findLastBlockNumber('PSWAP');
+    const headBlock = await this.soraApi.query.system.number();
     const blocksWithDistribution = await this.getAllBlocksWithDistribution(
-      headNum,
-    );
-    const filtered = blocksWithDistribution.filter(
-      (blockTemp) => blockTemp > lastBlock,
+      startBlock,
+      headBlock,
     );
 
-    for (const blockNum of filtered) {
+    for (const blockNum of blocksWithDistribution) {
       const distributions = await this.parseBlockWithDistribution(blockNum);
       let retStr = '';
       for (const elem of distributions) {
@@ -54,7 +50,9 @@ export class TrackerPswapSync {
           retStr = retStr + ',' + new FPNumber(x).div(DENOMINATOR).toString();
         }
         retStr = retStr.slice(0, -1);
-        if (retStr !== '') burningData.push(retStr);
+        if (retStr !== '') {
+          burningData.push(retStr);
+        }
       }
     }
 
@@ -70,20 +68,26 @@ export class TrackerPswapSync {
     this.logger.log('Fetching of burning data was successful!');
   }
 
-  private async getAllBlocksWithDistribution(endBlock): Promise<any> {
+  private async getAllBlocksWithDistribution(
+    startBlock: number,
+    endBlock: number,
+  ): Promise<any> {
     const blocksWithDistribution = [];
     const queryResult =
       await this.soraApi.query.pswapDistribution.subscribedAccounts.entries();
-    for (let [_, v] of queryResult) {
+
+    for (let [, v] of queryResult) {
       v = v.toHuman();
       const poolCreated = new FPNumber(v[3]).toNumber();
       let blockNum = poolCreated + DAY;
       for (; blockNum < endBlock; blockNum += DAY) {
-        blocksWithDistribution.push(blockNum);
+        if (blockNum > startBlock) {
+          blocksWithDistribution.push(blockNum);
+        }
       }
     }
 
-    return blocksWithDistribution.sort();
+    return blocksWithDistribution.sort((a, b) => a - b);
   }
 
   private async parseBlockWithDistribution(blockNum): Promise<any> {
