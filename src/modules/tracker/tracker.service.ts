@@ -51,12 +51,13 @@ export class TrackerService {
 
   public async getTrackerData(token: string): Promise<TrackerDto> {
     const blocks = await this.getAll(token);
+    const currentBlock = await this.getCurrentBlock();
     const lastBlock = blocks[0]?.blockNum || 0;
 
     return {
       blocks: this.trackerToBlockMapper.toDtos(blocks),
       last: lastBlock,
-      burn: this.calculateBurningData(blocks, lastBlock),
+      burn: this.calculateBurningData(blocks, currentBlock),
       graphBurning: await this.getBurningGraphData(token),
       graphSupply: await this.trackerSupplyRepository.getSupplyGraphData(token),
     };
@@ -81,7 +82,7 @@ export class TrackerService {
 
   private calculateBurningData(
     blocks: Tracker[],
-    lastBlock: number,
+    currentBlock: number,
   ): Map<string, TrackerBurnDto> {
     const burn = new Map<string, TrackerBurnDto>();
 
@@ -90,26 +91,30 @@ export class TrackerService {
         gross: this.calculateBurn(
           blocks,
           'grossBurn',
-          lastBlock,
+          currentBlock,
           period.lookBack,
         ),
-        net: this.calculateBurn(blocks, 'netBurn', lastBlock, period.lookBack),
+        net: this.calculateBurn(
+          blocks,
+          'netBurn',
+          currentBlock,
+          period.lookBack,
+        ),
       };
     });
 
     return burn;
   }
 
-  //FIXME: lookBack should be deducted from the current block
   private calculateBurn(
     blocks: Tracker[],
     burnField: 'grossBurn' | 'netBurn',
-    lastBlock: number,
+    currentBlock: number,
     lookBack?: number,
   ): number {
     return blocks
       .filter((block) =>
-        lookBack ? block.blockNum >= lastBlock - lookBack : true,
+        lookBack ? block.blockNum >= currentBlock - lookBack : true,
       )
       .map((block) => Number(block[burnField]))
       .filter((burned) => burned > 0)
@@ -149,7 +154,7 @@ export class TrackerService {
   }
 
   private async getCurrentBlock(): Promise<number> {
-    const blockNumber = await this.soraApi.query?.system?.number();
+    const blockNumber = await this.soraApi.query.system.number();
 
     return blockNumber.toNumber();
   }
