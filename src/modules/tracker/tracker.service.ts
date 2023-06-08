@@ -8,6 +8,10 @@ import { TrackerDto } from './dto/tracker.dto';
 import { Tracker } from './entity/tracker.entity';
 import { TrackerToBlockDtoMapper } from './mapper/tracker-to-block-dto.mapper';
 import { TrackerSupplyRepository } from './tracker-supply.repository';
+import { WsProvider } from '@polkadot/rpc-provider';
+import { PROVIDER } from '../../constants/constants';
+import { ApiPromise } from '@polkadot/api/promise';
+import { options } from '@sora-substrate/api';
 
 const BURN_PERIODS = [
   { type: '-1' }, // Total
@@ -19,32 +23,41 @@ const BURN_PERIODS = [
 @Injectable()
 export class TrackerService {
   private readonly logger = new Logger(TrackerService.name);
+  private soraApi;
 
   constructor(
     @InjectRepository(Tracker)
     private readonly trackerRepository: Repository<Tracker>,
     private readonly trackerSupplyRepository: TrackerSupplyRepository,
     private readonly trackerToBlockMapper: TrackerToBlockDtoMapper,
-  ) {}
+  ) {
+    const provider = new WsProvider(PROVIDER);
+    new ApiPromise(options({ provider, noInitWarn: true })).isReady.then(
+      (api) => {
+        this.soraApi = api;
+      },
+    );
+  }
 
-  public async findMaxBlockNumber(token: string): Promise<string> {
+  public async findLastBlockNumber(token: string): Promise<number> {
     const result = await this.trackerRepository
       .createQueryBuilder()
       .select('MAX(block_num)', 'lastBlock')
       .where({ token })
-      .getRawOne<{ lastBlock: string }>();
+      .getRawOne<{ lastBlock: number }>();
 
     return result.lastBlock;
   }
 
   public async getTrackerData(token: string): Promise<TrackerDto> {
     const blocks = await this.getAll(token);
+    const currentBlock = await this.getCurrentBlock();
     const lastBlock = blocks[0]?.blockNum || 0;
 
     return {
       blocks: this.trackerToBlockMapper.toDtos(blocks),
       last: lastBlock,
-      burn: this.calculateBurningData(blocks, lastBlock),
+      burn: this.calculateBurningData(blocks, currentBlock),
       graphBurning: await this.getBurningGraphData(token),
       graphSupply: await this.trackerSupplyRepository.getSupplyGraphData(token),
     };
@@ -69,7 +82,7 @@ export class TrackerService {
 
   private calculateBurningData(
     blocks: Tracker[],
-    lastBlock: number,
+    currentBlock: number,
   ): Map<string, TrackerBurnDto> {
     const burn = new Map<string, TrackerBurnDto>();
 
@@ -78,26 +91,30 @@ export class TrackerService {
         gross: this.calculateBurn(
           blocks,
           'grossBurn',
-          lastBlock,
+          currentBlock,
           period.lookBack,
         ),
-        net: this.calculateBurn(blocks, 'netBurn', lastBlock, period.lookBack),
+        net: this.calculateBurn(
+          blocks,
+          'netBurn',
+          currentBlock,
+          period.lookBack,
+        ),
       };
     });
 
     return burn;
   }
 
-  //FIXME: lookBack should be deducted from the current block
   private calculateBurn(
     blocks: Tracker[],
     burnField: 'grossBurn' | 'netBurn',
-    lastBlock: number,
+    currentBlock: number,
     lookBack?: number,
   ): number {
     return blocks
       .filter((block) =>
-        lookBack ? block.blockNum >= lastBlock - lookBack : true,
+        lookBack ? block.blockNum >= currentBlock - lookBack : true,
       )
       .map((block) => Number(block[burnField]))
       .filter((burned) => burned > 0)
@@ -134,5 +151,11 @@ export class TrackerService {
       default:
         return '0';
     }
+  }
+
+  private async getCurrentBlock(): Promise<number> {
+    const blockNumber = await this.soraApi.query.system.number();
+
+    return blockNumber.toNumber();
   }
 }
