@@ -19,9 +19,7 @@ export class TrackerValSync {
     this.logger.log('Start fetching burning data.');
 
     const burningData: ValTrackerBlockDto[] = [];
-    // const lastBlock = parseInt(
-    //   await this.trackerService.findMaxBlockNumber('VAL'),
-    // );
+    // const startBlock = await this.trackerService.findLastBlockNumber('VAL');
 
     //TODO: implement VAL burning data sync
 
