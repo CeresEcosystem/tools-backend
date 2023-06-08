@@ -8,6 +8,6 @@ export class PortfolioController {
 
   @Get(':accountId')
   getPortfolio(@Param('accountId') accountId: string): Promise<PortfolioDto[]> {
-    return this.portfolioService.getQuantity(accountId);
+    return this.portfolioService.getPortfolio(accountId);
   }
 }
