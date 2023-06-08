@@ -104,7 +104,7 @@ export class TrackerPswapSync {
       if (module === 'pswapDistribution' && event === 'FeesExchanged') {
         if (
           events.length > idx + 4 &&
-          events[idx + 4].event.method === 'IncentiveDistributed'
+          events[idx + 20].event.method === 'IncentiveDistributed'
         ) {
           const xorSpent = e.event.data[3];
           const grossBurn = e.event.data[5];
