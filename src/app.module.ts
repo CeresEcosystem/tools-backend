@@ -13,6 +13,7 @@ import { TrackerModule } from './modules/tracker/tracker.module';
 import { TokenPriceModule } from './modules/token-price/token-price.module';
 import { RewardsModule } from './modules/rewards/rewards.module';
 import { MailerModule } from './modules/mailer/mailer.module';
+import { PortfolioModule } from './modules/portfolio/portfolio.module';
 import { ConsoleModule } from 'nestjs-console';
 import { ValBurningSeeder } from './modules/tracker/val-seed/val-burning-seeder';
 import { ValSupplySeeder } from './modules/tracker/val-seed/val-supply-seeder';
@@ -55,6 +56,7 @@ import { ValSupplySeeder } from './modules/tracker/val-seed/val-supply-seeder';
     TokenPriceModule,
     RewardsModule,
     MailerModule,
+    PortfolioModule,
     ConsoleModule,
   ],
   controllers: [],
