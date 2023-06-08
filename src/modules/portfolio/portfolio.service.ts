@@ -54,10 +54,10 @@ export class PortfolioService {
       price: Number(tokenEntity.price),
       balance,
       value: Number(tokenEntity.price) * balance,
-      one_hour: oneHour,
-      one_day: oneDay,
-      one_week: oneWeek,
-      one_month: oneMonth,
+      oneHour,
+      oneDay,
+      oneWeek,
+      oneMonth,
     });
 
     const portfolio = await this.api.query.tokens.accounts.entries(accountId);
@@ -88,10 +88,10 @@ export class PortfolioService {
         price: Number(tokenEntity.price),
         balance,
         value: Number(tokenEntity.price) * balance,
-        one_hour: oneHour,
-        one_day: oneDay,
-        one_week: oneWeek,
-        one_month: oneMonth,
+        oneHour,
+        oneDay,
+        oneWeek,
+        oneMonth,
       });
     }
     return assetIdsAndAssetBalances;

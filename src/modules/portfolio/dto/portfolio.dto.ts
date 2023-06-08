@@ -4,8 +4,8 @@ export interface PortfolioDto {
   price: number;
   balance: number;
   value: number;
-  one_hour: number;
-  one_day: number;
-  one_week: number;
-  one_month: number;
+  oneHour: number;
+  oneDay: number;
+  oneWeek: number;
+  oneMonth: number;
 }
