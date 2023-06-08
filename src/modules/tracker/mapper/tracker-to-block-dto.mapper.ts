@@ -25,11 +25,6 @@ export class TrackerToBlockDtoMapper extends BaseDtoMapper<
       remintedParliament,
       xorSpent,
       xorDedicatedForBuyBack,
-      //FIXME: Deprecated fields
-      pswapGrossBurn: grossBurn,
-      pswapNetBurn: netBurn,
-      pswapRemintedLp: remintedLp,
-      pswapRemintedParliament: remintedParliament,
     };
   }
 }
