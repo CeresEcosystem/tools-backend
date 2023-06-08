@@ -8,8 +8,8 @@ import { WsProvider } from '@polkadot/rpc-provider';
 import { PROVIDER } from '../../constants/constants';
 import { ApiPromise } from '@polkadot/api/promise';
 import { options } from '@sora-substrate/api';
+import { DENOMINATOR } from './tracker.constants';
 
-const DENOMINATOR = FPNumber.fromNatural(Math.pow(10, 18));
 const DAY = 14400;
 
 @Injectable()
@@ -31,7 +31,7 @@ export class TrackerPswapSync {
 
   @Cron(CronExpression.EVERY_10_MINUTES)
   async fetchTrackerData(): Promise<void> {
-    this.logger.log('Start fetching burning data.');
+    this.logger.log('Start fetching PSWAP burning data.');
 
     const burningData = [];
     const startBlock = await this.trackerService.findLastBlockNumber('PSWAP');
@@ -65,7 +65,7 @@ export class TrackerPswapSync {
 
     await this.trackerService.insert(this.mapper.toEntities(burningData));
 
-    this.logger.log('Fetching of burning data was successful!');
+    this.logger.log('Fetching of PSWAP burning data was successful!');
   }
 
   private async getAllBlocksWithDistribution(
