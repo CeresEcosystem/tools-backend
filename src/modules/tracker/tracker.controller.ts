@@ -31,4 +31,10 @@ export class TrackerController {
       CACHE_TTL.FIVE_MINUTES,
     );
   }
+
+  //FIXME: Deprecated
+  @Get()
+  public getTrackerDataPSWAP(): Promise<TrackerDto> {
+    return this.getTrackerData('PSWAP');
+  }
 }
