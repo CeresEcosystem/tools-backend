@@ -1,5 +1,5 @@
 export interface ValTrackerBlockDto {
-  dateRaw: string;
+  dateRaw?: string;
   blockNum: number;
   xorTotalFee: string;
   valBurned: string;

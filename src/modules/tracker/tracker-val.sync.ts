@@ -35,7 +35,8 @@ export class TrackerValSync {
     this.logger.log('Start fetching VAL burning data.');
 
     const burningData: ValTrackerBlockDto[] = [];
-    const startBlock = await this.trackerService.findLastBlockNumber('VAL');
+    const lastSavedBlock = await this.trackerService.findLastBlockNumber('VAL');
+    const startBlock = lastSavedBlock + 1;
     const headBlock = await this.soraApi.query.system.number();
 
     for (let blockNum = startBlock; blockNum <= headBlock; blockNum++) {
@@ -77,7 +78,6 @@ export class TrackerValSync {
                 found = true;
 
                 burningData.push({
-                  dateRaw: '',
                   blockNum,
                   valBurned: valBurned.toString(),
                   valRemintedParliament,
