@@ -13,7 +13,7 @@ services:
       - 'sailmysql:/var/lib/mysql'
 
   pgsql:
-    image: 'postgres:11.17-bullseye'
+    image: 'timescale/timescaledb-ha:pg11-latest'
     ports:
       - '5432:5432'
     environment:
