@@ -54,31 +54,36 @@ export class TrackerValSync {
             const module = ev.event.section;
             const event = ev.event.method;
             if (module === 'balances' && event === 'Deposit') {
-              try {
-                const accountId = ev.event.data.who;
-                if (accountId === techAccount) {
-                  const xorDedicatedForBuyBack = new FPNumber(
-                    ev.event.data.amount,
-                  )
-                    .div(DENOMINATOR)
-                    .toString();
-                  const valBurned = new FPNumber(events[iddx + 7].event.data[3])
+              const accountId = ev.event.data.who;
+              if (accountId === techAccount) {
+                const xorDedicatedForBuyBack = new FPNumber(
+                  ev.event.data.amount,
+                )
+                  .div(DENOMINATOR)
+                  .toString();
+
+                let valBurned;
+                try {
+                  valBurned = new FPNumber(events[iddx + 7].event.data[3])
                     .div(DENOMINATOR)
                     .toNumber();
-                  const valRemintedParliament = (valBurned * 0.1).toString();
-                  found = true;
-
-                  burningData.push({
-                    dateRaw: '',
-                    blockNum,
-                    valBurned: valBurned.toString(),
-                    valRemintedParliament,
-                    xorDedicatedForBuyBack,
-                    xorTotalFee: xorDedicatedForBuyBack,
-                  });
+                } catch (e) {
+                  valBurned = new FPNumber(events[iddx + 8].event.data[3])
+                    .div(DENOMINATOR)
+                    .toNumber();
                 }
-              } catch (e) {
-                this.logger.log(`BlockNum: ${blockNum}`);
+
+                const valRemintedParliament = (valBurned * 0.1).toString();
+                found = true;
+
+                burningData.push({
+                  dateRaw: '',
+                  blockNum,
+                  valBurned: valBurned.toString(),
+                  valRemintedParliament,
+                  xorDedicatedForBuyBack,
+                  xorTotalFee: xorDedicatedForBuyBack,
+                });
               }
             }
           });
