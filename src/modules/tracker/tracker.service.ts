@@ -40,13 +40,13 @@ export class TrackerService {
   }
 
   public async findLastBlockNumber(token: string): Promise<number> {
-    const result = await this.trackerRepository
+    const { lastBlock } = await this.trackerRepository
       .createQueryBuilder()
       .select('MAX(block_num)', 'lastBlock')
       .where({ token })
-      .getRawOne<{ lastBlock: number }>();
+      .getRawOne<{ lastBlock: string }>();
 
-    return result.lastBlock;
+    return Number(lastBlock);
   }
 
   public async getTrackerData(token: string): Promise<TrackerDto> {
