@@ -68,32 +68,35 @@ export class PortfolioService {
       if (balance === 0) continue;
 
       let [, { code: assetId }] = assetsId.toHuman();
-      let tokenEntity = await this.tokenPriceService.findByAssetId(assetId);
+      try {
+        let tokenEntity = await this.tokenPriceService.findByAssetId(assetId);
 
-      const { o: prices } = await this.chronoPriceService.getPriceForChart(
-        tokenEntity.token,
-        30,
-        timestampBefore30Days,
-        timestamp,
-        0,
-      );
-      const [oneHour, oneDay, oneWeek, oneMonth] = this.calculatePriceChanges(
-        prices,
-        Number(tokenEntity.price),
-      );
+        const { o: prices } = await this.chronoPriceService.getPriceForChart(
+          tokenEntity.token,
+          30,
+          timestampBefore30Days,
+          timestamp,
+          0,
+        );
+        const [oneHour, oneDay, oneWeek, oneMonth] = this.calculatePriceChanges(
+          prices,
+          Number(tokenEntity.price),
+        );
 
-      assetIdsAndAssetBalances.push({
-        fullName: tokenEntity.fullName,
-        token: tokenEntity.token,
-        price: Number(tokenEntity.price),
-        balance,
-        value: Number(tokenEntity.price) * balance,
-        oneHour,
-        oneDay,
-        oneWeek,
-        oneMonth,
-      });
+        assetIdsAndAssetBalances.push({
+          fullName: tokenEntity.fullName,
+          token: tokenEntity.token,
+          price: Number(tokenEntity.price),
+          balance,
+          value: Number(tokenEntity.price) * balance,
+          oneHour,
+          oneDay,
+          oneWeek,
+          oneMonth,
+        });
+      } catch (error) {}
     }
+
     return assetIdsAndAssetBalances;
   }
 
