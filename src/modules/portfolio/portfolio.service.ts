@@ -1,6 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { WsProvider, ApiPromise } from '@polkadot/api';
 import { FPNumber } from '@sora-substrate/math';
 import { XOR_ADDRESS, PROVIDER } from 'src/constants/constants';
@@ -38,7 +38,7 @@ export class PortfolioService {
     const timestamp = Math.floor(Date.now() / 1000);
     const timestampBefore30Days = timestamp - 2592000;
 
-    // const URL_XOR = `${URL}from=${timestampBefore30Days}&to=${timestamp}`;
+    const URL_XOR = `${URL}from=${timestampBefore30Days}&to=${timestamp}`;
     let assetIdsAndAssetBalances: PortfolioDto[] = [];
 
     const xor = await this.api.rpc.assets.freeBalance(accountId, XOR_ADDRESS);
@@ -46,14 +46,14 @@ export class PortfolioService {
     const balance = new FPNumber(value.balance).toNumber();
     const tokenEntity = await this.tokenPriceService.findByAssetId(XOR_ADDRESS);
 
-    // const { o: prices } = await this.fetchPricesForInterval(URL_XOR);
-    const { o: prices } = await this.chronoPriceService.getPriceForChart(
-      tokenEntity.token,
-      30,
-      timestampBefore30Days,
-      timestamp,
-      0,
-    );
+    const { o: prices } = await this.fetchPricesForInterval(URL_XOR);
+    // const { o: prices } = await this.chronoPriceService.getPriceForChart(
+    //   tokenEntity.token,
+    //   30,
+    //   timestampBefore30Days,
+    //   timestamp,
+    //   0,
+    // );
 
     const [oneHour, oneDay, oneWeek, oneMonth] = this.calculatePriceChanges(
       prices,
@@ -80,35 +80,38 @@ export class PortfolioService {
       if (balance === 0) continue;
 
       let [, { code: assetId }] = assetsId.toHuman();
-      let tokenEntity = await this.tokenPriceService.findByAssetId(assetId);
+      try {
+        let tokenEntity = await this.tokenPriceService.findByAssetId(assetId);
 
-      // let urlTokens = `https://data.cerestoken.io/api/trading/history?symbol=${tokenEntity.token}&resolution=30&from=${timestampBefore30Days}&to=${timestamp}`;
+        let urlTokens = `https://data.cerestoken.io/api/trading/history?symbol=${tokenEntity.token}&resolution=30&from=${timestampBefore30Days}&to=${timestamp}`;
 
-      // const { o: prices } = await this.fetchPricesForInterval(urlTokens);\
-      const { o: prices } = await this.chronoPriceService.getPriceForChart(
-        tokenEntity.token,
-        30,
-        timestampBefore30Days,
-        timestamp,
-        0,
-      );
-      const [oneHour, oneDay, oneWeek, oneMonth] = this.calculatePriceChanges(
-        prices,
-        Number(tokenEntity.price),
-      );
+        const { o: prices } = await this.fetchPricesForInterval(urlTokens);
+        // const { o: prices } = await this.chronoPriceService.getPriceForChart(
+        //   tokenEntity.token,
+        //   30,
+        //   timestampBefore30Days,
+        //   timestamp,
+        //   0,
+        // );
+        const [oneHour, oneDay, oneWeek, oneMonth] = this.calculatePriceChanges(
+          prices,
+          Number(tokenEntity.price),
+        );
 
-      assetIdsAndAssetBalances.push({
-        fullName: tokenEntity.fullName,
-        token: tokenEntity.token,
-        price: Number(tokenEntity.price),
-        balance,
-        value: Number(tokenEntity.price) * balance,
-        oneHour,
-        oneDay,
-        oneWeek,
-        oneMonth,
-      });
+        assetIdsAndAssetBalances.push({
+          fullName: tokenEntity.fullName,
+          token: tokenEntity.token,
+          price: Number(tokenEntity.price),
+          balance,
+          value: Number(tokenEntity.price) * balance,
+          oneHour,
+          oneDay,
+          oneWeek,
+          oneMonth,
+        });
+      } catch (error) {}
     }
+
     return assetIdsAndAssetBalances;
   }
 
