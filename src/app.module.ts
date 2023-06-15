@@ -16,6 +16,7 @@ import { MailerModule } from './modules/mailer/mailer.module';
 import { PortfolioModule } from './modules/portfolio/portfolio.module';
 import { ConsoleModule } from 'nestjs-console';
 import { ValBurningSeeder } from './modules/tracker/val-seed/val-burning-seeder';
+import { ValSupplySeeder } from './modules/tracker/val-seed/val-supply-seeder';
 
 @Module({
   imports: [
@@ -59,7 +60,7 @@ import { ValBurningSeeder } from './modules/tracker/val-seed/val-burning-seeder'
     ConsoleModule,
   ],
   controllers: [],
-  providers: [ValBurningSeeder],
+  providers: [ValBurningSeeder, ValSupplySeeder],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
