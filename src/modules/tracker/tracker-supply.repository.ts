@@ -14,6 +14,12 @@ export class TrackerSupplyRepository {
     private readonly repository: Repository<TrackerSupply>,
   ) {}
 
+  public async query(query: string) {
+    const result = await this.repository.query(query);
+
+    return result;
+  }
+
   public async save(
     token: string,
     trackerSupply: string,
@@ -27,7 +33,7 @@ export class TrackerSupplyRepository {
     });
 
     if (!existingSupply) {
-      this.repository.insert({
+      await this.repository.insert({
         token,
         dateRaw,
         supply: trackerSupply,
@@ -39,7 +45,7 @@ export class TrackerSupplyRepository {
     }
 
     if (existingSupply.supply != trackerSupply) {
-      this.repository.update(
+      await this.repository.update(
         { token, dateRaw },
         {
           supply: trackerSupply,

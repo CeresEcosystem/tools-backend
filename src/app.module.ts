@@ -15,11 +15,13 @@ import { RewardsModule } from './modules/rewards/rewards.module';
 import { MailerModule } from './modules/mailer/mailer.module';
 import { PortfolioModule } from './modules/portfolio/portfolio.module';
 import { ConsoleModule } from 'nestjs-console';
-import { ValBurningSeeder } from './modules/tracker/val-seed/val-burning-seeder';
-import { ValSupplySeeder } from './modules/tracker/val-seed/val-supply-seeder';
+import { ValBurningSeeder } from './modules/tracker/seeder/val-burning-seeder';
+import { TokenSupplySeeder } from './modules/tracker/seeder/token-supply-seeder';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
+    HttpModule,
     ScheduleModule.forRoot(),
     ConfigModule.forRoot(),
     CacheModule.register({
@@ -60,7 +62,7 @@ import { ValSupplySeeder } from './modules/tracker/val-seed/val-supply-seeder';
     ConsoleModule,
   ],
   controllers: [],
-  providers: [ValBurningSeeder, ValSupplySeeder],
+  providers: [ValBurningSeeder, TokenSupplySeeder],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

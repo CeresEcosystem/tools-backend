@@ -7,22 +7,33 @@ import { CronExpression } from 'src/utils/cron-expression.enum';
 import { TrackerSupplyRepository } from './tracker-supply.repository';
 
 const SORA_SUPPLY_URL = 'https://mof.sora.org/qty/';
-const TRACKED_TOKENS = ['PSWAP', 'VAL'];
+//const TRACKED_TOKENS = ['PSWAP', 'VAL'];
 
 @Injectable()
 export class TrackerSupplySync {
-  private readonly logger = new Logger(TrackerSupplySync.name);
+  private readonly logger: Logger = new Logger(TrackerSupplySync.name);
+  private TRACKED_TOKENS: string[] = [];
 
   constructor(
     private readonly httpService: HttpService,
     private readonly trackerSupplyRepository: TrackerSupplyRepository,
   ) {}
 
+  @Cron(CronExpression.EVERY_10_SECONDS)
+  async syncTrackedTokens() {
+    this.logger.log('Start to sync tracked tokens');
+
+    this.TRACKED_TOKENS = await this.getDestinctTokens();
+    this.TRACKED_TOKENS.push('PSWAP', 'VAL'); // Can be added dynamically once PSWAP and VAL are seeded into the DB
+
+    this.logger.log('Finished sync of tracked tokens');
+  }
+
   @Cron(CronExpression.EVERY_10_MINUTES)
   async syncTrackerSupply(): Promise<void> {
     this.logger.log('Start fetching token supply from SORA API.');
 
-    for (const token of TRACKED_TOKENS) {
+    for (const token of this.TRACKED_TOKENS) {
       await this.updateTokenSupply(token);
     }
 
@@ -53,5 +64,19 @@ export class TrackerSupplySync {
     );
 
     return trackerSupply;
+  }
+
+  private async getDestinctTokens() {
+    const result = await this.trackerSupplyRepository.query(
+      'SELECT DISTINCT token FROM tracker_supply',
+    );
+
+    let tokens: string[] = [];
+
+    for (const row of result) {
+      tokens.push(row.token);
+    }
+
+    return tokens;
   }
 }

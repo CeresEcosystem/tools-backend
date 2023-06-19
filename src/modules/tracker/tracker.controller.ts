@@ -32,6 +32,11 @@ export class TrackerController {
     );
   }
 
+  @Get('/supply/:token')
+  public async getTokenSupply(@Param('token') token: string) {
+    return await this.trackerService.getTokenSupplyGraph(token);
+  }
+
   //FIXME: Deprecated
   @Get()
   public getTrackerDataPSWAP(): Promise<TrackerDto> {
