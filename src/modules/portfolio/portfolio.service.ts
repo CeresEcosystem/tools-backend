@@ -6,12 +6,12 @@ import { FPNumber } from '@sora-substrate/math';
 import { XOR_ADDRESS, PROVIDER } from 'src/constants/constants';
 import { options } from '@sora-substrate/api';
 import { PortfolioDto } from './dto/portfolio.dto';
+import { StakingDto } from './dto/staking.dto';
 import { TokenPriceService } from '../token-price/token-price.service';
 import { ChronoPriceService } from '../chrono-price/chrono-price.service';
 
 const DENOMINATOR = FPNumber.fromNatural(Math.pow(10, 18));
-const URL =
-  'https://data.cerestoken.io/api/trading/history?symbol=XOR&resolution=30&';
+
 const intervals = [2, 48, 336, 1440];
 
 @Injectable()
@@ -29,8 +29,21 @@ export class PortfolioService {
     );
   }
 
-  async fetchPricesForInterval(url) {
-    const { data } = await firstValueFrom(this.httpService.get<any>(url));
+  async fetchStakingData(accountId) {
+    const { data } = await firstValueFrom(
+      this.httpService.get<any>(
+        `https://farming-api.cerestoken.io/get-pools?accountId=${accountId}`,
+      ),
+    );
+    return data;
+  }
+
+  async fetchFarmingData(accountId) {
+    const { data } = await firstValueFrom(
+      this.httpService.get<any>(
+        `https://farming-api.cerestoken.io/get-farms?accountId=${accountId}`,
+      ),
+    );
     return data;
   }
 
@@ -46,14 +59,13 @@ export class PortfolioService {
     const balance = new FPNumber(value.balance).toNumber();
     const tokenEntity = await this.tokenPriceService.findByAssetId(XOR_ADDRESS);
 
-    const { o: prices } = await this.fetchPricesForInterval(URL_XOR);
-    // const { o: prices } = await this.chronoPriceService.getPriceForChart(
-    //   tokenEntity.token,
-    //   30,
-    //   timestampBefore30Days,
-    //   timestamp,
-    //   0,
-    // );
+    const { o: prices } = await this.chronoPriceService.getPriceForChart(
+      tokenEntity.token,
+      30,
+      timestampBefore30Days,
+      timestamp,
+      0,
+    );
 
     const [oneHour, oneDay, oneWeek, oneMonth] = this.calculatePriceChanges(
       prices,
@@ -83,16 +95,13 @@ export class PortfolioService {
       try {
         let tokenEntity = await this.tokenPriceService.findByAssetId(assetId);
 
-        let urlTokens = `https://data.cerestoken.io/api/trading/history?symbol=${tokenEntity.token}&resolution=30&from=${timestampBefore30Days}&to=${timestamp}`;
-
-        const { o: prices } = await this.fetchPricesForInterval(urlTokens);
-        // const { o: prices } = await this.chronoPriceService.getPriceForChart(
-        //   tokenEntity.token,
-        //   30,
-        //   timestampBefore30Days,
-        //   timestamp,
-        //   0,
-        // );
+        const { o: prices } = await this.chronoPriceService.getPriceForChart(
+          tokenEntity.token,
+          30,
+          timestampBefore30Days,
+          timestamp,
+          0,
+        );
         const [oneHour, oneDay, oneWeek, oneMonth] = this.calculatePriceChanges(
           prices,
           Number(tokenEntity.price),
@@ -112,7 +121,7 @@ export class PortfolioService {
       } catch (error) {}
     }
 
-    return assetIdsAndAssetBalances;
+    return [];
   }
 
   calculatePriceChanges(prices, tokenPrice): number[] {
@@ -125,5 +134,69 @@ export class PortfolioService {
       priceDifferenceInPercentageArr.push(priceInPercentage);
     });
     return priceDifferenceInPercentageArr;
+  }
+
+  async getStakingPortfolio(accountId: string): Promise<StakingDto[]> {
+    let stakingData: StakingDto[] = [];
+    const pools = await this.fetchStakingData(accountId);
+    for (const pool of pools) {
+      let balance = FPNumber.fromCodecValue(pool.pooledTokens).toNumber();
+      if (balance === 0) continue;
+      const tokenEntity = await this.tokenPriceService.findByAssetId(
+        pool.poolAsset,
+      );
+      stakingData.push({
+        fullName: tokenEntity.fullName,
+        token: tokenEntity.token,
+        price: Number(tokenEntity.price),
+        balance,
+        value: Number(tokenEntity.price) * balance,
+      });
+    }
+    return stakingData;
+  }
+
+  async getRewardsPortfolio(accountId: string): Promise<StakingDto[]> {
+    let rewardsData: StakingDto[] = [];
+    const rewardsMap = new Map();
+    const stakingPools = await this.fetchStakingData(accountId);
+    const farmingPools = await this.fetchFarmingData(accountId);
+
+    for (const pool of stakingPools) {
+      let stakingReward = FPNumber.fromCodecValue(pool.rewards).toNumber();
+      if (stakingReward === 0) continue;
+      if (rewardsMap.has(pool.rewardAsset)) {
+        const existingReward = rewardsMap.get(pool.rewardAsset);
+        rewardsMap.set(pool.rewardAsset, existingReward + stakingReward);
+      } else {
+        rewardsMap.set(pool.rewardAsset, stakingReward);
+      }
+    }
+
+    for (const pool of farmingPools) {
+      let farmingReward = FPNumber.fromCodecValue(pool.rewards).toNumber();
+      if (farmingReward == 0) continue;
+      if (rewardsMap.has(pool.rewardAsset)) {
+        const existingReward = rewardsMap.get(pool.rewardAsset);
+        rewardsMap.set(pool.rewardAsset, existingReward + farmingReward);
+      } else {
+        rewardsMap.set(pool.rewardAsset, farmingReward);
+      }
+    }
+
+    for (const [rewardAsset, balance] of rewardsMap) {
+      const tokenEntity = await this.tokenPriceService.findByAssetId(
+        rewardAsset,
+      );
+      rewardsData.push({
+        fullName: tokenEntity.fullName,
+        token: tokenEntity.token,
+        price: Number(tokenEntity.price),
+        balance,
+        value: Number(tokenEntity.price) * balance,
+      });
+    }
+
+    return rewardsData;
   }
 }
