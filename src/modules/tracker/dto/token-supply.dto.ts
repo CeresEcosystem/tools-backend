@@ -1,18 +1,18 @@
-interface TimestampleSupplyTupleDto {
+interface TimestampSupplyTupleDto {
   timestamp: string;
   supply: string;
 }
 
 export interface TokenSupplyDto {
-  supplies: TimestampleSupplyTupleDto[];
+  supplies: TimestampSupplyTupleDto[];
 }
 
 export class TokenSupply implements TokenSupplyDto {
-  supplies: TimestampleSupplyTupleDto[];
+  supplies: TimestampSupplyTupleDto[];
 
   constructor(data?: any) {
     if (data) {
-      let extractedData: TimestampleSupplyTupleDto[] = [];
+      let extractedData: TimestampSupplyTupleDto[] = [];
       for (const row of data) {
         const [timestamp, supply] = row;
         extractedData.push({
