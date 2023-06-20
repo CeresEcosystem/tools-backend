@@ -59,9 +59,4 @@ export class TokenPriceRepository {
       tokenPrice,
     );
   }
-
-  public async query(query: string) {
-    const result = await this.repository.query(query);
-    return result;
-  }
 }

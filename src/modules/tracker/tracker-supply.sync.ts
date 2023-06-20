@@ -5,8 +5,8 @@ import { AxiosError } from 'axios';
 import { catchError, firstValueFrom, of, retry } from 'rxjs';
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import { TrackerSupplyRepository } from './tracker-supply.repository';
+import { TokenPrice } from '../token-price/entity/token-price.entity';
 import { TokenPriceService } from '../token-price/token-price.service';
-import { TokenPriceRepository } from '../token-price/token-price.repository';
 
 const SORA_SUPPLY_URL = 'https://mof.sora.org/qty/';
 //const TRACKED_TOKENS = ['PSWAP', 'VAL'];
@@ -19,15 +19,14 @@ export class TrackerSupplySync {
   constructor(
     private readonly httpService: HttpService,
     private readonly trackerSupplyRepository: TrackerSupplyRepository,
-    private readonly tokenPriceRepository: TokenPriceRepository,
+    private readonly tokenPriceService: TokenPriceService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async syncTrackedTokens() {
     this.logger.log('Start to sync tracked tokens');
 
-    this.trackedTokens = await this.getDestinctTokens();
-    console.log(this.trackedTokens);
+    this.trackedTokens = await this.getTokenNames();
 
     this.logger.log('Finished sync of tracked tokens');
   }
@@ -69,17 +68,15 @@ export class TrackerSupplySync {
     return trackerSupply;
   }
 
-  private async getDestinctTokens() {
-    const result = await this.tokenPriceRepository.query(
-      'SELECT DISTINCT token FROM tracker_supply',
-    );
+  private async getTokenNames() {
+    const result: TokenPrice[] = await this.tokenPriceService.findAll();
 
-    let tokens: string[] = [];
+    const tokenNames: string[] = [];
 
-    for (const row of result) {
-      tokens.push(row.token);
-    }
+    result.forEach((token: TokenPrice) => {
+      tokenNames.push(token.token);
+    });
 
-    return tokens;
+    return tokenNames;
   }
 }

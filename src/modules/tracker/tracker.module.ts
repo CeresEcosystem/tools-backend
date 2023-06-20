@@ -12,14 +12,13 @@ import { TrackerPswapSync } from './tracker-pswap.sync';
 import { PSWAPTrackerBlockBcToEntityMapper } from './mapper/pswap-tracker-block-bc-to-entity.mapper';
 import { TrackerValSync } from './tracker-val.sync';
 import { VALTrackerBlockBcToEntityMapper } from './mapper/val-tracker-block-bc-to-entity.mapper';
-import { TokenPriceRepository } from '../token-price/token-price.repository';
-import { TokenOrder } from '../token-price/entity/token-order.entity';
-import { TokenPrice } from '../token-price/entity/token-price.entity';
+import { TokenPriceModule } from '../token-price/token-price.module';
 
 @Module({
   imports: [
     HttpModule,
-    TypeOrmModule.forFeature([Tracker, TrackerSupply, TokenPrice, TokenOrder]),
+    TypeOrmModule.forFeature([Tracker, TrackerSupply]),
+    TokenPriceModule,
   ],
   controllers: [TrackerController],
   providers: [
@@ -31,7 +30,6 @@ import { TokenPrice } from '../token-price/entity/token-price.entity';
     TrackerValSync,
     PSWAPTrackerBlockBcToEntityMapper,
     VALTrackerBlockBcToEntityMapper,
-    TokenPriceRepository,
   ],
   exports: [
     TrackerService,
