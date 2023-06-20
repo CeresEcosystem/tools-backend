@@ -63,7 +63,7 @@ export class TrackerService {
     };
   }
 
-  public async getTokenSupplyGraph(token: string) {
+  public async getTokenSupplyData(token: string) {
     return await this.trackerSupplyRepository.getSupplyGraphData(token);
   }
 

@@ -5,6 +5,8 @@ import { AxiosError } from 'axios';
 import { catchError, firstValueFrom, of, retry } from 'rxjs';
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import { TrackerSupplyRepository } from './tracker-supply.repository';
+import { TokenPriceService } from '../token-price/token-price.service';
+import { TokenPriceRepository } from '../token-price/token-price.repository';
 
 const SORA_SUPPLY_URL = 'https://mof.sora.org/qty/';
 //const TRACKED_TOKENS = ['PSWAP', 'VAL'];
@@ -12,19 +14,20 @@ const SORA_SUPPLY_URL = 'https://mof.sora.org/qty/';
 @Injectable()
 export class TrackerSupplySync {
   private readonly logger: Logger = new Logger(TrackerSupplySync.name);
-  private TRACKED_TOKENS: string[] = [];
+  private trackedTokens: string[] = [];
 
   constructor(
     private readonly httpService: HttpService,
     private readonly trackerSupplyRepository: TrackerSupplyRepository,
+    private readonly tokenPriceRepository: TokenPriceRepository,
   ) {}
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async syncTrackedTokens() {
     this.logger.log('Start to sync tracked tokens');
 
-    this.TRACKED_TOKENS = await this.getDestinctTokens();
-    this.TRACKED_TOKENS.push('PSWAP', 'VAL'); // Can be added dynamically once PSWAP and VAL are seeded into the DB
+    this.trackedTokens = await this.getDestinctTokens();
+    console.log(this.trackedTokens);
 
     this.logger.log('Finished sync of tracked tokens');
   }
@@ -33,7 +36,7 @@ export class TrackerSupplySync {
   async syncTrackerSupply(): Promise<void> {
     this.logger.log('Start fetching token supply from SORA API.');
 
-    for (const token of this.TRACKED_TOKENS) {
+    for (const token of this.trackedTokens) {
       await this.updateTokenSupply(token);
     }
 
@@ -67,7 +70,7 @@ export class TrackerSupplySync {
   }
 
   private async getDestinctTokens() {
-    const result = await this.trackerSupplyRepository.query(
+    const result = await this.tokenPriceRepository.query(
       'SELECT DISTINCT token FROM tracker_supply',
     );
 

@@ -5,13 +5,13 @@ import { TokenPrice } from 'src/modules/token-price/entity/token-price.entity';
 import { catchError, firstValueFrom, of, retry } from 'rxjs';
 import { AxiosError } from 'axios';
 import { HttpService } from '@nestjs/axios';
-import { TokenVolume } from '../dto/token-volume.dto';
+import { TokenSupply } from '../dto/token-supply.dto';
 import { getDateFormatted } from 'src/utils/date-utils';
 import Big from 'big.js';
 import {
-  DateTokenVolumeTupleDto,
-  FormatedTokenVolume,
-} from '../dto/formated-token-volume.dto';
+  DateTokenSupplyTupleDto,
+  FormatedTokenSupply,
+} from '../dto/formated-token-supply.dto';
 
 export const EXCLUDED_TOKENS = ['PSWAP', 'VAL'];
 
@@ -24,11 +24,11 @@ export class TokenSupplySeeder {
   ) {}
 
   @Command({
-    command: 'populateTokenVolumeData',
+    command: 'populateTokenSupplyData',
     description:
-      'Fetches historic volume data for all tokens, formats it and saves it into the database',
+      'Fetches historic supply data for all tokens, formats it and saves it into the database',
   })
-  public async populateTokenVolumeData() {
+  public async populateTokenSupplyData() {
     const spin = createSpinner();
     // Get token names
     spin.start('Fetching token names...');
@@ -36,19 +36,19 @@ export class TokenSupplySeeder {
     spin.succeed('Token names fetched');
     // Fetch, format and save data for each token
     for (let token of tokenNames) {
-      // Fetching historic volume data
-      const tokenHistoricVolume: TokenVolume =
-        await this.fetchHistoricTokenVolume(token);
+      // Fetching historic supply data
+      const tokenHistoricSupply: TokenSupply =
+        await this.fetchHistoricTokenSupply(token);
 
-      if (tokenHistoricVolume.volumes.length === 0) {
+      if (tokenHistoricSupply.supplies.length === 0) {
         continue;
       }
 
       // Format historic data
-      const formatedHTV = this.formatHTV(token, tokenHistoricVolume);
+      const formatedHTV = this.formatHTV(token, tokenHistoricSupply);
 
-      // Save historic volume data
-      await this.saveHistoricTokenVolume(formatedHTV);
+      // Save historic supply data
+      await this.saveHistoricTokenSupply(formatedHTV);
     }
   }
 
@@ -67,13 +67,13 @@ export class TokenSupplySeeder {
     return tokenNames;
   }
 
-  // Used to fetch historical volume data of specific token data
-  private async fetchHistoricTokenVolume(token: string): Promise<TokenVolume> {
+  // Used to fetch historical supply data of specific token data
+  private async fetchHistoricTokenSupply(token: string): Promise<TokenSupply> {
     const spin = createSpinner();
 
-    spin.start(`Fetching historic volume data for ${token}...`);
+    spin.start(`Fetching historic supply data for ${token}...`);
 
-    const tokenHistoricVolume: TokenVolume = await this.getHistoricTokenVolume(
+    const tokenHistoricSupply: TokenSupply = await this.getHistoricTokenSupply(
       `https://sora-qty.info/data/${token.toLocaleLowerCase()}.json`,
       spin,
       token,
@@ -81,21 +81,21 @@ export class TokenSupplySeeder {
 
     spin.stop();
 
-    return tokenHistoricVolume;
+    return tokenHistoricSupply;
   }
 
-  // Function for GET call of historic token volume data
-  private async getHistoricTokenVolume<T>(
+  // Function for GET call of historic token supply data
+  private async getHistoricTokenSupply<T>(
     url: string,
     spin: any,
     token: string,
-  ): Promise<TokenVolume> {
+  ): Promise<TokenSupply> {
     const { data } = await firstValueFrom(
       this.httpService.get<T>(url, { timeout: 1000 }).pipe(
         //retry({ count: 10, delay: 1000 }),
         catchError((error: AxiosError) => {
           spin.fail(
-            `Could not fetch historic volume data for ${token}. ${error.message}`,
+            `Could not fetch historic supply data for ${token}. ${error.message}`,
           );
           spin.stop();
           return of({ data: undefined });
@@ -104,51 +104,51 @@ export class TokenSupplySeeder {
     );
 
     if (data) {
-      spin.succeed(`Fetched historic volume data for ${token}`);
+      spin.succeed(`Fetched historic supply data for ${token}`);
     }
 
-    return new TokenVolume(data);
+    return new TokenSupply(data);
   }
 
   // Function for formating historic token data
-  private formatHTV(token: string, data: TokenVolume): FormatedTokenVolume {
-    let formatedHTV: DateTokenVolumeTupleDto[] = [];
+  private formatHTV(token: string, data: TokenSupply): FormatedTokenSupply {
+    let formatedHTV: DateTokenSupplyTupleDto[] = [];
 
-    let startDate = new Date(+data.volumes[0].timestamp);
+    let startDate = new Date(+data.supplies[0].timestamp);
     let currentDate = new Date();
-    let totalVolume = new Big(0);
-    let volumeCount = new Big(0);
+    let totalSupply = new Big(0);
+    let supplyCount = new Big(0);
 
-    for (const volume of data.volumes) {
-      currentDate = new Date(+volume.timestamp);
+    for (const supply of data.supplies) {
+      currentDate = new Date(+supply.timestamp);
 
       if (this.isSameDay(startDate, currentDate)) {
-        totalVolume = totalVolume.add(volume.volume);
-        volumeCount = volumeCount.add(1);
+        totalSupply = totalSupply.add(supply.supply);
+        supplyCount = supplyCount.add(1);
       } else {
-        const averageVolume = totalVolume.div(volumeCount);
+        const averageSupply = totalSupply.div(supplyCount);
 
         formatedHTV.push({
           token: token,
           date: getDateFormatted(startDate),
-          volume: averageVolume.toFixed(2),
+          supply: averageSupply.toFixed(2),
         });
 
-        totalVolume = new Big(volume.volume);
-        volumeCount = new Big(1);
+        totalSupply = new Big(supply.supply);
+        supplyCount = new Big(1);
         startDate = currentDate;
       }
     }
 
-    const averageVolume = totalVolume.div(volumeCount);
+    const averageSupply = totalSupply.div(supplyCount);
 
     formatedHTV.push({
       token: token,
       date: getDateFormatted(startDate),
-      volume: averageVolume.toFixed(2),
+      supply: averageSupply.toFixed(2),
     });
 
-    return new FormatedTokenVolume(formatedHTV);
+    return new FormatedTokenSupply(formatedHTV);
   }
 
   // Utility function used for checking if days are of the same date
@@ -160,27 +160,27 @@ export class TokenSupplySeeder {
     );
   }
 
-  // Function for saving historic token volume data
-  private async saveHistoricTokenVolume(formatedHTV: FormatedTokenVolume) {
+  // Function for saving historic token supply data
+  private async saveHistoricTokenSupply(formatedHTV: FormatedTokenSupply) {
     const spin = createSpinner();
     spin.start(
-      `Saving historic volume data for ${formatedHTV.volumes[0].token}...`,
+      `Saving historic supply data for ${formatedHTV.supplies[0].token}...`,
     );
 
     try {
-      for (const volume of formatedHTV.volumes) {
+      for (const supply of formatedHTV.supplies) {
         await this.supplyRepository.save(
-          volume.token,
-          volume.volume,
-          volume.date,
+          supply.token,
+          supply.supply,
+          supply.date,
         );
       }
       spin.succeed(
-        `Historic volume data for ${formatedHTV.volumes[0].token} has been saved`,
+        `Historic supply data for ${formatedHTV.supplies[0].token} has been saved`,
       );
     } catch (err) {
       spin.fail(
-        `An error occured while saving historic volume data for ${formatedHTV.volumes[0].token}. Error: ${err}`,
+        `An error occured while saving historic supply data for ${formatedHTV.supplies[0].token}. Error: ${err}`,
       );
     }
   }
