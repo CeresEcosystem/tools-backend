@@ -21,6 +21,16 @@ export class PairsService {
     return this.pairsRepository.findAll();
   }
 
+  public findOneByAssetIds(
+    baseAssetId: string,
+    tokenAssetId: string,
+  ): Promise<Pair> {
+    return this.pairsRepository.findOneByBaseAssetIdAndTokenAssetId(
+      baseAssetId,
+      tokenAssetId,
+    );
+  }
+
   public save(dtos: PairBcDto[]): void {
     const entities = this.mapper.toEntities(dtos);
 
