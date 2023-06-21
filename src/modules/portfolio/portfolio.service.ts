@@ -1,17 +1,22 @@
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+
 import { WsProvider, ApiPromise } from '@polkadot/api';
 import { FPNumber } from '@sora-substrate/math';
-import { XOR_ADDRESS, PROVIDER } from 'src/constants/constants';
 import { options } from '@sora-substrate/api';
-import { PortfolioDto } from './dto/portfolio.dto';
-import { StakingDto } from './dto/staking.dto';
+
+import { XOR_ADDRESS, XSTUSD_ADDRESS, PROVIDER } from 'src/constants/constants';
 import { TokenPriceService } from '../token-price/token-price.service';
 import { ChronoPriceService } from '../chrono-price/chrono-price.service';
+import { PairsService } from '../pairs/pairs.service';
+
+import { PortfolioDto } from './dto/portfolio.dto';
+import { StakingDto } from './dto/staking.dto';
+import { LiquidtyDto } from './dto/liquidity.dto';
+import { Pair } from '../pairs/entity/pairs.entity';
 
 const DENOMINATOR = FPNumber.fromNatural(Math.pow(10, 18));
-
 const intervals = [2, 48, 336, 1440];
 
 @Injectable()
@@ -22,6 +27,7 @@ export class PortfolioService {
     private tokenPriceService: TokenPriceService,
     private chronoPriceService: ChronoPriceService,
     private httpService: HttpService,
+    private pairsService: PairsService,
   ) {
     const provider = new WsProvider(PROVIDER);
     new ApiPromise(options({ provider, noInitWarn: true })).isReady.then(
@@ -51,7 +57,6 @@ export class PortfolioService {
     const timestamp = Math.floor(Date.now() / 1000);
     const timestampBefore30Days = timestamp - 2592000;
 
-    const URL_XOR = `${URL}from=${timestampBefore30Days}&to=${timestamp}`;
     let assetIdsAndAssetBalances: PortfolioDto[] = [];
 
     const xor = await this.api.rpc.assets.freeBalance(accountId, XOR_ADDRESS);
@@ -121,7 +126,7 @@ export class PortfolioService {
       } catch (error) {}
     }
 
-    return [];
+    return assetIdsAndAssetBalances;
   }
 
   calculatePriceChanges(prices, tokenPrice): number[] {
@@ -198,5 +203,71 @@ export class PortfolioService {
     }
 
     return rewardsData;
+  }
+
+  async getLiquidityPortfolio(accountId: string): Promise<LiquidtyDto[]> {
+    const poolSetXOR = await this.api.query.poolXYK.accountPools(
+      accountId,
+      XOR_ADDRESS,
+    );
+
+    const poolSetXSTUSD = await this.api.query.poolXYK.accountPools(
+      accountId,
+      XSTUSD_ADDRESS,
+    );
+
+    const liquidityXOR = await this.getLiquidity(
+      poolSetXOR,
+      XOR_ADDRESS,
+      accountId,
+    );
+
+    const liquidityXSTUSD = await this.getLiquidity(
+      poolSetXSTUSD,
+      XSTUSD_ADDRESS,
+      accountId,
+    );
+
+    return [...liquidityXOR, ...liquidityXSTUSD];
+  }
+
+  async getLiquidity(
+    poolSet,
+    baseAssetId: string,
+    accountId: string,
+  ): Promise<LiquidtyDto[]> {
+    let liquidityData: LiquidtyDto[] = [];
+
+    for (const { code: tokenAddress } of poolSet) {
+      Logger.log(tokenAddress);
+      let [poolAddress] = (
+        await this.api.query.poolXYK.properties(baseAssetId, tokenAddress)
+      ).toHuman();
+
+      let liquidityProviding = await this.api.query.poolXYK.poolProviders(
+        poolAddress,
+        accountId,
+      );
+
+      let totalLiquidity = await this.api.query.poolXYK.totalIssuances(
+        poolAddress,
+      );
+
+      let percentageHolding = liquidityProviding / totalLiquidity;
+
+      let pairData = await this.pairsService.findOneByAssetIds(
+        XOR_ADDRESS,
+        tokenAddress.toString(),
+      );
+      let value = pairData.liquidity * percentageHolding;
+
+      liquidityData.push({
+        token: pairData.token,
+        baseAsset: pairData.baseAsset,
+        value,
+      });
+    }
+
+    return liquidityData;
   }
 }

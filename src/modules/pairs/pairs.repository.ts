@@ -23,6 +23,13 @@ export class PairsRepository {
     });
   }
 
+  public findOneByBaseAssetIdAndTokenAssetId(
+    baseAssetId: string,
+    tokenAssetId: string,
+  ): Promise<Pair> {
+    return this.repository.findOneBy({ baseAssetId, tokenAssetId });
+  }
+
   public update(pair: Pair) {
     this.repository.update({ id: pair.id }, pair);
   }
