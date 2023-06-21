@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import { Console, Command, createSpinner } from 'nestjs-console';
 import * as Papa from 'papaparse';
 import * as fs from 'fs';

@@ -14,12 +14,6 @@ export class TrackerSupplyRepository {
     private readonly repository: Repository<TrackerSupply>,
   ) {}
 
-  public async query(query: string) {
-    const result = await this.repository.query(query);
-
-    return result;
-  }
-
   public async save(
     token: string,
     trackerSupply: string,

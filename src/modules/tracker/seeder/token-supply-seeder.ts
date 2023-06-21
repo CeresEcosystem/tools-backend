@@ -2,25 +2,22 @@ import { Console, Command, createSpinner } from 'nestjs-console';
 import { TrackerSupplyRepository } from '../tracker-supply.repository';
 import { TokenPriceService } from 'src/modules/token-price/token-price.service';
 import { TokenPrice } from 'src/modules/token-price/entity/token-price.entity';
-import { catchError, firstValueFrom, of, retry } from 'rxjs';
+import { catchError, firstValueFrom, of, retry, timestamp } from 'rxjs';
 import { AxiosError } from 'axios';
 import { HttpService } from '@nestjs/axios';
-import { TokenSupply } from '../dto/token-supply.dto';
 import { getDateFormatted } from 'src/utils/date-utils';
 import Big from 'big.js';
-import {
-  DateTokenSupplyTupleDto,
-  FormatedTokenSupply,
-} from '../dto/formated-token-supply.dto';
+import { FormatedTokenSupplyDto } from '../dto/formated-token-supply.dto';
+import { TokenSupplyDto } from '../dto/token-supply.dto';
 
 export const EXCLUDED_TOKENS = ['PSWAP', 'VAL'];
 
 @Console()
 export class TokenSupplySeeder {
   constructor(
-    private readonly tokenPriceService: TokenPriceService,
     private readonly httpService: HttpService,
     private readonly supplyRepository: TrackerSupplyRepository,
+    private readonly tokenPriceService: TokenPriceService,
   ) {}
 
   @Command({
@@ -30,50 +27,46 @@ export class TokenSupplySeeder {
   })
   public async populateTokenSupplyData() {
     const spin = createSpinner();
-    // Get token names
-    spin.start('Fetching token names...');
-    const tokenNames = await this.getTokenNames();
-    spin.succeed('Token names fetched');
-    // Fetch, format and save data for each token
-    for (let token of tokenNames) {
-      // Fetching historic supply data
-      const tokenHistoricSupply: TokenSupply =
-        await this.fetchHistoricTokenSupply(token);
 
-      if (tokenHistoricSupply.supplies.length === 0) {
+    spin.start('Fetching token names...');
+
+    const tokenNames = await this.getTokenNames();
+
+    spin.succeed('Token names fetched');
+
+    for (const token of tokenNames) {
+      if (!token) {
         continue;
       }
 
-      // Format historic data
-      const formatedHTV = this.formatHTV(token, tokenHistoricSupply);
+      const tokenSupplies: TokenSupplyDto[] = await this.fetchTokenSupplies(
+        token,
+      );
 
-      // Save historic supply data
-      await this.saveHistoricTokenSupply(formatedHTV);
+      if (tokenSupplies.length === 0) {
+        continue;
+      }
+
+      const formatedSupplies = this.formatTokenSupplies(token, tokenSupplies);
+
+      await this.saveTokenSupplies(formatedSupplies);
     }
   }
 
-  // Used to get token names from the database
   private async getTokenNames(): Promise<string[]> {
-    const result: TokenPrice[] = await this.tokenPriceService.findAll();
+    const tokenPrices: TokenPrice[] = await this.tokenPriceService.findAll();
 
-    const tokenNames: string[] = [];
-
-    result.forEach((token: TokenPrice) => {
-      if (!EXCLUDED_TOKENS.includes(token.token)) {
-        tokenNames.push(token.token);
-      }
-    });
-
-    return tokenNames;
+    return tokenPrices.map((tokenPrices) =>
+      !EXCLUDED_TOKENS.includes(tokenPrices.token) ? tokenPrices.token : null,
+    );
   }
 
-  // Used to fetch historical supply data of specific token data
-  private async fetchHistoricTokenSupply(token: string): Promise<TokenSupply> {
+  private async fetchTokenSupplies(token: string): Promise<TokenSupplyDto[]> {
     const spin = createSpinner();
 
     spin.start(`Fetching historic supply data for ${token}...`);
 
-    const tokenHistoricSupply: TokenSupply = await this.getHistoricTokenSupply(
+    const tokenSupplies = await this.getTokenSupplies(
       `https://sora-qty.info/data/${token.toLocaleLowerCase()}.json`,
       spin,
       token,
@@ -81,45 +74,44 @@ export class TokenSupplySeeder {
 
     spin.stop();
 
-    return tokenHistoricSupply;
+    return tokenSupplies.map(([timestamp, supply]) => {
+      return {
+        timestamp: String(timestamp),
+        supply: String(supply),
+      };
+    });
   }
 
-  // Function for GET call of historic token supply data
-  private async getHistoricTokenSupply<T>(
-    url: string,
-    spin: any,
-    token: string,
-  ): Promise<TokenSupply> {
+  private async getTokenSupplies(url: string, spin: any, token: string) {
     const { data } = await firstValueFrom(
-      this.httpService.get<T>(url, { timeout: 1000 }).pipe(
-        //retry({ count: 10, delay: 1000 }),
+      this.httpService.get<Array<number[]>>(url, { timeout: 1000 }).pipe(
+        retry({ count: 10, delay: 1000 }),
         catchError((error: AxiosError) => {
           spin.fail(
             `Could not fetch historic supply data for ${token}. ${error.message}`,
           );
           spin.stop();
-          return of({ data: undefined });
+          return of({ data: new Array<number[]>() });
         }),
       ),
     );
 
-    if (data) {
+    if (data.length != 0) {
       spin.succeed(`Fetched historic supply data for ${token}`);
     }
 
-    return new TokenSupply(data);
+    return data;
   }
 
-  // Function for formating historic token data
-  private formatHTV(token: string, data: TokenSupply): FormatedTokenSupply {
-    let formatedHTV: DateTokenSupplyTupleDto[] = [];
+  private formatTokenSupplies(token: string, tokenSupplies: TokenSupplyDto[]) {
+    let formatedSupplies = [];
 
-    let startDate = new Date(+data.supplies[0].timestamp);
+    let startDate = new Date(+tokenSupplies[0].timestamp);
     let currentDate = new Date();
     let totalSupply = new Big(0);
     let supplyCount = new Big(0);
 
-    for (const supply of data.supplies) {
+    for (const supply of tokenSupplies) {
       currentDate = new Date(+supply.timestamp);
 
       if (this.isSameDay(startDate, currentDate)) {
@@ -128,7 +120,7 @@ export class TokenSupplySeeder {
       } else {
         const averageSupply = totalSupply.div(supplyCount);
 
-        formatedHTV.push({
+        formatedSupplies.push({
           token: token,
           date: getDateFormatted(startDate),
           supply: averageSupply.toFixed(2),
@@ -142,16 +134,15 @@ export class TokenSupplySeeder {
 
     const averageSupply = totalSupply.div(supplyCount);
 
-    formatedHTV.push({
+    formatedSupplies.push({
       token: token,
       date: getDateFormatted(startDate),
       supply: averageSupply.toFixed(2),
     });
 
-    return new FormatedTokenSupply(formatedHTV);
+    return formatedSupplies;
   }
 
-  // Utility function used for checking if days are of the same date
   private isSameDay(firstDate: Date, secondDate: Date): boolean {
     return (
       firstDate.getFullYear() === secondDate.getFullYear() &&
@@ -160,15 +151,12 @@ export class TokenSupplySeeder {
     );
   }
 
-  // Function for saving historic token supply data
-  private async saveHistoricTokenSupply(formatedHTV: FormatedTokenSupply) {
+  private async saveTokenSupplies(formatedHTV: FormatedTokenSupplyDto[]) {
     const spin = createSpinner();
-    spin.start(
-      `Saving historic supply data for ${formatedHTV.supplies[0].token}...`,
-    );
+    spin.start(`Saving historic supply data for ${formatedHTV[0].token}...`);
 
     try {
-      for (const supply of formatedHTV.supplies) {
+      for (const supply of formatedHTV) {
         await this.supplyRepository.save(
           supply.token,
           supply.supply,
@@ -176,11 +164,11 @@ export class TokenSupplySeeder {
         );
       }
       spin.succeed(
-        `Historic supply data for ${formatedHTV.supplies[0].token} has been saved`,
+        `Historic supply data for ${formatedHTV[0].token} has been saved`,
       );
     } catch (err) {
       spin.fail(
-        `An error occured while saving historic supply data for ${formatedHTV.supplies[0].token}. Error: ${err}`,
+        `An error occured while saving historic supply data for ${formatedHTV[0].token}. Error: ${err}`,
       );
     }
   }

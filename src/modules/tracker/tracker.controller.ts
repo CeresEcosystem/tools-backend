@@ -11,6 +11,7 @@ import { Cache } from 'cache-manager';
 import { TrackerDto } from './dto/tracker.dto';
 import { CACHE_KEYS, CACHE_TTL } from './tracker.constants';
 import { TrackerService } from './tracker.service';
+import { TrackerSupplyGraphPointDto } from './dto/tracker-supply-graph-point.dto';
 
 @Controller('tracker')
 @ApiTags('Tracker Controller')
@@ -33,8 +34,14 @@ export class TrackerController {
   }
 
   @Get('/supply/:token')
-  public async getTokenSupply(@Param('token') token: string) {
-    return await this.trackerService.getTokenSupplyData(token);
+  public getTokenSupply(
+    @Param('token') token: string,
+  ): Promise<TrackerSupplyGraphPointDto[]> {
+    return this.cacheManager.wrap(
+      `${CACHE_KEYS.SUPPLY}-${token}`,
+      () => this.trackerService.getTokenSupplyData(token),
+      CACHE_TTL.ONE_HOUR,
+    );
   }
 
   //FIXME: Deprecated

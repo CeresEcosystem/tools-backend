@@ -13,6 +13,7 @@ import { PSWAPTrackerBlockBcToEntityMapper } from './mapper/pswap-tracker-block-
 import { TrackerValSync } from './tracker-val.sync';
 import { VALTrackerBlockBcToEntityMapper } from './mapper/val-tracker-block-bc-to-entity.mapper';
 import { TokenPriceModule } from '../token-price/token-price.module';
+import { TokenSupplySeeder } from './seeder/token-supply-seeder';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { TokenPriceModule } from '../token-price/token-price.module';
     TrackerValSync,
     PSWAPTrackerBlockBcToEntityMapper,
     VALTrackerBlockBcToEntityMapper,
+    TokenSupplySeeder,
   ],
   exports: [
     TrackerService,

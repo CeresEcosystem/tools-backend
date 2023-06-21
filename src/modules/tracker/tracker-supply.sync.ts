@@ -9,12 +9,10 @@ import { TokenPrice } from '../token-price/entity/token-price.entity';
 import { TokenPriceService } from '../token-price/token-price.service';
 
 const SORA_SUPPLY_URL = 'https://mof.sora.org/qty/';
-//const TRACKED_TOKENS = ['PSWAP', 'VAL'];
 
 @Injectable()
 export class TrackerSupplySync {
   private readonly logger: Logger = new Logger(TrackerSupplySync.name);
-  private trackedTokens: string[] = [];
 
   constructor(
     private readonly httpService: HttpService,
@@ -22,24 +20,17 @@ export class TrackerSupplySync {
     private readonly tokenPriceService: TokenPriceService,
   ) {}
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async syncTrackedTokens() {
-    this.logger.log('Start to sync tracked tokens');
-
-    this.trackedTokens = await this.getTokenNames();
-
-    this.logger.log('Finished sync of tracked tokens');
-  }
-
   @Cron(CronExpression.EVERY_10_MINUTES)
   async syncTrackerSupply(): Promise<void> {
-    this.logger.log('Start fetching token supply from SORA API.');
+    this.logger.log('Start fetching token supplies from SORA API.');
 
-    for (const token of this.trackedTokens) {
+    const trackedTokens = await this.getTokenNames();
+
+    for (const token of trackedTokens) {
       await this.updateTokenSupply(token);
     }
 
-    this.logger.log('Fetching of token supply was successful!');
+    this.logger.log('Fetching of token supplies was successful!');
   }
 
   private async updateTokenSupply(token: string): Promise<void> {
@@ -68,15 +59,9 @@ export class TrackerSupplySync {
     return trackerSupply;
   }
 
-  private async getTokenNames() {
-    const result: TokenPrice[] = await this.tokenPriceService.findAll();
+  private async getTokenNames(): Promise<string[]> {
+    const tokenPrices: TokenPrice[] = await this.tokenPriceService.findAll();
 
-    const tokenNames: string[] = [];
-
-    result.forEach((token: TokenPrice) => {
-      tokenNames.push(token.token);
-    });
-
-    return tokenNames;
+    return tokenPrices.map((tokenPrices) => tokenPrices.token);
   }
 }
