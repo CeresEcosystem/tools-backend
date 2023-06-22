@@ -27,7 +27,7 @@ export class TrackerSupplyRepository {
     });
 
     if (!existingSupply) {
-      this.repository.insert({
+      await this.repository.insert({
         token,
         dateRaw,
         supply: trackerSupply,
@@ -39,7 +39,7 @@ export class TrackerSupplyRepository {
     }
 
     if (existingSupply.supply != trackerSupply) {
-      this.repository.update(
+      await this.repository.update(
         { token, dateRaw },
         {
           supply: trackerSupply,

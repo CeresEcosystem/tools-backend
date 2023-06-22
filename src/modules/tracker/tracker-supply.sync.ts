@@ -5,28 +5,32 @@ import { AxiosError } from 'axios';
 import { catchError, firstValueFrom, of, retry } from 'rxjs';
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import { TrackerSupplyRepository } from './tracker-supply.repository';
+import { TokenPrice } from '../token-price/entity/token-price.entity';
+import { TokenPriceService } from '../token-price/token-price.service';
 
 const SORA_SUPPLY_URL = 'https://mof.sora.org/qty/';
-const TRACKED_TOKENS = ['PSWAP', 'VAL'];
 
 @Injectable()
 export class TrackerSupplySync {
-  private readonly logger = new Logger(TrackerSupplySync.name);
+  private readonly logger: Logger = new Logger(TrackerSupplySync.name);
 
   constructor(
     private readonly httpService: HttpService,
     private readonly trackerSupplyRepository: TrackerSupplyRepository,
+    private readonly tokenPriceService: TokenPriceService,
   ) {}
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_HOUR, { disabled: true })
   async syncTrackerSupply(): Promise<void> {
-    this.logger.log('Start fetching token supply from SORA API.');
+    this.logger.log('Start fetching token supplies from SORA API.');
 
-    for (const token of TRACKED_TOKENS) {
+    const trackedTokens = await this.getTokenNames();
+
+    for (const token of trackedTokens) {
       await this.updateTokenSupply(token);
     }
 
-    this.logger.log('Fetching of token supply was successful!');
+    this.logger.log('Fetching of token supplies was successful!');
   }
 
   private async updateTokenSupply(token: string): Promise<void> {
@@ -53,5 +57,11 @@ export class TrackerSupplySync {
     );
 
     return trackerSupply;
+  }
+
+  private async getTokenNames(): Promise<string[]> {
+    const tokenPrices: TokenPrice[] = await this.tokenPriceService.findAll();
+
+    return tokenPrices.map((tokenPrices) => tokenPrices.token);
   }
 }

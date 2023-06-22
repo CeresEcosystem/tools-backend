@@ -63,6 +63,10 @@ export class TrackerService {
     };
   }
 
+  public async getTokenSupplyData(token: string) {
+    return await this.trackerSupplyRepository.getSupplyGraphData(token);
+  }
+
   public async insert(trackers: Tracker[]): Promise<void> {
     trackers.forEach((tracker) => {
       tracker.createdAt = new Date();
