@@ -4,14 +4,14 @@ import { PortfolioService } from './portfolio.service';
 import { TokenPriceModule } from '../token-price/token-price.module';
 import { ChronoPriceModule } from '../chrono-price/chrono-price.module';
 import { PairsModule } from '../pairs/pairs.module';
-import { FarmingApiClinetModule } from '../farming-api-client/farming-api-client.module';
+import { FarmingApiClientModule } from '../farming-api-client/farming-api-client.module';
 
 @Module({
   imports: [
     TokenPriceModule,
     ChronoPriceModule,
     PairsModule,
-    FarmingApiClinetModule,
+    FarmingApiClientModule,
   ],
   controllers: [PortfolioController],
   providers: [PortfolioService],
