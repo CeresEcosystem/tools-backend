@@ -9,4 +9,4 @@ import { ConfigModule } from '@nestjs/config';
   providers: [FarmingClient],
   exports: [FarmingClient],
 })
-export class FarmingApiClinetModule {}
+export class FarmingApiClientModule {}
