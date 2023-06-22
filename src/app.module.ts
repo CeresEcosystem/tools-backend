@@ -15,7 +15,7 @@ import { RewardsModule } from './modules/rewards/rewards.module';
 import { MailerModule } from './modules/mailer/mailer.module';
 import { PortfolioModule } from './modules/portfolio/portfolio.module';
 import { ConsoleModule } from 'nestjs-console';
-import { ValBurningSeeder } from './modules/tracker/val-seed/val-burning-seeder';
+import { ValBurningSeeder } from './modules/tracker/seeder/val-burning-seeder';
 
 @Module({
   imports: [
