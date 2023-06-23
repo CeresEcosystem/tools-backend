@@ -52,13 +52,12 @@ export class TrackerSupplyRepository {
   public async getSupplyGraphData(
     token: string,
   ): Promise<TrackerSupplyGraphPointDto[]> {
-    return this.repository.query(
-      `SELECT DATE_FORMAT(date_raw, '%Y-%m-%d') as x, \
-            supply as y \
-            FROM tracker_supply \
-            WHERE token = ? \
-            ORDER BY date_raw`,
-      [token],
-    );
+    return this.repository
+      .createQueryBuilder()
+      .select("DATE_FORMAT(date_raw, '%Y-%m-%d')", 'x')
+      .addSelect('supply', 'y')
+      .where({ token })
+      .orderBy('date_raw')
+      .getRawMany<TrackerSupplyGraphPointDto>();
   }
 }
