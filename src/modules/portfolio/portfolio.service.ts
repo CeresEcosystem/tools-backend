@@ -1,11 +1,18 @@
 import { Injectable } from '@nestjs/common';
+
 import { WsProvider, ApiPromise } from '@polkadot/api';
 import { FPNumber } from '@sora-substrate/math';
-import { XOR_ADDRESS, PROVIDER } from 'src/constants/constants';
 import { options } from '@sora-substrate/api';
-import { PortfolioDto } from './dto/portfolio.dto';
+
+import { XOR_ADDRESS, XSTUSD_ADDRESS, PROVIDER } from 'src/constants/constants';
 import { TokenPriceService } from '../token-price/token-price.service';
 import { ChronoPriceService } from '../chrono-price/chrono-price.service';
+import { PairsService } from '../pairs/pairs.service';
+import { FarmingClient } from '../farming-api-client/farming-client';
+
+import { PortfolioDto } from './dto/portfolio.dto';
+import { StakingDto } from './dto/staking.dto';
+import { LiquidityDto } from './dto/liquidity.dto';
 
 const DENOMINATOR = FPNumber.fromNatural(Math.pow(10, 18));
 const intervals = [2, 48, 336, 1440];
@@ -17,6 +24,8 @@ export class PortfolioService {
   constructor(
     private tokenPriceService: TokenPriceService,
     private chronoPriceService: ChronoPriceService,
+    private pairsService: PairsService,
+    private farmingClient: FarmingClient,
   ) {
     const provider = new WsProvider(PROVIDER);
     new ApiPromise(options({ provider, noInitWarn: true })).isReady.then(
@@ -110,5 +119,134 @@ export class PortfolioService {
       priceDifferenceInPercentageArr.push(priceInPercentage);
     });
     return priceDifferenceInPercentageArr;
+  }
+
+  async getStakingPortfolio(accountId: string): Promise<StakingDto[]> {
+    let stakingData: StakingDto[] = [];
+    const pools = await this.farmingClient.fetchStakingData(accountId);
+    for (const pool of pools) {
+      const balance = FPNumber.fromCodecValue(pool.pooledTokens).toNumber();
+      if (balance === 0) continue;
+      const tokenEntity = await this.tokenPriceService.findByAssetId(
+        pool.poolAsset,
+      );
+      stakingData.push({
+        fullName: tokenEntity.fullName,
+        token: tokenEntity.token,
+        price: Number(tokenEntity.price),
+        balance,
+        value: Number(tokenEntity.price) * balance,
+      });
+    }
+    return stakingData;
+  }
+
+  async getRewardsPortfolio(accountId: string): Promise<StakingDto[]> {
+    let rewardsData: StakingDto[] = [];
+    const rewardsMap = new Map();
+    const stakingPools = await this.farmingClient.fetchStakingData(accountId);
+    const farmingPools = await this.farmingClient.fetchFarmingData(accountId);
+
+    for (const pool of stakingPools) {
+      const stakingReward = FPNumber.fromCodecValue(pool.rewards).toNumber();
+      if (stakingReward === 0) continue;
+      if (rewardsMap.has(pool.rewardAsset)) {
+        const existingReward = rewardsMap.get(pool.rewardAsset);
+        rewardsMap.set(pool.rewardAsset, existingReward + stakingReward);
+      } else {
+        rewardsMap.set(pool.rewardAsset, stakingReward);
+      }
+    }
+
+    for (const pool of farmingPools) {
+      const farmingReward = FPNumber.fromCodecValue(pool.rewards).toNumber();
+      if (farmingReward == 0) continue;
+      if (rewardsMap.has(pool.rewardAsset)) {
+        const existingReward = rewardsMap.get(pool.rewardAsset);
+        rewardsMap.set(pool.rewardAsset, existingReward + farmingReward);
+      } else {
+        rewardsMap.set(pool.rewardAsset, farmingReward);
+      }
+    }
+
+    for (const [rewardAsset, balance] of rewardsMap) {
+      const tokenEntity = await this.tokenPriceService.findByAssetId(
+        rewardAsset,
+      );
+      rewardsData.push({
+        fullName: tokenEntity.fullName,
+        token: tokenEntity.token,
+        price: Number(tokenEntity.price),
+        balance,
+        value: Number(tokenEntity.price) * balance,
+      });
+    }
+
+    return rewardsData;
+  }
+
+  async getLiquidityPortfolio(accountId: string): Promise<LiquidityDto[]> {
+    const poolSetXOR = await this.api.query.poolXYK.accountPools(
+      accountId,
+      XOR_ADDRESS,
+    );
+
+    const poolSetXSTUSD = await this.api.query.poolXYK.accountPools(
+      accountId,
+      XSTUSD_ADDRESS,
+    );
+
+    const liquidityXOR = await this.getLiquidity(
+      poolSetXOR,
+      XOR_ADDRESS,
+      accountId,
+    );
+
+    const liquidityXSTUSD = await this.getLiquidity(
+      poolSetXSTUSD,
+      XSTUSD_ADDRESS,
+      accountId,
+    );
+
+    return [...liquidityXOR, ...liquidityXSTUSD];
+  }
+
+  async getLiquidity(
+    poolSet,
+    baseAssetId: string,
+    accountId: string,
+  ): Promise<LiquidityDto[]> {
+    let liquidityData: LiquidityDto[] = [];
+
+    for (const { code: tokenAddress } of poolSet) {
+      const [poolAddress] = (
+        await this.api.query.poolXYK.properties(baseAssetId, tokenAddress)
+      ).toHuman();
+
+      let liquidityProviding = await this.api.query.poolXYK.poolProviders(
+        poolAddress,
+        accountId,
+      );
+
+      let totalLiquidity = await this.api.query.poolXYK.totalIssuances(
+        poolAddress,
+      );
+
+      let percentageHolding = liquidityProviding / totalLiquidity;
+
+      let pairData = await this.pairsService.findOneByAssetIds(
+        XOR_ADDRESS,
+        tokenAddress.toString(),
+      );
+      let value = pairData.liquidity * percentageHolding;
+
+      liquidityData.push({
+        token: pairData.token,
+        baseAsset: pairData.baseAsset,
+        value,
+      });
+    }
+
+    return liquidityData;
   }
 }
