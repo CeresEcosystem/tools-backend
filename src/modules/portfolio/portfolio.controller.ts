@@ -3,8 +3,10 @@ import { PortfolioService } from './portfolio.service';
 import { PortfolioDto } from './dto/portfolio.dto';
 import { StakingDto } from './dto/staking.dto';
 import { LiquidityDto } from './dto/liquidity.dto';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('portfolio')
+@ApiTags('Portfolio Controller')
 export class PortfolioController {
   constructor(private portfolioService: PortfolioService) {}
 
