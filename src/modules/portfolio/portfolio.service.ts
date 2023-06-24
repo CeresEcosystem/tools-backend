@@ -38,8 +38,14 @@ export class PortfolioService {
     const timestampBefore30Days = timestamp - 2592000;
 
     let assetIdsAndAssetBalances: PortfolioDto[] = [];
+    let xor;
+    let portfolio;
 
-    const xor = await this.api.rpc.assets.freeBalance(accountId, XOR_ADDRESS);
+    try {
+      xor = await this.api.rpc.assets.freeBalance(accountId, XOR_ADDRESS);
+    } catch (error) {
+      return assetIdsAndAssetBalances;
+    }
     const value = !xor.isNone ? xor.unwrap() : { balance: 0 };
     const balance = new FPNumber(value.balance).toNumber();
     const tokenEntity = await this.tokenPriceService.findByAssetId(XOR_ADDRESS);
@@ -69,7 +75,11 @@ export class PortfolioService {
       oneMonth,
     });
 
-    const portfolio = await this.api.query.tokens.accounts.entries(accountId);
+    try {
+      portfolio = await this.api.query.tokens.accounts.entries(accountId);
+    } catch (error) {
+      return assetIdsAndAssetBalances;
+    }
 
     for (const [assetsId, assetAmount] of portfolio) {
       let { free: assetBalance } = assetAmount.toHuman();
@@ -124,20 +134,21 @@ export class PortfolioService {
   async getStakingPortfolio(accountId: string): Promise<StakingDto[]> {
     let stakingData: StakingDto[] = [];
     const pools = await this.farmingClient.fetchStakingData(accountId);
-    for (const pool of pools) {
-      const balance = FPNumber.fromCodecValue(pool.pooledTokens).toNumber();
-      if (balance === 0) continue;
-      const tokenEntity = await this.tokenPriceService.findByAssetId(
-        pool.poolAsset,
-      );
-      stakingData.push({
-        fullName: tokenEntity.fullName,
-        token: tokenEntity.token,
-        price: Number(tokenEntity.price),
-        balance,
-        value: Number(tokenEntity.price) * balance,
-      });
-    }
+    if (pools)
+      for (const pool of pools) {
+        const balance = FPNumber.fromCodecValue(pool.pooledTokens).toNumber();
+        if (balance === 0) continue;
+        const tokenEntity = await this.tokenPriceService.findByAssetId(
+          pool.poolAsset,
+        );
+        stakingData.push({
+          fullName: tokenEntity.fullName,
+          token: tokenEntity.token,
+          price: Number(tokenEntity.price),
+          balance,
+          value: Number(tokenEntity.price) * balance,
+        });
+      }
     return stakingData;
   }
 
@@ -146,26 +157,26 @@ export class PortfolioService {
     const rewardsMap = new Map();
     const stakingPools = await this.farmingClient.fetchStakingData(accountId);
     const farmingPools = await this.farmingClient.fetchFarmingData(accountId);
-
-    for (const pool of stakingPools) {
-      const stakingReward = FPNumber.fromCodecValue(pool.rewards).toNumber();
-      if (stakingReward === 0) continue;
-      if (rewardsMap.has(pool.rewardAsset)) {
-        const existingReward = rewardsMap.get(pool.rewardAsset);
-        rewardsMap.set(pool.rewardAsset, existingReward + stakingReward);
-      } else {
-        rewardsMap.set(pool.rewardAsset, stakingReward);
+    if (stakingPools && farmingPools) {
+      for (const pool of stakingPools) {
+        const stakingReward = FPNumber.fromCodecValue(pool.rewards).toNumber();
+        if (stakingReward === 0) continue;
+        if (rewardsMap.has(pool.rewardAsset)) {
+          const existingReward = rewardsMap.get(pool.rewardAsset);
+          rewardsMap.set(pool.rewardAsset, existingReward + stakingReward);
+        } else {
+          rewardsMap.set(pool.rewardAsset, stakingReward);
+        }
       }
-    }
-
-    for (const pool of farmingPools) {
-      const farmingReward = FPNumber.fromCodecValue(pool.rewards).toNumber();
-      if (farmingReward == 0) continue;
-      if (rewardsMap.has(pool.rewardAsset)) {
-        const existingReward = rewardsMap.get(pool.rewardAsset);
-        rewardsMap.set(pool.rewardAsset, existingReward + farmingReward);
-      } else {
-        rewardsMap.set(pool.rewardAsset, farmingReward);
+      for (const pool of farmingPools) {
+        const farmingReward = FPNumber.fromCodecValue(pool.rewards).toNumber();
+        if (farmingReward == 0) continue;
+        if (rewardsMap.has(pool.rewardAsset)) {
+          const existingReward = rewardsMap.get(pool.rewardAsset);
+          rewardsMap.set(pool.rewardAsset, existingReward + farmingReward);
+        } else {
+          rewardsMap.set(pool.rewardAsset, farmingReward);
+        }
       }
     }
 
@@ -186,15 +197,21 @@ export class PortfolioService {
   }
 
   async getLiquidityPortfolio(accountId: string): Promise<LiquidityDto[]> {
-    const poolSetXOR = await this.api.query.poolXYK.accountPools(
-      accountId,
-      XOR_ADDRESS,
-    );
+    let poolSetXOR;
+    let poolSetXSTUSD;
 
-    const poolSetXSTUSD = await this.api.query.poolXYK.accountPools(
-      accountId,
-      XSTUSD_ADDRESS,
-    );
+    try {
+      poolSetXOR = await this.api.query.poolXYK.accountPools(
+        accountId,
+        XOR_ADDRESS,
+      );
+      poolSetXSTUSD = await this.api.query.poolXYK.accountPools(
+        accountId,
+        XSTUSD_ADDRESS,
+      );
+    } catch (error) {
+      return [];
+    }
 
     const liquidityXOR = await this.getLiquidity(
       poolSetXOR,
@@ -217,7 +234,6 @@ export class PortfolioService {
     accountId: string,
   ): Promise<LiquidityDto[]> {
     let liquidityData: LiquidityDto[] = [];
-
     for (const { code: tokenAddress } of poolSet) {
       const [poolAddress] = (
         await this.api.query.poolXYK.properties(baseAssetId, tokenAddress)
@@ -234,17 +250,19 @@ export class PortfolioService {
 
       let percentageHolding = liquidityProviding / totalLiquidity;
 
-      let pairData = await this.pairsService.findOneByAssetIds(
-        XOR_ADDRESS,
-        tokenAddress.toString(),
-      );
-      let value = pairData.liquidity * percentageHolding;
+      try {
+        let pairData = await this.pairsService.findOneByAssetIds(
+          XOR_ADDRESS,
+          tokenAddress.toString(),
+        );
+        let value = pairData.liquidity * percentageHolding;
 
-      liquidityData.push({
-        token: pairData.token,
-        baseAsset: pairData.baseAsset,
-        value,
-      });
+        liquidityData.push({
+          token: pairData.token,
+          baseAsset: pairData.baseAsset,
+          value,
+        });
+      } catch (error) {}
     }
 
     return liquidityData;
