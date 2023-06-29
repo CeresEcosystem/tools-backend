@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, retry } from 'rxjs';
 import { createFile } from 'src/utils/storage.helper';
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import {
@@ -23,7 +23,9 @@ export class IconsService {
     this.logger.log('Start downloading token icons.');
 
     const { data } = await firstValueFrom(
-      this.httpService.get<TokenIconDto[]>(ICONS_URL),
+      this.httpService
+        .get<TokenIconDto[]>(ICONS_URL)
+        .pipe(retry({ count: 10, delay: 1000 })),
     );
 
     data.forEach((tokenIcon) => {
