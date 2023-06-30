@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { firstValueFrom } from 'rxjs';
+import { catchError, firstValueFrom, of, retry } from 'rxjs';
 import { createFile } from 'src/utils/storage.helper';
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import {
@@ -11,6 +11,8 @@ import {
   SVG_EXTENSION,
 } from './icons.const';
 import { TokenIconDto } from './icons.dto';
+import { error } from 'console';
+import { AxiosError } from 'axios';
 
 @Injectable()
 export class IconsService {
@@ -23,7 +25,15 @@ export class IconsService {
     this.logger.log('Start downloading token icons.');
 
     const { data } = await firstValueFrom(
-      this.httpService.get<TokenIconDto[]>(ICONS_URL),
+      this.httpService.get<TokenIconDto[]>(ICONS_URL).pipe(
+        retry({ count: 10, delay: 1000 }),
+        catchError((error: AxiosError) => {
+          this.logger.error(
+            `An error occured while fetching the price off of CoinGecko. ${error.response.data}`,
+          );
+          return of({ data: new Array<TokenIconDto>() });
+        }),
+      ),
     );
 
     data.forEach((tokenIcon) => {
