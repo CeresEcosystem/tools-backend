@@ -11,7 +11,6 @@ import {
   SVG_EXTENSION,
 } from './icons.const';
 import { TokenIconDto } from './icons.dto';
-import { error } from 'console';
 import { AxiosError } from 'axios';
 
 @Injectable()
@@ -29,9 +28,9 @@ export class IconsService {
         retry({ count: 10, delay: 1000 }),
         catchError((error: AxiosError) => {
           this.logger.error(
-            `An error occured while fetching the price off of CoinGecko. ${error.response.data}`,
+            `An error occured while calling the icons API. ${error}`,
           );
-          return of({ data: new Array<TokenIconDto>() });
+          return of({ data: [] });
         }),
       ),
     );
