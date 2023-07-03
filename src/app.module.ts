@@ -16,6 +16,7 @@ import { MailerModule } from './modules/mailer/mailer.module';
 import { PortfolioModule } from './modules/portfolio/portfolio.module';
 import { ConsoleModule } from 'nestjs-console';
 import { ValBurningSeeder } from './modules/tracker/seeder/val-burning-seeder';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -23,6 +24,10 @@ import { ValBurningSeeder } from './modules/tracker/seeder/val-burning-seeder';
     ConfigModule.forRoot(),
     CacheModule.register({
       isGlobal: true,
+    }),
+    ThrottlerModule.forRoot({
+      ttl: 60,
+      limit: 3,
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'storage'),

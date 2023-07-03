@@ -1,4 +1,4 @@
-export interface StakingClientDto {
+export interface DeoStakingDto {
   poolAsset: string;
   rewardAsset: string;
   pooledTokens: string;

@@ -8,7 +8,7 @@ import { XOR_ADDRESS, XSTUSD_ADDRESS, PROVIDER } from 'src/constants/constants';
 import { TokenPriceService } from '../token-price/token-price.service';
 import { ChronoPriceService } from '../chrono-price/chrono-price.service';
 import { PairsService } from '../pairs/pairs.service';
-import { FarmingClient } from '../farming-api-client/farming-client';
+import { DeoClient } from '../deo-client/deo-client';
 
 import { PortfolioDto } from './dto/portfolio.dto';
 import { StakingDto } from './dto/staking.dto';
@@ -25,7 +25,7 @@ export class PortfolioService {
     private tokenPriceService: TokenPriceService,
     private chronoPriceService: ChronoPriceService,
     private pairsService: PairsService,
-    private farmingClient: FarmingClient,
+    private deoClient: DeoClient,
   ) {
     const provider = new WsProvider(PROVIDER);
     new ApiPromise(options({ provider, noInitWarn: true })).isReady.then(
@@ -37,7 +37,7 @@ export class PortfolioService {
     const timestamp = Math.floor(Date.now() / 1000);
     const timestampBefore30Days = timestamp - 2592000;
 
-    let assetIdsAndAssetBalances: PortfolioDto[] = [];
+    const assetIdsAndAssetBalances: PortfolioDto[] = [];
     let xor;
     let portfolio;
 
@@ -82,13 +82,13 @@ export class PortfolioService {
     }
 
     for (const [assetsId, assetAmount] of portfolio) {
-      let { free: assetBalance } = assetAmount.toHuman();
-      let balance = new FPNumber(assetBalance).div(DENOMINATOR).toNumber();
+      const { free: assetBalance } = assetAmount.toHuman();
+      const balance = new FPNumber(assetBalance).div(DENOMINATOR).toNumber();
       if (balance === 0) continue;
 
-      let [, { code: assetId }] = assetsId.toHuman();
+      const [, { code: assetId }] = assetsId.toHuman();
       try {
-        let tokenEntity = await this.tokenPriceService.findByAssetId(assetId);
+        const tokenEntity = await this.tokenPriceService.findByAssetId(assetId);
 
         const { o: prices } = await this.chronoPriceService.getPriceForChart(
           tokenEntity.token,
@@ -120,7 +120,7 @@ export class PortfolioService {
   }
 
   calculatePriceChanges(prices, tokenPrice): number[] {
-    let priceDifferenceInPercentageArr: number[] = [];
+    const priceDifferenceInPercentageArr: number[] = [];
     intervals.forEach((interval) => {
       let beforePrice = prices[prices.length - interval];
       let priceInPercentage =
@@ -132,8 +132,8 @@ export class PortfolioService {
   }
 
   async getStakingPortfolio(accountId: string): Promise<StakingDto[]> {
-    let stakingData: StakingDto[] = [];
-    const pools = await this.farmingClient.fetchStakingData(accountId);
+    const stakingData: StakingDto[] = [];
+    const pools = await this.deoClient.fetchStakingData(accountId);
     if (pools)
       for (const pool of pools) {
         const balance = FPNumber.fromCodecValue(pool.pooledTokens).toNumber();
@@ -153,10 +153,10 @@ export class PortfolioService {
   }
 
   async getRewardsPortfolio(accountId: string): Promise<StakingDto[]> {
-    let rewardsData: StakingDto[] = [];
+    const rewardsData: StakingDto[] = [];
     const rewardsMap = new Map();
-    const stakingPools = await this.farmingClient.fetchStakingData(accountId);
-    const farmingPools = await this.farmingClient.fetchFarmingData(accountId);
+    const stakingPools = await this.deoClient.fetchStakingData(accountId);
+    const farmingPools = await this.deoClient.fetchFarmingData(accountId);
     if (stakingPools && farmingPools) {
       for (const pool of stakingPools) {
         const stakingReward = FPNumber.fromCodecValue(pool.rewards).toNumber();
@@ -233,25 +233,25 @@ export class PortfolioService {
     baseAssetId: string,
     accountId: string,
   ): Promise<LiquidityDto[]> {
-    let liquidityData: LiquidityDto[] = [];
+    const liquidityData: LiquidityDto[] = [];
     for (const { code: tokenAddress } of poolSet) {
       const [poolAddress] = (
         await this.api.query.poolXYK.properties(baseAssetId, tokenAddress)
       ).toHuman();
 
-      let liquidityProviding = await this.api.query.poolXYK.poolProviders(
+      const liquidityProviding = await this.api.query.poolXYK.poolProviders(
         poolAddress,
         accountId,
       );
 
-      let totalLiquidity = await this.api.query.poolXYK.totalIssuances(
+      const totalLiquidity = await this.api.query.poolXYK.totalIssuances(
         poolAddress,
       );
 
       let percentageHolding = liquidityProviding / totalLiquidity;
 
       try {
-        let pairData = await this.pairsService.findOneByAssetIds(
+        const pairData = await this.pairsService.findOneByAssetIds(
           XOR_ADDRESS,
           tokenAddress.toString(),
         );

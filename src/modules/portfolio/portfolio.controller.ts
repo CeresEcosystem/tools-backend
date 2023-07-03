@@ -1,12 +1,14 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { PortfolioService } from './portfolio.service';
 import { PortfolioDto } from './dto/portfolio.dto';
 import { StakingDto } from './dto/staking.dto';
 import { LiquidityDto } from './dto/liquidity.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { ThrottlerBehindProxyGuard } from 'src/guards/throttler-behind-proxy.guard';
 
 @Controller('portfolio')
 @ApiTags('Portfolio Controller')
+@UseGuards(ThrottlerBehindProxyGuard)
 export class PortfolioController {
   constructor(private portfolioService: PortfolioService) {}
 
