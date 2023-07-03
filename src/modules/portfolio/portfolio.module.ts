@@ -4,15 +4,10 @@ import { PortfolioService } from './portfolio.service';
 import { TokenPriceModule } from '../token-price/token-price.module';
 import { ChronoPriceModule } from '../chrono-price/chrono-price.module';
 import { PairsModule } from '../pairs/pairs.module';
-import { FarmingApiClientModule } from '../farming-api-client/farming-api-client.module';
+import { DeoClientModule } from '../deo-client/deo-client.module';
 
 @Module({
-  imports: [
-    TokenPriceModule,
-    ChronoPriceModule,
-    PairsModule,
-    FarmingApiClientModule,
-  ],
+  imports: [TokenPriceModule, ChronoPriceModule, PairsModule, DeoClientModule],
   controllers: [PortfolioController],
   providers: [PortfolioService],
 })

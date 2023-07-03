@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { FarmingClient } from './farming-client';
+import { DeoClient } from './deo-client';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [HttpModule, ConfigModule.forRoot()],
   controllers: [],
-  providers: [FarmingClient],
-  exports: [FarmingClient],
+  providers: [DeoClient],
+  exports: [DeoClient],
 })
-export class FarmingApiClientModule {}
+export class DeoClientModule {}
