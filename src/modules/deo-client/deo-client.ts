@@ -13,12 +13,12 @@ export class DeoClient {
   constructor(private readonly httpService: HttpService) {}
 
   public fetchStakingData(accountId: string): Promise<DeoStakingDto[]> {
-    const url = `${DEO_BACKEND_URL}/demeter/farms?accountId=${accountId}`;
+    const url = `${DEO_BACKEND_URL}/demeter/stakings?accountId=${accountId}`;
     return this.sendGetRequest<DeoStakingDto[]>(url);
   }
 
   public fetchFarmingData(accountId: string): Promise<DeoFarmingDto[]> {
-    const url = `${DEO_BACKEND_URL}/demeter/stakings?accountId=${accountId}`;
+    const url = `${DEO_BACKEND_URL}/demeter/farms?accountId=${accountId}`;
     return this.sendGetRequest<DeoFarmingDto[]>(url);
   }
 
