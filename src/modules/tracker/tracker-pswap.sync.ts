@@ -101,7 +101,11 @@ export class TrackerPswapSync {
       const module = e.event.section;
       const event = e.event.method;
 
-      if (module === 'pswapDistribution' && event === 'FeesExchanged') {
+      if (
+        module === 'pswapDistribution' &&
+        event === 'FeesExchanged' &&
+        events.length >= idx + 20
+      ) {
         if (
           events.length > idx + 4 &&
           events[idx + 20].event.method === 'IncentiveDistributed'
