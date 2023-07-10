@@ -13,7 +13,7 @@ import { DeoClient } from '../deo-client/deo-client';
 import { PortfolioDto } from './dto/portfolio.dto';
 import { StakingDto } from './dto/staking.dto';
 import { LiquidityDto } from './dto/liquidity.dto';
-import { PortfolioPriceDifferenceDto } from './dto/portfolio-price-difference.dto';
+import { PortfolioValueDifferenceDto } from './dto/portfolio-value-difference.dto';
 
 const DENOMINATOR = FPNumber.fromNatural(Math.pow(10, 18));
 const intervals = [2, 48, 336, 1440];
@@ -72,13 +72,13 @@ export class PortfolioService {
       balance,
       value: Number(tokenEntity.price) * balance,
       oneHour: oneHour.percentageDifference,
-      oneHourValueDifference: oneHour.priceDifference,
+      oneHourValueDifference: oneHour.valueDifference,
       oneDay: oneDay.percentageDifference,
-      oneDayValueDifference: oneDay.priceDifference,
+      oneDayValueDifference: oneDay.valueDifference,
       oneWeek: oneWeek.percentageDifference,
-      oneWeekValueDifference: oneWeek.priceDifference,
+      oneWeekValueDifference: oneWeek.valueDifference,
       oneMonth: oneMonth.percentageDifference,
-      oneMonthValueDifference: oneMonth.priceDifference,
+      oneMonthValueDifference: oneMonth.valueDifference,
     });
 
     try {
@@ -117,13 +117,13 @@ export class PortfolioService {
           balance,
           value: Number(tokenEntity.price) * balance,
           oneHour: oneHour.percentageDifference,
-          oneHourValueDifference: oneHour.priceDifference,
+          oneHourValueDifference: oneHour.valueDifference,
           oneDay: oneDay.percentageDifference,
-          oneDayValueDifference: oneDay.priceDifference,
+          oneDayValueDifference: oneDay.valueDifference,
           oneWeek: oneWeek.percentageDifference,
-          oneWeekValueDifference: oneWeek.priceDifference,
+          oneWeekValueDifference: oneWeek.valueDifference,
           oneMonth: oneMonth.percentageDifference,
-          oneMonthValueDifference: oneMonth.priceDifference,
+          oneMonthValueDifference: oneMonth.valueDifference,
         });
       } catch (error) {}
     }
@@ -135,18 +135,18 @@ export class PortfolioService {
     prices,
     tokenPrice,
     balance,
-  ): PortfolioPriceDifferenceDto[] {
-    const priceDifferenceInPercentageArr: PortfolioPriceDifferenceDto[] = [];
+  ): PortfolioValueDifferenceDto[] {
+    const priceDifferenceInPercentageArr: PortfolioValueDifferenceDto[] = [];
 
     intervals.forEach((interval) => {
       const beforePrice = prices[prices.length - interval];
       const priceInPercentage =
         ((tokenPrice / beforePrice - 1) * 100 * 100) / 100;
-      const priceDifference = (tokenPrice - beforePrice) * balance;
+      const valueDifference = (tokenPrice - beforePrice) * balance;
 
       priceDifferenceInPercentageArr.push({
         percentageDifference: priceInPercentage,
-        priceDifference,
+        valueDifference,
       });
     });
     return priceDifferenceInPercentageArr;
