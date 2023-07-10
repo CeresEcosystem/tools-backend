@@ -13,6 +13,7 @@ import { DeoClient } from '../deo-client/deo-client';
 import { PortfolioDto } from './dto/portfolio.dto';
 import { StakingDto } from './dto/staking.dto';
 import { LiquidityDto } from './dto/liquidity.dto';
+import { PortfolioPriceDifferenceDto } from './dto/portfolio-price-difference.dto';
 
 const DENOMINATOR = FPNumber.fromNatural(Math.pow(10, 18));
 const intervals = [2, 48, 336, 1440];
@@ -61,6 +62,7 @@ export class PortfolioService {
     const [oneHour, oneDay, oneWeek, oneMonth] = this.calculatePriceChanges(
       prices,
       Number(tokenEntity.price),
+      balance,
     );
 
     assetIdsAndAssetBalances.push({
@@ -69,10 +71,14 @@ export class PortfolioService {
       price: Number(tokenEntity.price),
       balance,
       value: Number(tokenEntity.price) * balance,
-      oneHour,
-      oneDay,
-      oneWeek,
-      oneMonth,
+      oneHour: oneHour.percentageDifference,
+      oneHourValueDifference: oneHour.priceDifference,
+      oneDay: oneDay.percentageDifference,
+      oneDayValueDifference: oneDay.priceDifference,
+      oneWeek: oneWeek.percentageDifference,
+      oneWeekValueDifference: oneWeek.priceDifference,
+      oneMonth: oneMonth.percentageDifference,
+      oneMonthValueDifference: oneMonth.priceDifference,
     });
 
     try {
@@ -97,9 +103,11 @@ export class PortfolioService {
           timestamp,
           0,
         );
+
         const [oneHour, oneDay, oneWeek, oneMonth] = this.calculatePriceChanges(
           prices,
           Number(tokenEntity.price),
+          balance,
         );
 
         assetIdsAndAssetBalances.push({
@@ -108,10 +116,14 @@ export class PortfolioService {
           price: Number(tokenEntity.price),
           balance,
           value: Number(tokenEntity.price) * balance,
-          oneHour,
-          oneDay,
-          oneWeek,
-          oneMonth,
+          oneHour: oneHour.percentageDifference,
+          oneHourValueDifference: oneHour.priceDifference,
+          oneDay: oneDay.percentageDifference,
+          oneDayValueDifference: oneDay.priceDifference,
+          oneWeek: oneWeek.percentageDifference,
+          oneWeekValueDifference: oneWeek.priceDifference,
+          oneMonth: oneMonth.percentageDifference,
+          oneMonthValueDifference: oneMonth.priceDifference,
         });
       } catch (error) {}
     }
@@ -119,14 +131,23 @@ export class PortfolioService {
     return assetIdsAndAssetBalances;
   }
 
-  calculatePriceChanges(prices, tokenPrice): number[] {
-    const priceDifferenceInPercentageArr: number[] = [];
-    intervals.forEach((interval) => {
-      let beforePrice = prices[prices.length - interval];
-      let priceInPercentage =
-        Math.round((tokenPrice / beforePrice - 1) * 100 * 100) / 100;
+  calculatePriceChanges(
+    prices,
+    tokenPrice,
+    balance,
+  ): PortfolioPriceDifferenceDto[] {
+    const priceDifferenceInPercentageArr: PortfolioPriceDifferenceDto[] = [];
 
-      priceDifferenceInPercentageArr.push(priceInPercentage);
+    intervals.forEach((interval) => {
+      const beforePrice = prices[prices.length - interval];
+      const priceInPercentage =
+        ((tokenPrice / beforePrice - 1) * 100 * 100) / 100;
+      const priceDifference = (tokenPrice - beforePrice) * balance;
+
+      priceDifferenceInPercentageArr.push({
+        percentageDifference: priceInPercentage,
+        priceDifference,
+      });
     });
     return priceDifferenceInPercentageArr;
   }
@@ -248,14 +269,14 @@ export class PortfolioService {
         poolAddress,
       );
 
-      let percentageHolding = liquidityProviding / totalLiquidity;
+      const percentageHolding = liquidityProviding / totalLiquidity;
 
       try {
         const pairData = await this.pairsService.findOneByAssetIds(
           XOR_ADDRESS,
           tokenAddress.toString(),
         );
-        let value = pairData.liquidity * percentageHolding;
+        const value = pairData.liquidity * percentageHolding;
 
         liquidityData.push({
           token: pairData.token,
