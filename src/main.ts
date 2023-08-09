@@ -28,7 +28,7 @@ async function bootstrap() {
   );
 
   // https://docs.nestjs.com/techniques/validation
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
   // https://docs.nestjs.com/faq/global-prefix
   app.setGlobalPrefix('api');
@@ -47,6 +47,10 @@ function buildSwaggerConfig() {
   return new DocumentBuilder()
     .setTitle('Tools Backend')
     .setVersion('1.0')
+    .addBearerAuth({
+      type: 'http',
+      in: 'Header',
+    })
     .build();
 }
 

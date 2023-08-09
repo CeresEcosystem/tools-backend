@@ -17,11 +17,16 @@ import { PortfolioModule } from './modules/portfolio/portfolio.module';
 import { ConsoleModule } from 'nestjs-console';
 import { ValBurningSeeder } from './modules/tracker/seeder/val-burning-seeder';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { BannerModule } from './modules/banner/banner.module';
+import { NestjsFormDataModule } from 'nestjs-form-data';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     ConfigModule.forRoot(),
+    NestjsFormDataModule.config({
+      isGlobal: true,
+    }),
     CacheModule.register({
       isGlobal: true,
     }),
@@ -62,6 +67,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     MailerModule,
     PortfolioModule,
     ConsoleModule,
+    BannerModule,
   ],
   controllers: [],
   providers: [ValBurningSeeder],
