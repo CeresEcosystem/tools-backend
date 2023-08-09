@@ -72,7 +72,7 @@ export class TrackerPswapSync {
     startBlock: number,
     endBlock: number,
   ): Promise<any> {
-    const blocksWithDistribution = [];
+    const blocksWithDistribution = new Set<number>();
     const queryResult =
       await this.soraApi.query.pswapDistribution.subscribedAccounts.entries();
 
@@ -82,12 +82,12 @@ export class TrackerPswapSync {
       let blockNum = poolCreated + DAY;
       for (; blockNum < endBlock; blockNum += DAY) {
         if (blockNum > startBlock) {
-          blocksWithDistribution.push(blockNum);
+          blocksWithDistribution.add(blockNum);
         }
       }
     }
 
-    return blocksWithDistribution.sort((a, b) => a - b);
+    return [...blocksWithDistribution].sort((a, b) => a - b);
   }
 
   private async parseBlockWithDistribution(blockNum): Promise<any> {

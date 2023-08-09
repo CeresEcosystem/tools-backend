@@ -1,10 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api/promise';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { options } from '@sora-substrate/api';
 import { PROVIDER } from '../../constants/constants';
-import { CronExpression } from 'src/utils/cron-expression.enum';
 import { TokenPriceBcDto } from './dto/token-price-bc.dto';
 import { TokenPriceService } from './token-price.service';
 import * as whitelist from 'src/utils/files/whitelist.json';

@@ -46,7 +46,7 @@ export class TrackerValSync {
       let found = false;
       events = events.toHuman();
 
-      events.forEach((e, _) => {
+      events.forEach((e) => {
         const module = e.event.section;
         const event = e.event.method;
         if (module === 'session' && event === 'NewSession') {
