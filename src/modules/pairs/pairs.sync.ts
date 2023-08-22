@@ -15,6 +15,7 @@ import { ApiPromise } from '@polkadot/api/promise';
 import { options } from '@sora-substrate/api';
 import * as whitelist from '../../utils/files/whitelist.json';
 import { TokenPriceService } from '../token-price/token-price.service';
+import { TokenPrice } from '../token-price/entity/token-price.entity';
 import { FPNumber } from '@sora-substrate/math';
 import { AxiosError } from 'axios';
 
@@ -61,58 +62,64 @@ export class PairsSync {
     }
 
     const tokenPrices = await this.tokenPriceService.findAll();
-    const xorPrice = tokenPrices.find((tp) => tp.token === 'XOR').price;
-    const xstusdPrice = tokenPrices.find((tp) => tp.token === 'XSTUSD').price;
 
     for (const pair of this.pairs) {
       const { token, baseAsset, baseAssetId, tokenAssetId } = pair;
 
-      await this.soraApi.query.poolXYK.reserves(
-        baseAssetId,
-        tokenAssetId,
-        async (liqArray) => {
-          liqArray = liqArray.toHuman();
-          if (new FPNumber(liqArray[0]).toNumber() === 0) {
-            return;
-          }
+      const liqArray = (
+        await this.soraApi.query.poolXYK.reserves(baseAssetId, tokenAssetId)
+      ).toHuman();
 
-          const tokenPrice = tokenPrices.find((tp) => tp.token === token).price;
+      if (Number(liqArray[0]) === 0) {
+        return;
+      }
 
-          const liqData = this.getLiquidityOfPair(
-            liqArray,
-            baseAsset,
-            parseFloat(xorPrice),
-            parseFloat(xstusdPrice),
-            parseFloat(tokenPrice),
-          );
-
-          if (liqData.liquidity != null) {
-            let volume = 0;
-            const id = `${tokenAssetId}_${baseAssetId}`;
-            const pairData = volumeData[id];
-            const basePrice = baseAsset === 'XOR' ? xorPrice : xstusdPrice;
-            if (pairData) {
-              volume = pairData['quote_volume'] * parseFloat(basePrice);
-            }
-            if (!volume) {
-              volume = 0;
-            }
-
-            this.pairsService.save([
-              {
-                ...pair,
-                liquidity: liqData.liquidity,
-                baseAssetLiq: liqData.baseAssetLiq.toFixed(2),
-                targetAssetLiq: liqData.targetAssetLiq.toFixed(2),
-                volume: volume.toFixed(2),
-              },
-            ]);
-          }
-        },
+      const { basePrice, targetPrice } = this.getBaseAndTargetPrices(
+        tokenPrices,
+        token,
+        baseAsset,
       );
+
+      const liqData = this.getLiquidityOfPair(liqArray, basePrice, targetPrice);
+
+      if (!liqData.liquidity) {
+        return;
+      }
+
+      const pairData = volumeData[`${tokenAssetId}_${baseAssetId}`];
+      const volume = pairData ? pairData['quote_volume'] * basePrice : 0;
+
+      this.logger.log(
+        `Saving pair ${pair.tokenFullName}, ${pair.baseAssetFullName}`,
+      );
+
+      this.pairsService.save([
+        {
+          ...pair,
+          liquidity: liqData.liquidity,
+          baseAssetLiq: liqData.baseAssetLiq.toFixed(2),
+          targetAssetLiq: liqData.targetAssetLiq.toFixed(2),
+          volume: volume.toFixed(2),
+        },
+      ]);
     }
 
     this.logger.log('Fetching of pairs data was successful!');
+  }
+
+  private getBaseAndTargetPrices(
+    tokenPrices: TokenPrice[],
+    targetAsset: string,
+    baseAsset: string,
+  ): { basePrice: number; targetPrice: number } {
+    const basePrice = parseFloat(
+      tokenPrices.find((tp) => tp.token === baseAsset).price,
+    );
+    const targetPrice = parseFloat(
+      tokenPrices.find((tp) => tp.token === targetAsset).price,
+    );
+
+    return { basePrice, targetPrice };
   }
 
   private async getPairs(): Promise<void> {
@@ -163,13 +170,10 @@ export class PairsSync {
   }
 
   private getLiquidityOfPair(
-    liquidityArray,
-    baseAsset: string,
-    xorPrice: number,
-    xstusdPrice: number,
+    liquidityArray: string[],
+    basePrice: number,
     tokenPrice: number,
   ): { liquidity: number; baseAssetLiq: number; targetAssetLiq: number } {
-    const baseAssetPrice: number = baseAsset === 'XOR' ? xorPrice : xstusdPrice;
     const baseAssetLiq = new FPNumber(liquidityArray[0])
       .div(DENOMINATOR)
       .toNumber();
@@ -179,7 +183,7 @@ export class PairsSync {
 
     return {
       liquidity: Math.round(
-        baseAssetLiq * baseAssetPrice + targetAssetLiq * tokenPrice,
+        baseAssetLiq * basePrice + targetAssetLiq * tokenPrice,
       ),
       baseAssetLiq,
       targetAssetLiq,
