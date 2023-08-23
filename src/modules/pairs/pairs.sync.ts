@@ -89,10 +89,6 @@ export class PairsSync {
       const pairData = volumeData[`${tokenAssetId}_${baseAssetId}`];
       const volume = pairData ? pairData['quote_volume'] * basePrice : 0;
 
-      this.logger.log(
-        `Saving pair ${pair.tokenFullName}, ${pair.baseAssetFullName}`,
-      );
-
       this.pairsService.save([
         {
           ...pair,

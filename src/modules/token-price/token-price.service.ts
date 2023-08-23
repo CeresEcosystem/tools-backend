@@ -1,14 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Like, Repository } from 'typeorm';
+import { FindOptionsWhere, Like } from 'typeorm';
 import { TokenPriceBcDto } from './dto/token-price-bc.dto';
 import { TokenPrice } from './entity/token-price.entity';
 import { TokenPriceBcDtoToEntityMapper } from './mapper/token-price.mapper';
 import { TokenPriceRepository } from './token-price.repository';
-import { TokenOrder } from './entity/token-order.entity';
 import { SymbolService } from '../symbol/symbol.service';
 import { ChronoPriceService } from '../chrono-price/chrono-price.service';
 import { ChronoPriceDto } from '../chrono-price/dto/chrono-price.dto';
+import { TokenOrderService } from '../token-order/token-order.service';
 
 @Injectable()
 export class TokenPriceService {
@@ -16,8 +15,7 @@ export class TokenPriceService {
 
   constructor(
     private readonly tokenPriceRepository: TokenPriceRepository,
-    @InjectRepository(TokenOrder)
-    private readonly tokenOrderRepository: Repository<TokenOrder>,
+    private readonly tokenOrderService: TokenOrderService,
     private readonly mapper: TokenPriceBcDtoToEntityMapper,
     private readonly symbolService: SymbolService,
     private readonly chronoPriceService: ChronoPriceService,
@@ -37,7 +35,8 @@ export class TokenPriceService {
 
   public async save(tokenPriceDtos: TokenPriceBcDto[]): Promise<void> {
     const tokenPrices = this.mapper.toEntities(tokenPriceDtos);
-    const { tokenOrderBySymbol, defaultOrder } = await this.getTokenOrder();
+    const { tokenOrderBySymbol, defaultOrder } =
+      await this.tokenOrderService.getTokenOrder();
 
     tokenPrices.forEach((tokenPrice) => {
       const { token, price, fullName } = tokenPrice;
@@ -67,24 +66,6 @@ export class TokenPriceService {
       where: whereStatements,
       order: { order: 'asc' },
     });
-  }
-
-  private async getTokenOrder() {
-    const tokenOrders = await this.tokenOrderRepository.find();
-    const lastOrder =
-      tokenOrders.length > 0
-        ? Math.max(...tokenOrders.map((tokenOrder) => tokenOrder.order))
-        : 0;
-
-    const defaultOrder = lastOrder + 1;
-    const tokenOrderBySymbol = Object.fromEntries(
-      tokenOrders.map((tokenOrder) => [tokenOrder.symbol, tokenOrder.order]),
-    );
-
-    return {
-      tokenOrderBySymbol,
-      defaultOrder,
-    };
   }
 
   private saveChronoPrices(tokenPrices: TokenPrice[]) {
