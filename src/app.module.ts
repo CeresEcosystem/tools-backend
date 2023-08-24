@@ -33,7 +33,7 @@ import { TokenOrderModule } from './modules/token-order/token-order.module';
     }),
     ThrottlerModule.forRoot({
       ttl: 60,
-      limit: 3,
+      limit: 10,
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'storage'),
