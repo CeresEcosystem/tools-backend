@@ -50,7 +50,7 @@ export class PairsSync {
     );
   }
 
-  @Cron(CronExpression.EVERY_3_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async fetchLiquidityPairs(): Promise<void> {
     this.logger.log('Start fetching pairs data.');
 
@@ -66,12 +66,14 @@ export class PairsSync {
     for (const pair of this.pairs) {
       const { token, baseAsset, baseAssetId, tokenAssetId } = pair;
 
-      const liqArray = (
-        await this.soraApi.query.poolXYK.reserves(baseAssetId, tokenAssetId)
-      ).toHuman();
+      let liqArray = await this.soraApi.query.poolXYK.reserves(
+        baseAssetId,
+        tokenAssetId,
+      );
+      liqArray = liqArray.toHuman();
 
       if (Number(liqArray[0]) === 0) {
-        return;
+        continue;
       }
 
       const { basePrice, targetPrice } = this.getBaseAndTargetPrices(
@@ -83,7 +85,7 @@ export class PairsSync {
       const liqData = this.getLiquidityOfPair(liqArray, basePrice, targetPrice);
 
       if (!liqData.liquidity) {
-        return;
+        continue;
       }
 
       const pairData = volumeData[`${tokenAssetId}_${baseAssetId}`];
