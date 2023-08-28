@@ -66,6 +66,13 @@ export class PairsSync {
     for (const pair of this.pairs) {
       const { token, baseAsset, baseAssetId, tokenAssetId } = pair;
 
+      if (
+        !tokenPrices.some((tp) => tp.token === baseAsset) ||
+        !tokenPrices.some((tp) => tp.token === token)
+      ) {
+        continue;
+      }
+
       let liqArray = await this.soraApi.query.poolXYK.reserves(
         baseAssetId,
         tokenAssetId,

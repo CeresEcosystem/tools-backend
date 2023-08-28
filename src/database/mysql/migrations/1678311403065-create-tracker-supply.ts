@@ -5,7 +5,7 @@ export class CreateTrackerSupply1678311403065 implements MigrationInterface {
     await queryRunner.query(
       `CREATE TABLE IF NOT EXISTS tracker_supply ( \
             id bigint NOT NULL AUTO_INCREMENT, \
-            date_raw date NOT NULL UNIQUE, \
+            date_raw date NOT NULL, \
             supply varchar(60) DEFAULT '0', \
             created_at datetime DEFAULT NULL, \
             updated_at datetime DEFAULT NULL, \

@@ -8,7 +8,7 @@ export class TrackerSupply {
   @Column()
   token: string;
 
-  @Column(`date`, { name: 'date_raw', unique: true })
+  @Column(`date`, { name: 'date_raw' })
   dateRaw: string;
 
   @Column()
