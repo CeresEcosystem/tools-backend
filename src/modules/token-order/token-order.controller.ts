@@ -21,8 +21,11 @@ import { TokenOrderToDtoMapper } from './mapper/to-dto.mapper';
 import { TokenOrderDto } from './dto/token-order.dto';
 
 @Controller('token-order')
-@ApiTags('Token Order', 'Admin')
+@ApiTags('Token Order Controller', 'Admin')
 @ApiBearerAuth()
+@Roles(Role.Admin)
+@UseGuards(RolesGuard)
+@UseGuards(AuthGuard)
 export class TokenOrderController {
   constructor(
     private readonly tokenOrderService: TokenOrderService,
@@ -30,9 +33,6 @@ export class TokenOrderController {
   ) {}
 
   @Get()
-  @Roles(Role.Admin)
-  @UseGuards(RolesGuard)
-  @UseGuards(AuthGuard)
   public findAll(
     @Query() pageOptions: PageOptionsDto,
   ): Promise<PageDto<TokenOrderDto>> {
@@ -40,10 +40,7 @@ export class TokenOrderController {
   }
 
   @Put()
-  @Roles(Role.Admin)
-  @UseGuards(RolesGuard)
-  @UseGuards(AuthGuard)
-  public create(
+  public upsert(
     @Body() tokenOrderDto: UpsertTokenOrderDto,
   ): Promise<TokenOrderDto> {
     return this.toDtoMapper.toDtoAsync(
@@ -52,9 +49,6 @@ export class TokenOrderController {
   }
 
   @Delete(':symbol')
-  @Roles(Role.Admin)
-  @UseGuards(RolesGuard)
-  @UseGuards(AuthGuard)
   public delete(@Param('symbol') symbol: string): Promise<void> {
     return this.tokenOrderService.delete(symbol);
   }

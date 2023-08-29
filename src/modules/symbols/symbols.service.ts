@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TokenSymbol } from './entity/symbol.entity';
@@ -9,6 +9,7 @@ import { SymbolAdminDto } from './dto/symbol-admin-dto';
 import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
 import { SymbolsAdminMapper } from './mapper/symbol-to-admin-dto.mapper';
 import { SymbolsMapper } from './mapper/create-symbol-to-entity.mapper';
+import { UpdateSymbolDto } from './dto/update-symbol-dto';
 
 @Injectable()
 export class SymbolsService {
@@ -68,5 +69,16 @@ export class SymbolsService {
        price: ${newSymbol.price}, \
        pricescale: ${symbol.priceScale}`,
     );
+  }
+
+  public async update(
+    id: string,
+    updateSymbolDto: UpdateSymbolDto,
+  ): Promise<void> {
+    if (!(await this.symbolsRepo.exist({ where: { id } }))) {
+      throw new BadRequestException('Symbol does not exist.');
+    }
+
+    await this.symbolsRepo.update(id, updateSymbolDto);
   }
 }
