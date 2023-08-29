@@ -6,7 +6,7 @@ import { TokenPriceBcDtoToEntityMapper } from './mapper/token-price.mapper';
 import { TokenPriceRepository } from './token-price.repository';
 import { TokenPriceService } from './token-price.service';
 import { TokenPrice } from './entity/token-price.entity';
-import { SymbolModule } from '../symbol/symbol.module';
+import { SymbolsModule } from '../symbols/symbols.module';
 import { ChronoPriceModule } from '../chrono-price/chrono-price.module';
 import { TokenPriceController } from './token-price.controller';
 import { TokenPriceToDtoMapper } from './mapper/token-price-to-dto.mapper';
@@ -17,7 +17,7 @@ import { TokenOrderModule } from '../token-order/token-order.module';
 @Module({
   imports: [
     HttpModule,
-    SymbolModule,
+    SymbolsModule,
     ChronoPriceModule,
     CeresClientModule,
     TokenOrderModule,

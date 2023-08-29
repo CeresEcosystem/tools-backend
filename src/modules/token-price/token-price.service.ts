@@ -1,23 +1,21 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { FindOptionsWhere, Like } from 'typeorm';
 import { TokenPriceBcDto } from './dto/token-price-bc.dto';
 import { TokenPrice } from './entity/token-price.entity';
 import { TokenPriceBcDtoToEntityMapper } from './mapper/token-price.mapper';
 import { TokenPriceRepository } from './token-price.repository';
-import { SymbolService } from '../symbol/symbol.service';
+import { SymbolsService } from '../symbols/symbols.service';
 import { ChronoPriceService } from '../chrono-price/chrono-price.service';
 import { ChronoPriceDto } from '../chrono-price/dto/chrono-price.dto';
 import { TokenOrderService } from '../token-order/token-order.service';
 
 @Injectable()
 export class TokenPriceService {
-  private readonly logger = new Logger(TokenPriceService.name);
-
   constructor(
     private readonly tokenPriceRepository: TokenPriceRepository,
     private readonly tokenOrderService: TokenOrderService,
     private readonly mapper: TokenPriceBcDtoToEntityMapper,
-    private readonly symbolService: SymbolService,
+    private readonly symbolsService: SymbolsService,
     private readonly chronoPriceService: ChronoPriceService,
   ) {}
 
@@ -42,7 +40,7 @@ export class TokenPriceService {
       const { token, price, fullName } = tokenPrice;
       tokenPrice.order = tokenOrderBySymbol[token] ?? defaultOrder;
 
-      this.symbolService.createSymbolIfMissing({ token, fullName, price });
+      this.symbolsService.createSymbolIfMissing({ token, fullName, price });
     });
 
     this.tokenPriceRepository.upsertAll(tokenPrices);

@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-@Entity(`symbols`)
+@Entity('symbols')
 export class TokenSymbol {
   @PrimaryColumn()
   id: string;
@@ -17,17 +17,14 @@ export class TokenSymbol {
   @Column()
   timezone: string;
 
-  @Column()
-  minmovement: boolean;
+  @Column({ name: 'minmovement' })
+  minMovement1: number;
 
-  @Column()
-  minmovement2: boolean;
+  @Column({ name: 'minmovement2' })
+  minMovement2: number;
 
-  @Column()
-  pricescale: number;
-
-  @Column({ name: 'has-dwm' })
-  hasDwm: boolean;
+  @Column({ name: 'pricescale' })
+  priceScale: number;
 
   @Column({ name: 'has-intraday' })
   hasIntraday: boolean;
