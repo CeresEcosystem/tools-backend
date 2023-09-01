@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger } from '@nestjs/common';
+import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { catchError, firstValueFrom, of, retry } from 'rxjs';
+import { catchError, firstValueFrom, retry } from 'rxjs';
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import { PairBcDto } from './dto/pair-bc.dto';
 import { PairsService } from './pairs.service';
@@ -163,10 +163,8 @@ export class PairsSync {
       this.httpService.get<any>(VOLUME_URL, { timeout: 2000 }).pipe(
         retry({ count: 30, delay: 1000 }),
         catchError((error: AxiosError) => {
-          this.logger.warn(
-            `An error happened while fetching pairs from sora stats! msg: ${error.message}, code: ${error.code}, cause: ${error.cause}`,
-          );
-          return of({ data: undefined });
+          this.logWarning(error);
+          throw new BadGatewayException('Sora Stats API unreachable.');
         }),
       ),
     );
@@ -193,5 +191,12 @@ export class PairsSync {
       baseAssetLiq,
       targetAssetLiq,
     };
+  }
+
+  private logWarning(error: AxiosError) {
+    this.logger.warn(
+      `An error happened while fetching pairs from sora stats!
+      msg: ${error.message}, code: ${error.code}, cause: ${error.cause}`,
+    );
   }
 }

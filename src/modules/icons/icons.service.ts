@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger } from '@nestjs/common';
+import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { catchError, firstValueFrom, of, retry } from 'rxjs';
+import { catchError, firstValueFrom, retry } from 'rxjs';
 import { createFile } from 'src/utils/storage.helper';
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import {
@@ -27,10 +27,8 @@ export class IconsService {
       this.httpService.get<TokenIconDto[]>(ICONS_URL).pipe(
         retry({ count: 10, delay: 1000 }),
         catchError((error: AxiosError) => {
-          this.logger.error(
-            `An error occured while calling the icons API. ${error}`,
-          );
-          return of({ data: [] });
+          this.logWarning(error);
+          throw new BadGatewayException('Icons API unreachable.');
         }),
       ),
     );
@@ -67,5 +65,12 @@ export class IconsService {
 
   private decodeIconContent(iconContent: string) {
     return decodeURIComponent(iconContent);
+  }
+
+  private logWarning(error: AxiosError) {
+    this.logger.warn(
+      `An error happened while contacting icons API!
+      msg: ${error.message}, code: ${error.code}, cause: ${error.cause}`,
+    );
   }
 }

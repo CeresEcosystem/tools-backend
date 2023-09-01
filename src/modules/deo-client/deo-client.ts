@@ -1,6 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { firstValueFrom, catchError, of, retry } from 'rxjs';
+import { firstValueFrom, catchError, retry } from 'rxjs';
 import { AxiosError } from 'axios';
 import { DeoStakingDto } from './dto/deo-staking.dto';
 import { DeoFarmingDto } from './dto/deo-farming.dto';
@@ -28,7 +28,7 @@ export class DeoClient {
         retry({ count: 10, delay: 1000 }),
         catchError((error: AxiosError) => {
           this.logWarning(error);
-          return of({ data: undefined });
+          throw new BadGatewayException('Deo backend unreachable.');
         }),
       ),
     );
@@ -38,7 +38,8 @@ export class DeoClient {
 
   private logWarning(error: AxiosError) {
     this.logger.warn(
-      `An error happened while contacting deo-backend! msg: ${error.message}, code: ${error.code}, cause: ${error.cause}`,
+      `An error happened while contacting deo-backend!
+      msg: ${error.message}, code: ${error.code}, cause: ${error.cause}`,
     );
   }
 }

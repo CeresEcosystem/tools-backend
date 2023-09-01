@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger } from '@nestjs/common';
+import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { catchError, firstValueFrom, of, retry } from 'rxjs';
+import { catchError, firstValueFrom, retry } from 'rxjs';
 import { TokenLockDto } from './dto/token-lock.dto';
 import { LiquidityLockDto } from './dto/liquidity-lock.dto';
 import { AxiosError } from 'axios';
@@ -35,7 +35,7 @@ export class CeresClient {
         retry({ count: 10, delay: 1000 }),
         catchError((error: AxiosError) => {
           this.logWarning(error);
-          return of({ data: undefined });
+          throw new BadGatewayException('Ceres backend unreachable.');
         }),
       ),
     );
@@ -45,7 +45,8 @@ export class CeresClient {
 
   private logWarning(error: AxiosError) {
     this.logger.warn(
-      `An error happened while contacting ceres-backend! msg: ${error.message}, code: ${error.code}, cause: ${error.cause}`,
+      `An error happened while contacting ceres-backend!
+      msg: ${error.message}, code: ${error.code}, cause: ${error.cause}`,
     );
   }
 }
