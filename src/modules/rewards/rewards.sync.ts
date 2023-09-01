@@ -5,7 +5,7 @@ import { RewardsService } from './rewards.service';
 import { PairsService } from '../pairs/pairs.service';
 import { TokenPriceService } from '../token-price/token-price.service';
 
-const DOUBLE_POOLS = ['DAI', 'PSWAP', 'ETH', 'VAL', 'XST'];
+const DOUBLE_POOLS = ['DAI', 'PSWAP', 'ETH', 'VAL', 'XST', 'TBCD'];
 
 @Injectable()
 export class RewardsSync {
