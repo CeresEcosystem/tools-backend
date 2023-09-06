@@ -30,8 +30,12 @@ export class RewardsSync {
     let baseAssetLiquidity = 0;
 
     pairs.forEach((pair) => {
-      if (pair.baseAsset === 'XOR' && DOUBLE_POOLS.includes(pair.token)) {
-        baseAssetLiquidity += pair.baseAssetLiq;
+      if (pair.baseAsset === 'XOR') {
+        if (DOUBLE_POOLS.includes(pair.token)) {
+          baseAssetLiquidity += 2 * pair.baseAssetLiq;
+        } else {
+          baseAssetLiquidity += pair.baseAssetLiq;
+        }
       }
     });
 
