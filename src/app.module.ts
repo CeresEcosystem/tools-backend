@@ -20,6 +20,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { BannerModule } from './modules/banner/banner.module';
 import { NestjsFormDataModule } from 'nestjs-form-data';
 import { TokenOrderModule } from './modules/token-order/token-order.module';
+import { SwapsModule } from './modules/swaps/swaps.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { TokenOrderModule } from './modules/token-order/token-order.module';
     ConsoleModule,
     BannerModule,
     TokenOrderModule,
+    SwapsModule,
   ],
   controllers: [],
   providers: [ValBurningSeeder],

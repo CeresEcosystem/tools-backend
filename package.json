@@ -20,6 +20,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm": "ts-node ./node_modules/typeorm/cli",
+    "typeorm:migration-generate": "yarn run typeorm migration:generate -d dist/database/mysql/typeOrm.config.js",
     "typeorm:run-migrations": "yarn typeorm migration:run -d ./src/database/mysql/typeOrm.config.ts && yarn typeorm migration:run -d ./src/database/pg/typeOrm.config.ts",
     "typeorm:revert-migration": "yarn typeorm -d ./src/database/mysql/typeOrm.config.ts migration:revert",
     "console": "ts-node -r tsconfig-paths/register src/console.ts"
