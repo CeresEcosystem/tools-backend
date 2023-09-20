@@ -18,20 +18,6 @@ export class TrackerVALTBCBurningsListener {
     this.soraAPI = new ApiPromise({ provider, noInitWarn: true });
   }
 
-  formatU128String = (amount: string) => {
-    if (amount.length > 18) {
-      const insertionIndex = amount.length - 18;
-
-      return `${amount.substring(0, insertionIndex)}.${amount.substring(
-        insertionIndex,
-      )}`;
-    } else if (amount.length === 18) {
-      return `0.${amount}`;
-    } else {
-      return `0.${'0'.repeat(18 - amount.length)}${amount}`;
-    }
-  };
-
   async runListener() {
     this.logger.log('Val burning listener initialized');
 
