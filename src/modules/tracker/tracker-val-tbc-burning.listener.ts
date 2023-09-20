@@ -1,10 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import {
+  DENOMINATOR,
   PROVIDER,
   VAL_BURN_ADDRESS,
   VAL_TOKEN_ID,
 } from './tracker.constants';
+import { FPNumber } from '@sora-substrate/math';
 
 @Injectable()
 export class TrackerVALTBCBurningsListener {
@@ -47,7 +49,7 @@ export class TrackerVALTBCBurningsListener {
         await this.soraAPI.at(blockHash)
       ).query.system.events();
 
-      let burnTotal = BigInt(0);
+      let burnTotal = new FPNumber(0);
 
       for (const event of events) {
         if (
@@ -60,16 +62,18 @@ export class TrackerVALTBCBurningsListener {
             data.currencyId.code === VAL_TOKEN_ID &&
             data.who === VAL_BURN_ADDRESS
           ) {
-            burnTotal += BigInt(data.amount.replace(/,/g, ''));
+            burnTotal.add(new FPNumber(data.amount));
           }
         }
       }
 
       const newBlock = header.number.toHuman().replace(/,/g, '');
-      const newAmount = this.formatU128String(burnTotal.toString());
+      const newAmount = new FPNumber(burnTotal.toString())
+        .div(DENOMINATOR)
+        .toString();
 
       if (
-        burnTotal !== BigInt(0) &&
+        burnTotal !== new FPNumber(0) &&
         previousBlock != newBlock &&
         previousAmount != newAmount
       ) {
