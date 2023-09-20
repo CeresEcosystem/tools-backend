@@ -4,8 +4,8 @@ export class TokenPricesQuery {
   @IsString()
   symbol: string;
 
-  @IsNumberString()
-  resolution: number;
+  @IsString()
+  resolution: string;
 
   @IsNumberString()
   from: number;
