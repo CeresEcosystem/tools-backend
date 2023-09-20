@@ -14,6 +14,7 @@ import { TrackerValSync } from './tracker-val.sync';
 import { VALTrackerBlockBcToEntityMapper } from './mapper/val-tracker-block-bc-to-entity.mapper';
 import { TokenPriceModule } from '../token-price/token-price.module';
 import { TokenSupplySeeder } from './seeder/token-supply-seeder';
+import { TrackerVALTBCBurningsListener } from './tracker-val-tbc-burning.listener';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { TokenSupplySeeder } from './seeder/token-supply-seeder';
     PSWAPTrackerBlockBcToEntityMapper,
     VALTrackerBlockBcToEntityMapper,
     TokenSupplySeeder,
+    TrackerVALTBCBurningsListener
   ],
   exports: [
     TrackerService,
