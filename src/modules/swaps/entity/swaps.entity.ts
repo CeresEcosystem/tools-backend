@@ -1,6 +1,16 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, Index } from 'typeorm';
 
 @Entity(`swap`)
+@Index(
+  [
+    'accountId',
+    'inputAssetId',
+    'outputAssetId',
+    'assetInputAmount',
+    'assetOutputAmount',
+  ],
+  { unique: true },
+)
 export class Swap {
   @PrimaryGeneratedColumn()
   id: number;
