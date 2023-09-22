@@ -17,8 +17,7 @@ export class RewardsSync {
     private readonly rewardsService: RewardsService,
   ) {}
 
-  // Every 5 minutes
-  @Cron(CronExpression.EVERY_12_HOURS)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async calculateFarmingRewards(): Promise<void> {
     this.logger.log('Start calculating farming rewards.');
 

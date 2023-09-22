@@ -31,7 +31,7 @@ export class TrackerValSync {
   }
 
   // Every hour
-  @Cron(CronExpression.EVERY_12_HOURS)
+  @Cron(CronExpression.EVERY_HOUR)
   async fetchTrackerData(): Promise<void> {
     this.logger.log('Start fetching VAL burning data.');
 

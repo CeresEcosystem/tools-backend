@@ -13,8 +13,7 @@ export class TokenLockerSync {
     private readonly tokenPriceService: TokenPriceService,
   ) {}
 
-  // Every 2 minutes
-  @Cron(CronExpression.EVERY_12_HOURS)
+  @Cron(CronExpression.EVERY_2_MINUTES)
   async fetchTokenLocks(): Promise<void> {
     this.logger.log('Start fetching token locks.');
 

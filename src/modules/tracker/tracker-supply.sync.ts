@@ -21,7 +21,7 @@ export class TrackerSupplySync {
   ) {}
 
   // Every hour
-  @Cron(CronExpression.EVERY_12_HOURS)
+  @Cron(CronExpression.EVERY_HOUR)
   async syncTrackerSupply(): Promise<void> {
     this.logger.log('Start fetching token supplies from SORA API.');
 

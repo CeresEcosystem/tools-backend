@@ -34,8 +34,7 @@ export class TokenPriceSync {
     );
   }
 
-  // Every minute
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_MINUTE)
   async fetchTokenPrices(): Promise<void> {
     this.logger.log('Start fetching tokens prices.');
     const pricesToUpsert: TokenPriceBcDto[] = [];

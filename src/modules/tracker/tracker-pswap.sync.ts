@@ -30,7 +30,7 @@ export class TrackerPswapSync {
   }
 
   // Every 10 minutes
-  @Cron(CronExpression.EVERY_12_HOURS)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async fetchTrackerData(): Promise<void> {
     this.logger.log('Start fetching PSWAP burning data.');
 

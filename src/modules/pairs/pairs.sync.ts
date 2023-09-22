@@ -55,8 +55,7 @@ export class PairsSync {
     );
   }
 
-  // Every 3 minutes
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron(CronExpression.EVERY_3_MINUTES)
   async fetchLiquidityPairs(): Promise<void> {
     this.logger.log('Start fetching pairs data.');
 
