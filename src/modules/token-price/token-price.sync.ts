@@ -27,9 +27,10 @@ export class TokenPriceSync {
   constructor(private readonly tokenPriceService: TokenPriceService) {
     const provider = new WsProvider(PROVIDER);
     new ApiPromise(options({ provider, noInitWarn: true })).isReady.then(
-      (api) => {
+      async (api) => {
         this.soraApi = api;
-        this.getTokens().then();
+        await this.getTokens();
+        await this.fetchTokenPrices();
       },
     );
   }
