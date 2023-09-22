@@ -3,11 +3,15 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api/promise';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { options } from '@sora-substrate/api';
-import { PROVIDER } from '../../constants/constants';
+import { FPNumber } from '@sora-substrate/math';
+
 import { TokenPriceBcDto } from './dto/token-price-bc.dto';
 import { TokenPriceService } from './token-price.service';
+
+import { PROVIDER } from '../../constants/constants';
+
 import * as whitelist from 'src/utils/files/whitelist.json';
-import { FPNumber } from '@sora-substrate/math';
+import * as synthetic from 'src/utils/files/synthetics.json';
 
 const DAI_ADDRESS =
   '0x0200060000000000000000000000000000000000000000000000000000000000';
@@ -30,46 +34,66 @@ export class TokenPriceSync {
     );
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  // Every minute
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async fetchTokenPrices(): Promise<void> {
     this.logger.log('Start fetching tokens prices.');
     const pricesToUpsert: TokenPriceBcDto[] = [];
 
     for (const token of this.tokens) {
-      const symbol = token.symbol;
-      let amount = 1;
+      if (synthetic.includes(token.assetId)) {
+        // Get price via band query
+        const result = await this.soraApi.query.band.symbolRates(
+          token.symbol.substring(3),
+        );
 
-      if (HUNDREDS.includes(symbol)) {
-        amount = 100;
-      } else if (BILLIONS.includes(symbol)) {
-        amount = 1000000000;
+        const data = result.toHuman();
+
+        const price = new FPNumber(data.value).div(
+          new FPNumber(Math.pow(10, 18)),
+        );
+
+        pricesToUpsert.push({ ...token, price: price.toString() });
+      } else {
+        // Get price via token liquidity
+
+        const symbol = token.symbol;
+        let amount = 1;
+
+        if (HUNDREDS.includes(symbol)) {
+          amount = 100;
+        } else if (BILLIONS.includes(symbol)) {
+          amount = 1000000000;
+        }
+
+        await this.soraApi.rpc.liquidityProxy.quote(
+          0,
+          token.assetId,
+          DAI_ADDRESS,
+          FPNumber.fromNatural(amount).bnToString(),
+          'WithDesiredInput',
+          ['XYKPool'],
+          'Disabled',
+          (result) => {
+            const value = !result.isNone
+              ? result.unwrap()
+              : { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0 };
+
+            let price: any = new FPNumber(value.amount).toNumber();
+            price = HUNDREDS.includes(symbol)
+              ? (price / 100).toFixed(8)
+              : price;
+            price = BILLIONS.includes(symbol)
+              ? (price / 1000000000).toFixed(12)
+              : price;
+
+            pricesToUpsert.push({
+              ...token,
+              price: symbol === 'DAI' ? '1' : price.toString(),
+            });
+          },
+        );
       }
-
-      await this.soraApi.rpc.liquidityProxy.quote(
-        0,
-        token.assetId,
-        DAI_ADDRESS,
-        FPNumber.fromNatural(amount).bnToString(),
-        'WithDesiredInput',
-        ['XYKPool'],
-        'Disabled',
-        (result) => {
-          const value = !result.isNone
-            ? result.unwrap()
-            : { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0 };
-
-          let price: any = new FPNumber(value.amount).toNumber();
-          price = HUNDREDS.includes(symbol) ? (price / 100).toFixed(8) : price;
-          price = BILLIONS.includes(symbol)
-            ? (price / 1000000000).toFixed(12)
-            : price;
-
-          pricesToUpsert.push({
-            ...token,
-            price: symbol === 'DAI' ? '1' : price.toString(),
-          });
-        },
-      );
     }
 
     if (pricesToUpsert.length > 0) {
@@ -85,7 +109,7 @@ export class TokenPriceSync {
     for (let [assetId, token] of tokens) {
       assetId = assetId.toHuman()[0].code;
 
-      if (!whitelist.includes(assetId)) {
+      if (!whitelist.includes(assetId) && !synthetic.includes(assetId)) {
         continue;
       }
 

@@ -13,7 +13,8 @@ export class PairsLockerSync {
     private readonly pairsService: PairsService,
   ) {}
 
-  @Cron(CronExpression.EVERY_2_MINUTES)
+  // Every 2 minutes
+  @Cron(CronExpression.EVERY_12_HOURS)
   async fetchLiquidityLocks(): Promise<void> {
     this.logger.log('Start fetching liquidity locks.');
 

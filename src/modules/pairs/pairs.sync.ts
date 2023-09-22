@@ -2,22 +2,27 @@ import { HttpService } from '@nestjs/axios';
 import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { catchError, firstValueFrom, retry } from 'rxjs';
+import { WsProvider } from '@polkadot/rpc-provider';
+import { ApiPromise } from '@polkadot/api/promise';
+import { options } from '@sora-substrate/api';
+import { FPNumber } from '@sora-substrate/math';
+import { AxiosError } from 'axios';
+
+import { TokenPriceService } from '../token-price/token-price.service';
+import { TokenPrice } from '../token-price/entity/token-price.entity';
+
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import { PairBcDto } from './dto/pair-bc.dto';
 import { PairsService } from './pairs.service';
-import { WsProvider } from '@polkadot/rpc-provider';
+
 import {
   PROVIDER,
   XOR_ADDRESS,
   XSTUSD_ADDRESS,
 } from '../../constants/constants';
-import { ApiPromise } from '@polkadot/api/promise';
-import { options } from '@sora-substrate/api';
+
 import * as whitelist from '../../utils/files/whitelist.json';
-import { TokenPriceService } from '../token-price/token-price.service';
-import { TokenPrice } from '../token-price/entity/token-price.entity';
-import { FPNumber } from '@sora-substrate/math';
-import { AxiosError } from 'axios';
+import * as synthetics from 'src/utils/files/synthetics.json';
 
 const VOLUME_URL = 'https://stats.sora.org/pairs';
 const BASE_ASSETS = [
@@ -50,7 +55,8 @@ export class PairsSync {
     );
   }
 
-  @Cron(CronExpression.EVERY_3_MINUTES)
+  // Every 3 minutes
+  @Cron(CronExpression.EVERY_30_SECONDS)
   async fetchLiquidityPairs(): Promise<void> {
     this.logger.log('Start fetching pairs data.');
 
@@ -135,7 +141,7 @@ export class PairsSync {
         for (const pair of pairList) {
           const assetId = pair['targetAssetId'];
 
-          if (!whitelist.includes(assetId)) {
+          if (!whitelist.includes(assetId) && !synthetics.includes(assetId)) {
             continue;
           }
 
