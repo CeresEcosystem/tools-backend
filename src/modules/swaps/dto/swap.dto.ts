@@ -1,9 +1,9 @@
 export interface SwapDto {
   id: number;
   swappedAt: Date;
-  accountId: String;
-  inputAssetId: String;
-  outputAssetId: String;
+  accountId: string;
+  inputAssetId: string;
+  outputAssetId: string;
   assetInputAmount: number;
   assetOutputAmount: number;
 }

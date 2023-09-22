@@ -1,15 +1,9 @@
-import {
-  CACHE_MANAGER,
-  Controller,
-  Get,
-  Inject,
-  Logger,
-  Param,
-} from '@nestjs/common';
+import { Controller, Get, Inject, Logger, Param } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
-import { TrackerDto } from './dto/tracker.dto';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { CACHE_KEYS, CACHE_TTL } from './tracker.constants';
+import { TrackerDto } from './dto/tracker.dto';
 import { TrackerService } from './tracker.service';
 import { TrackerSupplyGraphPointDto } from './dto/tracker-supply-graph-point.dto';
 

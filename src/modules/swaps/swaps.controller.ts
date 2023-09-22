@@ -2,7 +2,7 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import { SwapRepository } from './swaps.repository';
 import { PageDto } from 'src/utils/pagination/page.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
-import { SwapDto } from './dto/swap.do';
+import { SwapDto } from './dto/swap.dto';
 import { DbConnectionService } from './db-connection.service';
 
 @Controller('swaps')

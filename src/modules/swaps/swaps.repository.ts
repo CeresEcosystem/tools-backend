@@ -9,7 +9,7 @@ import { FPNumber } from '@sora-substrate/math';
 import { PROVIDER } from 'src/constants/constants';
 
 import { Swap } from './entity/swaps.entity';
-import { SwapDto } from './dto/swap.do';
+import { SwapDto } from './dto/swap.dto';
 
 import { PageDto } from 'src/utils/pagination/page.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
@@ -57,17 +57,17 @@ export class SwapRepository {
             FPNumber.fromCodecValue(assetOutputAmount).toNumber();
           swap.swappedAt = new Date();
           // Save data to the database
-          // Check if there are dobule entries, if true, handle error & continue script
+          // Check if there are double entries, if true, handle error & continue script
           try {
-            this.swapRepository.save(swap);
-            this.logger.log('Fetching token swaps was successful');
+            await this.swapRepository.save(swap);
+            this.logger.log('Fetching token swaps was successful.');
           } catch (error) {
             console.log(error);
             if (error instanceof QueryFailedError) {
               const driverError = error.driverError;
               console.log(driverError);
             } else {
-              console.error('An error occurred:', error.message);
+              console.error('An error occurred: ', error.message);
               throw error;
             }
           }

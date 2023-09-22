@@ -1,4 +1,5 @@
-import { CacheModule, MiddlewareConsumer, Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { CacheModule } from '@nestjs/cache-manager';
 import { LoggerMiddleware } from './middleware/logger.middleware';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
@@ -32,10 +33,12 @@ import { SwapsModule } from './modules/swaps/swaps.module';
     CacheModule.register({
       isGlobal: true,
     }),
-    ThrottlerModule.forRoot({
-      ttl: 60,
-      limit: 10,
-    }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60,
+        limit: 10,
+      },
+    ]),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'storage'),
       serveRoot: '/storage',

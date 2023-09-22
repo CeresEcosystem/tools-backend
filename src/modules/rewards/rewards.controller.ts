@@ -1,6 +1,7 @@
-import { CACHE_MANAGER, Controller, Get, Inject, Logger } from '@nestjs/common';
+import { Controller, Get, Inject, Logger } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { CACHE_KEYS, CACHE_TTL } from './rewards.constants';
 import { RewardsService } from './rewards.service';
 import { RewardsDto } from './rewards.dto';

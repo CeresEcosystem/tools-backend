@@ -2,7 +2,7 @@ import { Console, Command, createSpinner } from 'nestjs-console';
 import { TrackerSupplyRepository } from '../tracker-supply.repository';
 import { TokenPriceService } from 'src/modules/token-price/token-price.service';
 import { TokenPrice } from 'src/modules/token-price/entity/token-price.entity';
-import { catchError, firstValueFrom, of, retry, timestamp } from 'rxjs';
+import { catchError, firstValueFrom, of, retry } from 'rxjs';
 import { AxiosError } from 'axios';
 import { HttpService } from '@nestjs/axios';
 import { getDateFormatted } from 'src/utils/date-utils';

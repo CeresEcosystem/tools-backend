@@ -1,4 +1,5 @@
-import { CACHE_MANAGER, Controller, Get, Inject, Logger } from '@nestjs/common';
+import { Controller, Get, Inject, Logger } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ApiTags } from '@nestjs/swagger';
 import { PairToDtoMapper } from './mapper/pair-to-dto.mapper';
 import { Cache } from 'cache-manager';
