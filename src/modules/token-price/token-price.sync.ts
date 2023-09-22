@@ -11,7 +11,7 @@ import { TokenPriceService } from './token-price.service';
 import { PROVIDER } from '../../constants/constants';
 
 import * as whitelist from 'src/utils/files/whitelist.json';
-import * as synthetic from 'src/utils/files/synthetics.json';
+import * as synthetics from 'src/utils/files/synthetics.json';
 
 const DAI_ADDRESS =
   '0x0200060000000000000000000000000000000000000000000000000000000000';
@@ -40,7 +40,7 @@ export class TokenPriceSync {
     const pricesToUpsert: TokenPriceBcDto[] = [];
 
     for (const token of this.tokens) {
-      if (synthetic.includes(token.assetId)) {
+      if (synthetics.includes(token.assetId)) {
         // Get price via band query
         const result = await this.soraApi.query.band.symbolRates(
           token.symbol.substring(3),
@@ -108,7 +108,7 @@ export class TokenPriceSync {
     for (let [assetId, token] of tokens) {
       assetId = assetId.toHuman()[0].code;
 
-      if (!whitelist.includes(assetId) && !synthetic.includes(assetId)) {
+      if (!whitelist.includes(assetId) && !synthetics.includes(assetId)) {
         continue;
       }
 
