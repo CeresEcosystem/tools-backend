@@ -60,6 +60,7 @@ export class SwapRepository {
           // Check if there are dobule entries, if true, handle error & continue script
           try {
             this.swapRepository.save(swap);
+            this.logger.log('Fetching token swaps was successful');
           } catch (error) {
             console.log(error);
             if (error instanceof QueryFailedError) {
@@ -71,7 +72,6 @@ export class SwapRepository {
             }
           }
         }
-        this.logger.log('Fetching token swaps was successful');
       }
     });
   }
