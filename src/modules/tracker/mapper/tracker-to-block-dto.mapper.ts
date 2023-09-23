@@ -1,6 +1,6 @@
 import { BaseDtoMapper } from 'src/utils/mappers/base-dto-mapper';
-import { TrackerBlockDto } from '../dto/tracker-block.dto';
 import { Tracker } from '../entity/tracker.entity';
+import { TrackerBlockDto } from '../dto/tracker.dto';
 
 export class TrackerToBlockDtoMapper extends BaseDtoMapper<
   Tracker,

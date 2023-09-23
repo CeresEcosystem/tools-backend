@@ -3,9 +3,9 @@ import { Console, Command, createSpinner } from 'nestjs-console';
 import * as Papa from 'papaparse';
 import * as fs from 'fs';
 import { TrackerService } from '../tracker.service';
-import { VALTrackerBlockBcToEntityMapper } from '../mapper/val-tracker-block-bc-to-entity.mapper';
-import { ValTrackerBlockDto } from '../dto/val-tracker-bc-block';
+import { ValFeesTrackerBlockBcToEntityMapper } from '../mapper/val-fees-tracker-to-entity.mapper';
 import { getDateFormatted } from 'src/utils/date-utils';
+import { ValFeesTrackerBlockDto } from '../dto/val-fees-tracker-bc-block';
 
 export const CSV_STORAGE_PATH = 'storage/csv/';
 
@@ -15,7 +15,7 @@ export class ValBurningSeeder {
 
   constructor(
     private readonly trackerService: TrackerService,
-    private readonly mapper: VALTrackerBlockBcToEntityMapper,
+    private readonly mapper: ValFeesTrackerBlockBcToEntityMapper,
   ) {}
 
   @Command({
@@ -92,7 +92,7 @@ export class ValBurningSeeder {
         valBurned: row['val_burned'] as string,
         valRemintedParliament: row['val_reminted_parliament'] as string,
         xorDedicatedForBuyBack: row['xor_dedicated_for_buy_back'] as string,
-      } as ValTrackerBlockDto;
+      } as ValFeesTrackerBlockDto;
 
       dtos.push(valTrackerBlockDto);
 
