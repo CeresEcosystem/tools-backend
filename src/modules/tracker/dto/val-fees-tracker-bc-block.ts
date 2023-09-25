@@ -1,4 +1,4 @@
-export interface ValTrackerBlockDto {
+export interface ValFeesTrackerBlockDto {
   dateRaw?: string;
   blockNum: number;
   xorTotalFee: string;

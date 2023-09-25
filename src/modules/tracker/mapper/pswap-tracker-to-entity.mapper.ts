@@ -10,6 +10,7 @@ export class PSWAPTrackerBlockBcToEntityMapper extends BaseEntityMapper<
 
     return {
       token: 'PSWAP',
+      burnType: 'FEES',
       blockNum: Number(parts[0]),
       xorSpent: parts[1],
       grossBurn: parts[2],

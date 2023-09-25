@@ -2,14 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import { TrackerService } from './tracker.service';
-import { VALTrackerBlockBcToEntityMapper } from './mapper/val-tracker-block-bc-to-entity.mapper';
-import { ValTrackerBlockDto } from './dto/val-tracker-bc-block';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { PROVIDER } from '../../constants/constants';
 import { ApiPromise } from '@polkadot/api/promise';
 import { options } from '@sora-substrate/api';
 import { FPNumber } from '@sora-substrate/math';
 import { DENOMINATOR } from './tracker.constants';
+import { ValFeesTrackerBlockBcToEntityMapper } from './mapper/val-fees-tracker-to-entity.mapper';
+import { ValFeesTrackerBlockDto } from './dto/val-fees-tracker-bc-block';
 
 const techAccount = 'cnTQ1kbv7PBNNQrEb1tZpmK7hhnohXfYrx5GuD1H9ShjdGoBh';
 
@@ -20,7 +20,7 @@ export class TrackerValSync {
 
   constructor(
     private readonly trackerService: TrackerService,
-    private readonly mapper: VALTrackerBlockBcToEntityMapper,
+    private readonly mapper: ValFeesTrackerBlockBcToEntityMapper,
   ) {
     const provider = new WsProvider(PROVIDER);
     new ApiPromise(options({ provider, noInitWarn: true })).isReady.then(
@@ -34,7 +34,7 @@ export class TrackerValSync {
   async fetchTrackerData(): Promise<void> {
     this.logger.log('Start fetching VAL burning data.');
 
-    const burningData: ValTrackerBlockDto[] = [];
+    const burningData: ValFeesTrackerBlockDto[] = [];
     const lastSavedBlock = await this.trackerService.findLastBlockNumber('VAL');
     const startBlock = lastSavedBlock + 1;
     const headBlock = await this.soraApi.query.system.number();

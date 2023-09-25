@@ -5,13 +5,14 @@ import {
   Inject,
   Logger,
   Param,
+  ParseEnumPipe,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
-import { TrackerDto } from './dto/tracker.dto';
+import { TrackerDto, TrackerSupplyGraphPointDto } from './dto/tracker.dto';
 import { CACHE_KEYS, CACHE_TTL } from './tracker.constants';
 import { TrackerService } from './tracker.service';
-import { TrackerSupplyGraphPointDto } from './dto/tracker-supply-graph-point.dto';
+import { BurnType } from './entity/tracker.entity';
 
 @Controller('tracker')
 @ApiTags('Tracker Controller')
@@ -26,9 +27,17 @@ export class TrackerController {
 
   @Get('/:token')
   public getTrackerData(@Param('token') token: string): Promise<TrackerDto> {
+    return this.getTrackerDataByType(token, BurnType.FEES);
+  }
+
+  @Get('/:token/type/:burnType')
+  public getTrackerDataByType(
+    @Param('token') token: string,
+    @Param('burnType', new ParseEnumPipe(BurnType)) burnType: BurnType,
+  ): Promise<TrackerDto> {
     return this.cacheManager.wrap(
-      `${CACHE_KEYS.TRACKER}-${token}`,
-      () => this.trackerService.getTrackerData(token),
+      `${CACHE_KEYS.TRACKER}-${token}-${burnType}`,
+      () => this.trackerService.getTrackerData(token, burnType),
       CACHE_TTL.FIVE_MINUTES,
     );
   }

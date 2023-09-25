@@ -1,13 +1,13 @@
 import { BaseEntityMapper } from 'src/utils/mappers/base-entity-mapper';
 import { Tracker } from '../entity/tracker.entity';
-import { ValTrackerBlockDto } from '../dto/val-tracker-bc-block';
 import { Big } from 'big.js';
+import { ValFeesTrackerBlockDto } from '../dto/val-fees-tracker-bc-block';
 
-export class VALTrackerBlockBcToEntityMapper extends BaseEntityMapper<
+export class ValFeesTrackerBlockBcToEntityMapper extends BaseEntityMapper<
   Tracker,
-  ValTrackerBlockDto
+  ValFeesTrackerBlockDto
 > {
-  toEntity(burningData: ValTrackerBlockDto): Tracker {
+  toEntity(burningData: ValFeesTrackerBlockDto): Tracker {
     const {
       dateRaw,
       blockNum,
@@ -19,6 +19,7 @@ export class VALTrackerBlockBcToEntityMapper extends BaseEntityMapper<
 
     return {
       token: 'VAL',
+      burnType: 'FEES',
       dateRaw,
       blockNum,
       xorSpent: xorTotalFee,

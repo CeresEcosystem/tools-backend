@@ -7,32 +7,38 @@ import {
   VAL_TOKEN_ID,
 } from './tracker.constants';
 import { FPNumber } from '@sora-substrate/math';
+import { options } from '@sora-substrate/api';
+import { TrackerService } from './tracker.service';
+import { ValTbcTrackerToEntityMapper } from './mapper/val-tbc-tracker-to-entity.mapper';
 
 @Injectable()
-export class TrackerVALTBCBurningsListener {
-  private readonly logger = new Logger(TrackerVALTBCBurningsListener.name);
-  private soraAPI;
+export class TrackerValTbcBurningsListener {
+  private readonly logger = new Logger(TrackerValTbcBurningsListener.name);
+  private soraApi;
 
-  constructor() {
+  constructor(
+    private readonly trackerService: TrackerService,
+    private readonly mapper: ValTbcTrackerToEntityMapper,
+  ) {
     const provider = new WsProvider(PROVIDER);
-    this.soraAPI = new ApiPromise({ provider, noInitWarn: true });
+    new ApiPromise(options({ provider, noInitWarn: true })).isReady.then(
+      (api) => {
+        this.soraApi = api;
+        this.runListener();
+      },
+    );
   }
 
   async runListener() {
-    this.logger.log('Val burning listener initialized');
+    this.logger.log('VAL TBC burning listener initialized');
 
-    await this.soraAPI.isReady;
-
-    let previousBlock = '';
-    let previousAmount = '';
-
-    this.soraAPI.rpc.chain.subscribeNewHeads(async (header) => {
-      const blockHash = await this.soraAPI.rpc.chain.getBlockHash(
+    this.soraApi.rpc.chain.subscribeNewHeads(async (header) => {
+      const blockHash = await this.soraApi.rpc.chain.getBlockHash(
         header.number,
       );
 
       const events = await (
-        await this.soraAPI.at(blockHash)
+        await this.soraApi.at(blockHash)
       ).query.system.events();
 
       let burnTotal = new FPNumber(0);
@@ -48,25 +54,24 @@ export class TrackerVALTBCBurningsListener {
             data.currencyId.code === VAL_TOKEN_ID &&
             data.who === VAL_BURN_ADDRESS
           ) {
-            burnTotal.add(new FPNumber(data.amount));
+            const amount = new FPNumber(data.amount);
+            burnTotal = burnTotal.add(amount);
           }
         }
       }
 
-      const newBlock = header.number.toHuman().replace(/,/g, '');
-      const newAmount = new FPNumber(burnTotal.toString())
-        .div(DENOMINATOR)
-        .toString();
+      const blockNum = new FPNumber(header.number.toHuman()).toNumber();
+      const valBurned = burnTotal.div(DENOMINATOR).toString();
 
-      if (
-        burnTotal !== new FPNumber(0) &&
-        previousBlock != newBlock &&
-        previousAmount != newAmount
-      ) {
-        console.log(`At block #${newBlock}: ${newAmount} VAL was burned`);
+      if (Number(valBurned) !== 0) {
+        this.logger.debug(`At block #${blockNum}: ${valBurned} VAL was burned`);
 
-        previousBlock = newBlock;
-        previousAmount = newAmount;
+        const burningData = {
+          blockNum,
+          valBurned,
+        };
+
+        await this.trackerService.insert([this.mapper.toEntity(burningData)]);
       }
     });
   }

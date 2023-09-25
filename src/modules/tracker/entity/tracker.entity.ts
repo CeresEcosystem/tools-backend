@@ -1,5 +1,10 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
+export enum BurnType {
+  FEES = 'FEES',
+  TBC = 'TBC',
+}
+
 @Entity(`tracker`)
 export class Tracker {
   @PrimaryColumn()
@@ -10,6 +15,9 @@ export class Tracker {
 
   @Column({ name: 'block_num' })
   blockNum: number;
+
+  @Column('enum', { enum: BurnType, name: 'burn_type' })
+  burnType: BurnType;
 
   @Column({ name: 'xor_spent' })
   xorSpent: string;
