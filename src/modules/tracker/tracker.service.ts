@@ -7,7 +7,7 @@ import {
   TrackerBurningGraphPointDto,
   TrackerDto,
 } from './dto/tracker.dto';
-import { BurnType, Tracker } from './entity/tracker.entity';
+import { Tracker } from './entity/tracker.entity';
 import { TrackerToBlockDtoMapper } from './mapper/tracker-to-block-dto.mapper';
 import { TrackerSupplyRepository } from './tracker-supply.repository';
 import { WsProvider } from '@polkadot/rpc-provider';
@@ -51,11 +51,8 @@ export class TrackerService {
     return Number(lastBlock);
   }
 
-  public async getTrackerData(
-    token: string,
-    burnType: BurnType,
-  ): Promise<TrackerDto> {
-    const blocks = await this.getAll(token, burnType);
+  public async getTrackerData(token: string): Promise<TrackerDto> {
+    const blocks = await this.getAll(token);
     const currentBlock = await this.getCurrentBlock();
     const lastBlock = blocks[0]?.blockNum || 0;
 
@@ -86,9 +83,9 @@ export class TrackerService {
     ]);
   }
 
-  private getAll(token: string, burnType: BurnType): Promise<Tracker[]> {
+  private getAll(token: string): Promise<Tracker[]> {
     return this.trackerRepository.find({
-      where: { token, burnType },
+      where: { token },
       order: { blockNum: 'DESC' },
     });
   }

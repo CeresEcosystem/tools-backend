@@ -15,6 +15,7 @@ export class ValTbcTrackerToEntityMapper extends BaseEntityMapper<
       dateRaw,
       blockNum,
       grossBurn: valBurned,
+      netBurn: valBurned,
     } as Tracker;
   }
 }

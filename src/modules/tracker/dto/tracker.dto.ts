@@ -1,3 +1,5 @@
+import { BurnType } from '../entity/tracker.entity';
+
 export interface TrackerDto {
   blocks: TrackerBlockDto[];
   burn: Map<string, TrackerBurnDto>;
@@ -8,18 +10,13 @@ export interface TrackerDto {
 
 export interface TrackerBlockDto {
   blockNum: number;
+  burnType: BurnType;
   grossBurn: string;
   netBurn: string;
   remintedLp: string;
   remintedParliament: string;
   xorSpent: string;
   xorDedicatedForBuyBack: string;
-
-  //FIXME: Deprecated fields
-  pswapGrossBurn: string;
-  pswapNetBurn: string;
-  pswapRemintedLp: string;
-  pswapRemintedParliament: string;
 }
 
 export interface TrackerBurnDto {
