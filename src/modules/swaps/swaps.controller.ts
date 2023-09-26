@@ -3,14 +3,10 @@ import { SwapRepository } from './swaps.repository';
 import { PageDto } from 'src/utils/pagination/page.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { SwapDto } from './dto/swap.dto';
-import { DbConnectionService } from './db-connection.service';
 
 @Controller('swaps')
 export class SwapsController {
-  constructor(
-    private swapRepo: SwapRepository,
-    private swapDatabase: DbConnectionService,
-  ) {}
+  constructor(private swapRepo: SwapRepository) {}
 
   @Get(':assetId')
   async findAll(

@@ -5,7 +5,6 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
-import { SwapDto } from './dto/swap.dto';
 import { Swap } from './entity/swaps.entity';
 
 @WebSocketGateway({ namespace: 'swapsocket' })
