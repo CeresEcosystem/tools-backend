@@ -7,7 +7,7 @@ import {
   TrackerBurningGraphPointDto,
   TrackerDto,
 } from './dto/tracker.dto';
-import { Tracker } from './entity/tracker.entity';
+import { BurnType, Tracker } from './entity/tracker.entity';
 import { TrackerToBlockDtoMapper } from './mapper/tracker-to-block-dto.mapper';
 import { TrackerSupplyRepository } from './tracker-supply.repository';
 import { WsProvider } from '@polkadot/rpc-provider';
@@ -41,11 +41,14 @@ export class TrackerService {
     );
   }
 
-  public async findLastBlockNumber(token: string): Promise<number> {
+  public async findLastBlockNumber(
+    token: string,
+    burnType: BurnType,
+  ): Promise<number> {
     const { lastBlock } = await this.trackerRepository
       .createQueryBuilder()
       .select('MAX(block_num)', 'lastBlock')
-      .where({ token })
+      .where({ token, burnType })
       .getRawOne<{ lastBlock: string }>();
 
     return Number(lastBlock);

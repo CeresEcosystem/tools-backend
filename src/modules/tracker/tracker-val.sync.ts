@@ -35,7 +35,10 @@ export class TrackerValSync {
     this.logger.log('Start fetching VAL burning data.');
 
     const burningData: ValFeesTrackerBlockDto[] = [];
-    const lastSavedBlock = await this.trackerService.findLastBlockNumber('VAL');
+    const lastSavedBlock = await this.trackerService.findLastBlockNumber(
+      'VAL',
+      'FEES',
+    );
     const startBlock = lastSavedBlock + 1;
     const headBlock = await this.soraApi.query.system.number();
 

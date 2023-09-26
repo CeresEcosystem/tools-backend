@@ -34,7 +34,10 @@ export class TrackerPswapSync {
     this.logger.log('Start fetching PSWAP burning data.');
 
     const burningData = [];
-    const startBlock = await this.trackerService.findLastBlockNumber('PSWAP');
+    const startBlock = await this.trackerService.findLastBlockNumber(
+      'PSWAP',
+      'FEES',
+    );
     const headBlock = await this.soraApi.query.system.number();
     const blocksWithDistribution = await this.getAllBlocksWithDistribution(
       startBlock,
