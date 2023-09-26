@@ -47,7 +47,6 @@ export class SwapRepository {
             assetInputAmount,
             assetOutputAmount,
           ] = eventData;
-          // write data to the database
           swap.accountId = accountId;
           swap.inputAssetId = inputAssetId;
           swap.outputAssetId = outputAssetId;
@@ -56,13 +55,10 @@ export class SwapRepository {
           swap.assetOutputAmount =
             FPNumber.fromCodecValue(assetOutputAmount).toNumber();
           swap.swappedAt = new Date();
-          // Save data to the database
-          // Check if there are double entries, if true, handle error & continue script
           try {
             await this.swapRepository.save(swap);
             this.logger.log('Fetching token swaps was successful.');
           } catch (error) {
-            console.log(error);
             if (error instanceof QueryFailedError) {
               const driverError = error.driverError;
               console.log(driverError);
@@ -83,11 +79,17 @@ export class SwapRepository {
     const [data, count] = await this.swapRepository.findAndCount({
       skip: pageOptions.skip,
       take: pageOptions.size,
+      order: { id: 'DESC' },
       where: [{ inputAssetId: assetId }, { outputAssetId: assetId }],
+    });
+
+    const swapDto = data.map((swap) => {
+      const swapType = swap.inputAssetId === assetId ? 'sell' : 'buy';
+      return { ...swap, swapType };
     });
 
     const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
 
-    return new PageDto(data, meta);
+    return new PageDto(swapDto, meta);
   }
 }

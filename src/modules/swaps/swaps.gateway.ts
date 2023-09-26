@@ -2,12 +2,18 @@ import {
   MessageBody,
   SubscribeMessage,
   WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
+import { Server } from 'socket.io';
+import { SwapDto } from './dto/swap.dto';
 
-@WebSocketGateway()
+@WebSocketGateway({ namespace: 'swapsocket' })
 export class SwapGateway {
-  @SubscribeMessage('newMessage')
-  onNewMessage(@MessageBody() body: any) {
-    console.log(body);
+  @WebSocketServer()
+  server: Server;
+
+  @SubscribeMessage('newSwap')
+  onSwap(@MessageBody() swap: SwapDto) {
+    this.server.emit('onSwap', swap);
   }
 }

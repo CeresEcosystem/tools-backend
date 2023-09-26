@@ -12,16 +12,12 @@ export class SwapsController {
     private swapDatabase: DbConnectionService,
   ) {}
 
-  @Get('row')
-  getSwaps() {
-    return this.swapDatabase.watchDatabaseChanges();
-  }
-
   @Get(':assetId')
   async findAll(
     @Query() pageOptions: PageOptionsDto,
     @Param('assetId') assetId: string,
   ): Promise<PageDto<SwapDto>> {
+    this.swapDatabase.watchDatabaseChanges(assetId);
     return this.swapRepo.findSwapsByAssetId(pageOptions, assetId);
   }
 }

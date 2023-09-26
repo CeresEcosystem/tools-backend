@@ -3,6 +3,7 @@ import { Column, Entity, PrimaryGeneratedColumn, Index } from 'typeorm';
 @Entity(`swap`)
 @Index(
   [
+    'swappedAt',
     'accountId',
     'inputAssetId',
     'outputAssetId',
