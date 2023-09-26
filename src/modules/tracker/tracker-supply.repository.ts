@@ -2,8 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { getTodayFormatted } from 'src/utils/date-utils';
 import { Repository } from 'typeorm';
-import { TrackerSupplyGraphPointDto } from './dto/tracker-supply-graph-point.dto';
 import { TrackerSupply } from './entity/tracker-supply.entity';
+import { TrackerSupplyGraphPointDto } from './dto/tracker.dto';
 
 @Injectable()
 export class TrackerSupplyRepository {

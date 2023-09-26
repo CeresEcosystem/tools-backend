@@ -2,10 +2,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { getTodayFormatted } from 'src/utils/date-utils';
 import { Repository } from 'typeorm';
-import { TrackerBurnDto } from './dto/tracker-burn.dto';
-import { TrackerBurningGraphPointDto } from './dto/tracker-burning-graph-point.dto';
-import { TrackerDto } from './dto/tracker.dto';
-import { Tracker } from './entity/tracker.entity';
+import {
+  TrackerBurnDto,
+  TrackerBurningGraphPointDto,
+  TrackerDto,
+} from './dto/tracker.dto';
+import { BurnType, Tracker } from './entity/tracker.entity';
 import { TrackerToBlockDtoMapper } from './mapper/tracker-to-block-dto.mapper';
 import { TrackerSupplyRepository } from './tracker-supply.repository';
 import { WsProvider } from '@polkadot/rpc-provider';
@@ -49,8 +51,11 @@ export class TrackerService {
     return Number(lastBlock);
   }
 
-  public async getTrackerData(token: string): Promise<TrackerDto> {
-    const blocks = await this.getAll(token);
+  public async getTrackerData(
+    token: string,
+    burnType: BurnType,
+  ): Promise<TrackerDto> {
+    const blocks = await this.getAll(token, burnType);
     const currentBlock = await this.getCurrentBlock();
     const lastBlock = blocks[0]?.blockNum || 0;
 
@@ -74,12 +79,16 @@ export class TrackerService {
       tracker.dateRaw = tracker.dateRaw || getTodayFormatted();
     });
 
-    await this.trackerRepository.insert(trackers);
+    await this.trackerRepository.upsert(trackers, [
+      'token',
+      'blockNum',
+      'burnType',
+    ]);
   }
 
-  private getAll(token: string): Promise<Tracker[]> {
+  private getAll(token: string, burnType: BurnType): Promise<Tracker[]> {
     return this.trackerRepository.find({
-      where: { token },
+      where: { token, burnType },
       order: { blockNum: 'DESC' },
     });
   }

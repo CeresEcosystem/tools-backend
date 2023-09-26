@@ -9,11 +9,13 @@ import { TrackerService } from './tracker.service';
 import { TrackerToBlockDtoMapper } from './mapper/tracker-to-block-dto.mapper';
 import { Tracker } from './entity/tracker.entity';
 import { TrackerPswapSync } from './tracker-pswap.sync';
-import { PSWAPTrackerBlockBcToEntityMapper } from './mapper/pswap-tracker-block-bc-to-entity.mapper';
+import { PSWAPTrackerBlockBcToEntityMapper } from './mapper/pswap-tracker-to-entity.mapper';
 import { TrackerValSync } from './tracker-val.sync';
-import { VALTrackerBlockBcToEntityMapper } from './mapper/val-tracker-block-bc-to-entity.mapper';
 import { TokenPriceModule } from '../token-price/token-price.module';
 import { TokenSupplySeeder } from './seeder/token-supply-seeder';
+import { ValFeesTrackerBlockBcToEntityMapper } from './mapper/val-fees-tracker-to-entity.mapper';
+import { ValTbcTrackerToEntityMapper } from './mapper/val-tbc-tracker-to-entity.mapper';
+import { TrackerValTbcBurningsListener } from './tracker-val-tbc-burning.listener';
 
 @Module({
   imports: [
@@ -30,12 +32,14 @@ import { TokenSupplySeeder } from './seeder/token-supply-seeder';
     TrackerPswapSync,
     TrackerValSync,
     PSWAPTrackerBlockBcToEntityMapper,
-    VALTrackerBlockBcToEntityMapper,
+    ValFeesTrackerBlockBcToEntityMapper,
     TokenSupplySeeder,
+    TrackerValTbcBurningsListener,
+    ValTbcTrackerToEntityMapper,
   ],
   exports: [
     TrackerService,
-    VALTrackerBlockBcToEntityMapper,
+    ValFeesTrackerBlockBcToEntityMapper,
     TrackerSupplyRepository,
   ],
 })

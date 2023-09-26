@@ -1,4 +1,4 @@
-export const CHART_SUPPORTED_RESOLUTIONS = ['5', '15', '30', '60', '4h'];
+export const CHART_SUPPORTED_RESOLUTIONS = ['5', '15', '30', '60', '4h', 'D'];
 
 export const CHART_CONFIG = {
   supported_resolutions: CHART_SUPPORTED_RESOLUTIONS,

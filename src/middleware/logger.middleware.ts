@@ -7,8 +7,11 @@ export class LoggerMiddleware implements NestMiddleware {
 
   use(req: Request, res: Response, next: NextFunction) {
     const body = JSON.stringify(req.body);
+    const query = JSON.stringify(req.query);
 
-    this.logger.debug(`Request: ${req.method} ${req.baseUrl}, body: ${body}`);
+    this.logger.debug(
+      `Request: ${req.method} ${req.baseUrl}, body: ${body}, query: ${query}`,
+    );
 
     next();
   }

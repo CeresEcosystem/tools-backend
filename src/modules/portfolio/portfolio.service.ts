@@ -53,7 +53,7 @@ export class PortfolioService {
 
     const { o: prices } = await this.chronoPriceService.getPriceForChart(
       tokenEntity.token,
-      30,
+      '30',
       timestampBefore30Days,
       timestamp,
       0,
@@ -98,7 +98,7 @@ export class PortfolioService {
 
         const { o: prices } = await this.chronoPriceService.getPriceForChart(
           tokenEntity.token,
-          30,
+          '30',
           timestampBefore30Days,
           timestamp,
           0,

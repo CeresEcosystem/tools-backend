@@ -39,7 +39,7 @@ export class SymbolChartMapper extends BaseDtoMapper<
       intraday_multipliers: CHART_SUPPORTED_RESOLUTIONS,
       supported_resolutions: CHART_SUPPORTED_RESOLUTIONS,
       session: '24x7',
-      has_daily: false,
+      has_daily: true,
     };
   }
 }

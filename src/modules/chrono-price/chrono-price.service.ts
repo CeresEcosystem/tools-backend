@@ -3,6 +3,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ChronoPriceDto } from './dto/chrono-price.dto';
 import { ChronoPrice } from './entity/chrono-price.entity';
+import { isNumberString } from 'class-validator';
 
 @Injectable()
 export class ChronoPriceService {
@@ -21,7 +22,7 @@ export class ChronoPriceService {
 
   public async getPriceForChart(
     symbol: string,
-    resolution: number,
+    resolution: string,
     from: number,
     to: number,
     countback: number,
@@ -50,12 +51,12 @@ export class ChronoPriceService {
 
   private buildQuery(
     symbol: string,
-    resolution: number,
+    resolution: string,
     from: number,
     to: number,
     countback: number,
   ) {
-    const params = [resolution + 'm', symbol];
+    const params = [this.resolveResolution(resolution), symbol];
 
     let query = `
         select array_agg(t) as t, array_agg(o) as o, array_agg(c) as c, array_agg(h) as h, array_agg(l) as l from (
@@ -100,5 +101,13 @@ export class ChronoPriceService {
       query,
       params,
     };
+  }
+
+  private resolveResolution(resolution: string) {
+    if (isNumberString(resolution)) {
+      return resolution + 'm';
+    }
+
+    return resolution;
   }
 }

@@ -7,8 +7,8 @@ import { AxiosError } from 'axios';
 import { HttpService } from '@nestjs/axios';
 import { getDateFormatted } from 'src/utils/date-utils';
 import Big from 'big.js';
-import { FormatedTokenSupplyDto } from '../dto/formated-token-supply.dto';
 import { TokenSupplyDto } from '../dto/token-supply.dto';
+import { FormattedTokenSupplyDto } from '../dto/formatted-token-supply.dto';
 
 export const EXCLUDED_TOKENS = ['PSWAP', 'VAL'];
 
@@ -104,7 +104,7 @@ export class TokenSupplySeeder {
   }
 
   private formatTokenSupplies(token: string, tokenSupplies: TokenSupplyDto[]) {
-    let formatedSupplies = [];
+    const formattedSupplies = [];
 
     let startDate = new Date(+tokenSupplies[0].timestamp);
     let currentDate = new Date();
@@ -120,7 +120,7 @@ export class TokenSupplySeeder {
       } else {
         const averageSupply = totalSupply.div(supplyCount);
 
-        formatedSupplies.push({
+        formattedSupplies.push({
           token: token,
           date: getDateFormatted(startDate),
           supply: averageSupply.toFixed(2),
@@ -134,13 +134,13 @@ export class TokenSupplySeeder {
 
     const averageSupply = totalSupply.div(supplyCount);
 
-    formatedSupplies.push({
+    formattedSupplies.push({
       token: token,
       date: getDateFormatted(startDate),
       supply: averageSupply.toFixed(2),
     });
 
-    return formatedSupplies;
+    return formattedSupplies;
   }
 
   private isSameDay(firstDate: Date, secondDate: Date): boolean {
@@ -151,12 +151,12 @@ export class TokenSupplySeeder {
     );
   }
 
-  private async saveTokenSupplies(formatedHTV: FormatedTokenSupplyDto[]) {
+  private async saveTokenSupplies(formattedHTV: FormattedTokenSupplyDto[]) {
     const spin = createSpinner();
-    spin.start(`Saving historic supply data for ${formatedHTV[0].token}...`);
+    spin.start(`Saving historic supply data for ${formattedHTV[0].token}...`);
 
     try {
-      for (const supply of formatedHTV) {
+      for (const supply of formattedHTV) {
         await this.supplyRepository.save(
           supply.token,
           supply.supply,
@@ -164,11 +164,11 @@ export class TokenSupplySeeder {
         );
       }
       spin.succeed(
-        `Historic supply data for ${formatedHTV[0].token} has been saved`,
+        `Historic supply data for ${formattedHTV[0].token} has been saved`,
       );
     } catch (err) {
       spin.fail(
-        `An error occured while saving historic supply data for ${formatedHTV[0].token}. Error: ${err}`,
+        `An error occurred while saving historic supply data for ${formattedHTV[0].token}. Error: ${err}`,
       );
     }
   }

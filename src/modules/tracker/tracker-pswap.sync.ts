@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { CronExpression } from 'src/utils/cron-expression.enum';
-import { PSWAPTrackerBlockBcToEntityMapper } from './mapper/pswap-tracker-block-bc-to-entity.mapper';
+import { PSWAPTrackerBlockBcToEntityMapper } from './mapper/pswap-tracker-to-entity.mapper';
 import { TrackerService } from './tracker.service';
 import { FPNumber } from '@sora-substrate/math';
 import { WsProvider } from '@polkadot/rpc-provider';
