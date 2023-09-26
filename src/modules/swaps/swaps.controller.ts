@@ -17,7 +17,6 @@ export class SwapsController {
     @Query() pageOptions: PageOptionsDto,
     @Param('assetId') assetId: string,
   ): Promise<PageDto<SwapDto>> {
-    this.swapDatabase.watchDatabaseChanges(assetId);
     return this.swapRepo.findSwapsByAssetId(pageOptions, assetId);
   }
 }

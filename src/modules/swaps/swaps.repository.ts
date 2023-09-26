@@ -14,6 +14,7 @@ import { SwapDto } from './dto/swap.dto';
 import { PageDto } from 'src/utils/pagination/page.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
+import { SwapGateway } from './swaps.gateway';
 
 @Injectable()
 export class SwapRepository {
@@ -22,6 +23,7 @@ export class SwapRepository {
   constructor(
     @InjectRepository(Swap)
     private readonly swapRepository: Repository<Swap>,
+    private swapGateway: SwapGateway,
   ) {
     const provider = new WsProvider(PROVIDER);
     this.soraApi = new ApiPromise({ provider, noInitWarn: true });
@@ -57,6 +59,7 @@ export class SwapRepository {
           swap.swappedAt = new Date();
           try {
             await this.swapRepository.save(swap);
+            this.swapGateway.onSwap({ ...swap });
             this.logger.log('Fetching token swaps was successful.');
           } catch (error) {
             if (error instanceof QueryFailedError) {
