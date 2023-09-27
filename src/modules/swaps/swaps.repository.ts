@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-
 import { Swap } from './entity/swaps.entity';
 import { SwapDto } from './dto/swap.dto';
-
+import { SwapEntityToDto } from './mapper/swap-entity-to-dto.mapper';
 import { PageDto } from 'src/utils/pagination/page.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
@@ -14,6 +13,7 @@ export class SwapRepository {
   constructor(
     @InjectRepository(Swap)
     private readonly swapRepository: Repository<Swap>,
+    private readonly swapMapper: SwapEntityToDto,
   ) {}
 
   async findSwapsByAssetId(
@@ -32,15 +32,9 @@ export class SwapRepository {
     const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
 
     data.forEach((swap) => {
-      swaps.push({
-        swappedAt: swap.swappedAt,
-        accountId: swap.accountId,
-        inputAssetId: swap.inputAssetId,
-        outputAssetId: swap.outputAssetId,
-        assetInputAmount: swap.assetInputAmount,
-        assetOutputAmount: swap.assetOutputAmount,
-      });
+      swaps.push(this.swapMapper.toDto(swap));
     });
+
     return new PageDto(swaps, meta);
   }
 }

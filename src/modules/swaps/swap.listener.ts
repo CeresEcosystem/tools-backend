@@ -8,6 +8,7 @@ import { PROVIDER } from 'src/constants/constants';
 import { Swap } from './entity/swaps.entity';
 import { SwapGateway } from './swaps.gateway';
 import { SwapDto } from './dto/swap.dto';
+import { SwapEntityToDto } from './mapper/swap-entity-to-dto.mapper';
 
 @Injectable()
 export class SwapListener {
@@ -18,6 +19,7 @@ export class SwapListener {
     @InjectRepository(Swap)
     private readonly swapRepository: Repository<Swap>,
     private swapGateway: SwapGateway,
+    private swapMapper: SwapEntityToDto,
   ) {
     const provider = new WsProvider(PROVIDER);
     this.soraApi = new ApiPromise({ provider, noInitWarn: true });
@@ -53,14 +55,7 @@ export class SwapListener {
         swap.swappedAt = new Date();
         try {
           await this.swapRepository.save(swap);
-          const swapDto: SwapDto = {
-            swappedAt: swap.swappedAt,
-            accountId: swap.accountId,
-            inputAssetId: swap.inputAssetId,
-            outputAssetId: swap.outputAssetId,
-            assetInputAmount: swap.assetInputAmount,
-            assetOutputAmount: swap.assetOutputAmount,
-          };
+          const swapDto = this.swapMapper.toDto(swap);
           this.swapGateway.onSwap(swapDto);
           this.logger.log('Fetching token swaps was successful.');
         } catch (error) {
