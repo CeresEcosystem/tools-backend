@@ -7,6 +7,7 @@ import { FPNumber } from '@sora-substrate/math';
 import { PROVIDER } from 'src/constants/constants';
 import { Swap } from './entity/swaps.entity';
 import { SwapGateway } from './swaps.gateway';
+import { SwapDto } from './dto/swap.dto';
 
 @Injectable()
 export class SwapListener {
@@ -22,14 +23,14 @@ export class SwapListener {
     this.soraApi = new ApiPromise({ provider, noInitWarn: true });
   }
 
-  async writeSwapToDatabase() {
+  async trackSwaps() {
     await this.soraApi.isReady;
     this.soraApi.query.system.events(async (events) => {
       for (const record of events) {
         const { event } = record;
 
         if (event?.section != 'liquidityProxy' && event?.method != 'Exchange')
-          return;
+          continue;
 
         this.logger.log('Start fetching token swaps.');
         const swap = new Swap();
@@ -52,7 +53,15 @@ export class SwapListener {
         swap.swappedAt = new Date();
         try {
           await this.swapRepository.save(swap);
-          this.swapGateway.onSwap({ ...swap });
+          const swapDto: SwapDto = {
+            swappedAt: swap.swappedAt,
+            accountId: swap.accountId,
+            inputAssetId: swap.inputAssetId,
+            outputAssetId: swap.outputAssetId,
+            assetInputAmount: swap.assetInputAmount,
+            assetOutputAmount: swap.assetOutputAmount,
+          };
+          this.swapGateway.onSwap(swapDto);
           this.logger.log('Fetching token swaps was successful.');
         } catch (error) {
           if (error instanceof QueryFailedError) {

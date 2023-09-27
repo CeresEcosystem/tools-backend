@@ -5,7 +5,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
-import { Swap } from './entity/swaps.entity';
+import { SwapDto } from './dto/swap.dto';
 
 @WebSocketGateway({ namespace: 'swapsocket' })
 export class SwapGateway {
@@ -13,7 +13,7 @@ export class SwapGateway {
   server: Server;
 
   @SubscribeMessage('newSwap')
-  onSwap(@MessageBody() swap: Swap) {
+  onSwap(@MessageBody() swap: SwapDto) {
     this.server.emit(swap.inputAssetId, swap);
     this.server.emit(swap.outputAssetId, swap);
   }

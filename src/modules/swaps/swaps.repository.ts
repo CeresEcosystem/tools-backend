@@ -27,8 +27,20 @@ export class SwapRepository {
       where: [{ inputAssetId: assetId }, { outputAssetId: assetId }],
     });
 
+    let swaps: SwapDto[] = [];
+
     const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
 
-    return new PageDto(data, meta);
+    data.forEach((swap) => {
+      swaps.push({
+        swappedAt: swap.swappedAt,
+        accountId: swap.accountId,
+        inputAssetId: swap.inputAssetId,
+        outputAssetId: swap.outputAssetId,
+        assetInputAmount: swap.assetInputAmount,
+        assetOutputAmount: swap.assetOutputAmount,
+      });
+    });
+    return new PageDto(swaps, meta);
   }
 }

@@ -13,6 +13,6 @@ import { SwapGateway } from './swaps.gateway';
 })
 export class SwapsModule {
   constructor(private swapListener: SwapListener) {
-    this.swapListener.writeSwapToDatabase();
+    this.swapListener.trackSwaps();
   }
 }
