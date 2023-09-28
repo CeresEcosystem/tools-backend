@@ -1,4 +1,5 @@
-import { CacheModule, MiddlewareConsumer, Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { CacheModule } from '@nestjs/cache-manager';
 import { LoggerMiddleware } from './middleware/logger.middleware';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
@@ -20,6 +21,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { BannerModule } from './modules/banner/banner.module';
 import { NestjsFormDataModule } from 'nestjs-form-data';
 import { TokenOrderModule } from './modules/token-order/token-order.module';
+import { SwapsModule } from './modules/swaps/swaps.module';
 
 @Module({
   imports: [
@@ -31,10 +33,12 @@ import { TokenOrderModule } from './modules/token-order/token-order.module';
     CacheModule.register({
       isGlobal: true,
     }),
-    ThrottlerModule.forRoot({
-      ttl: 60,
-      limit: 10,
-    }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60,
+        limit: 10,
+      },
+    ]),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'storage'),
       serveRoot: '/storage',
@@ -70,6 +74,7 @@ import { TokenOrderModule } from './modules/token-order/token-order.module';
     ConsoleModule,
     BannerModule,
     TokenOrderModule,
+    SwapsModule,
   ],
   controllers: [],
   providers: [ValBurningSeeder],
