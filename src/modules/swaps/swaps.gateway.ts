@@ -7,7 +7,7 @@ import {
 import { Server } from 'socket.io';
 import { SwapDto } from './dto/swap.dto';
 
-@WebSocketGateway({ namespace: 'swapsocket' })
+@WebSocketGateway({ namespace: 'swapsocket', cors: { origin: '*' } })
 export class SwapGateway {
   @WebSocketServer()
   server: Server;
