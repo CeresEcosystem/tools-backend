@@ -28,7 +28,9 @@ export class PairsLiquidityChangesListener {
     this.logger.log('Pairs liquidity changes listener initialized');
 
     this.soraAPI.rpc.chain.subscribeNewHeads(async (header) => {
-      const blockHash = await this.soraAPI.rpc.chain.getBlockHash(header);
+      const blockHash = await this.soraAPI.rpc.chain.getBlockHash(
+        header.number,
+      );
       const block = await this.soraAPI.rpc.chain.getBlock(blockHash);
       const timestamp = await this.soraAPI.query.timestamp.now();
 
