@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity(`liquidity_pair`)
-export class PairsLiquidityChanges {
+export class PairsLiquidityChangesEntity {
   @PrimaryColumn({ name: 'id' })
   id: number;
 
