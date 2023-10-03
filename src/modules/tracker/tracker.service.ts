@@ -72,7 +72,7 @@ export class TrackerService {
     return await this.trackerSupplyRepository.getSupplyGraphData(token);
   }
 
-  public async insert(trackers: Tracker[]): Promise<void> {
+  public async upsert(trackers: Tracker[]): Promise<void> {
     trackers.forEach((tracker) => {
       tracker.createdAt = new Date();
       tracker.updatedAt = new Date();

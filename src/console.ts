@@ -1,8 +1,51 @@
-import { BootstrapConsole } from 'nestjs-console';
-import { AppModule } from './app.module';
+import { BootstrapConsole, ConsoleModule } from 'nestjs-console';
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { TelegramLoggerModule } from './modules/logger/telegram-logger.module';
+import { ValTbcTrackerToEntityMapper } from './modules/tracker/mapper/val-tbc-tracker-to-entity.mapper';
+import { ValBurningSeeder } from './modules/tracker/seeder/val-burning-seeder';
+import { TrackerModule } from './modules/tracker/tracker.module';
+import { CacheModule } from '@nestjs/cache-manager';
+
+@Module({
+  imports: [
+    ScheduleModule.forRoot(),
+    ConfigModule.forRoot(),
+    CacheModule.register({
+      isGlobal: true,
+    }),
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: process.env.MYSQL_HOST,
+      port: Number(process.env.MYSQL_PORT),
+      username: process.env.MYSQL_USER,
+      password: process.env.MYSQL_PASSWORD,
+      database: process.env.MYSQL_DB_NAME,
+      autoLoadEntities: true,
+    }),
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      name: 'pg',
+      host: process.env.PG_HOST,
+      port: Number(process.env.PG_PORT),
+      username: process.env.PG_USER,
+      password: process.env.PG_PASSWORD,
+      database: process.env.PG_DB_NAME,
+      autoLoadEntities: true,
+    }),
+    TelegramLoggerModule,
+    TrackerModule,
+    ConsoleModule,
+  ],
+  controllers: [],
+  providers: [ValBurningSeeder, ValTbcTrackerToEntityMapper],
+})
+class AppConsoleModule {}
 
 const nestConsole = new BootstrapConsole({
-  module: AppModule,
+  module: AppConsoleModule,
   useDecorators: true,
 });
 

@@ -3,11 +3,15 @@ import { Console, Command, createSpinner } from 'nestjs-console';
 import * as Papa from 'papaparse';
 import * as fs from 'fs';
 import { TrackerService } from '../tracker.service';
-import { ValFeesTrackerBlockBcToEntityMapper } from '../mapper/val-fees-tracker-to-entity.mapper';
 import { getDateFormatted } from 'src/utils/date-utils';
-import { ValFeesTrackerBlockDto } from '../dto/val-fees-tracker-bc-block';
+import { ValTbcTrackerBlockDto } from '../dto/val-tbc-tracker-bc-block';
+import { ValTbcTrackerToEntityMapper } from '../mapper/val-tbc-tracker-to-entity.mapper';
+import { FPNumber } from '@sora-substrate/math';
+import { DENOMINATOR } from '../tracker.constants';
+import Big from 'big.js';
 
 export const CSV_STORAGE_PATH = 'storage/csv/';
+const INSERT_BATCH_SIZE = 1000;
 
 @Console()
 export class ValBurningSeeder {
@@ -15,7 +19,7 @@ export class ValBurningSeeder {
 
   constructor(
     private readonly trackerService: TrackerService,
-    private readonly mapper: ValFeesTrackerBlockBcToEntityMapper,
+    private readonly mapper: ValTbcTrackerToEntityMapper,
   ) {}
 
   @Command({
@@ -45,7 +49,11 @@ export class ValBurningSeeder {
         new Date().getTime() - (currentBlockNum - row['block_num']) * 6 * 1000,
       );
 
-      row['date_raw'] = getDateFormatted(date);
+      row['dateRaw'] = getDateFormatted(date);
+      row['blockNum'] = row['block_num'];
+      row['valBurned'] = new FPNumber(row['val_burned'])
+        .div(DENOMINATOR)
+        .toString();
     });
 
     fs.writeFileSync(
@@ -75,31 +83,37 @@ export class ValBurningSeeder {
       'utf8',
     );
 
-    const valBurningData = Papa.parse(valBurningDataFile, { header: true });
+    const valBurningData = Papa.parse<ValTbcTrackerBlockDto>(
+      valBurningDataFile,
+      { header: true },
+    );
 
     fs.writeFileSync(
       `${CSV_STORAGE_PATH}/val-parse-result.json`,
       JSON.stringify(valBurningData),
     );
 
-    let dtos = [];
+    const valBurningDataAgg: ValTbcTrackerBlockDto[] = [];
 
-    for (const [index, row] of valBurningData.data.entries()) {
-      const valTrackerBlockDto = {
-        dateRaw: row['date_raw'],
-        blockNum: row['block_num'],
-        xorTotalFee: row['xor_total_fee'] as string,
-        valBurned: row['val_burned'] as string,
-        valRemintedParliament: row['val_reminted_parliament'] as string,
-        xorDedicatedForBuyBack: row['xor_dedicated_for_buy_back'] as string,
-      } as ValFeesTrackerBlockDto;
-
-      dtos.push(valTrackerBlockDto);
-
-      if (dtos.length >= 1000 || index === valBurningData.data.length - 1) {
-        await this.trackerService.insert(this.mapper.toEntities(dtos));
-        dtos = [];
+    valBurningData.data.reduce(function (res, burnRecord) {
+      if (!res[burnRecord.blockNum]) {
+        res[burnRecord.blockNum] = burnRecord;
+        valBurningDataAgg.push(res[burnRecord.blockNum]);
+      } else {
+        const val = new Big(res[burnRecord.blockNum].valBurned)
+          .add(burnRecord.valBurned)
+          .toString();
+        res[burnRecord.blockNum].valBurned = val;
       }
+      return res;
+    }, {});
+
+    for (let i = 0; i < valBurningDataAgg.length; i += INSERT_BATCH_SIZE) {
+      await this.trackerService.upsert(
+        this.mapper.toEntities(
+          valBurningDataAgg.slice(i, i + INSERT_BATCH_SIZE),
+        ),
+      );
     }
   }
 }

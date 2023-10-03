@@ -15,8 +15,6 @@ import { TokenPriceModule } from './modules/token-price/token-price.module';
 import { RewardsModule } from './modules/rewards/rewards.module';
 import { MailerModule } from './modules/mailer/mailer.module';
 import { PortfolioModule } from './modules/portfolio/portfolio.module';
-import { ConsoleModule } from 'nestjs-console';
-import { ValBurningSeeder } from './modules/tracker/seeder/val-burning-seeder';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { BannerModule } from './modules/banner/banner.module';
 import { NestjsFormDataModule } from 'nestjs-form-data';
@@ -71,13 +69,12 @@ import { SwapsModule } from './modules/swaps/swaps.module';
     RewardsModule,
     MailerModule,
     PortfolioModule,
-    ConsoleModule,
     BannerModule,
     TokenOrderModule,
     SwapsModule,
   ],
   controllers: [],
-  providers: [ValBurningSeeder],
+  providers: [],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

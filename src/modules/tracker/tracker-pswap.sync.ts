@@ -66,7 +66,7 @@ export class TrackerPswapSync {
 
     this.logger.log(`Number of entries to load: ${burningData.length}`);
 
-    await this.trackerService.insert(this.mapper.toEntities(burningData));
+    await this.trackerService.upsert(this.mapper.toEntities(burningData));
 
     this.logger.log('Fetching of PSWAP burning data was successful!');
   }

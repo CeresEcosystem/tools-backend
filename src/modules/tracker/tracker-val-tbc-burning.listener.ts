@@ -71,7 +71,7 @@ export class TrackerValTbcBurningsListener {
           valBurned,
         };
 
-        await this.trackerService.insert([this.mapper.toEntity(burningData)]);
+        await this.trackerService.upsert([this.mapper.toEntity(burningData)]);
       }
     });
   }
