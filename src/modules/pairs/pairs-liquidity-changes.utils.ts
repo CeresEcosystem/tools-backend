@@ -1,7 +1,9 @@
-import { PairsLiquidityDeposit } from './dto/pairs-liquidity-deposit.dto';
-import { PairsLiquidityWithdraw } from './dto/pairs-liquidity-withdraw.dto';
+import { PairsLiquidityDepositDto } from './dto/pairs-liquidity-deposit.dto';
+import { PairsLiquidityWithdrawDto } from './dto/pairs-liquidity-withdraw.dto';
 
-export const parsePoolXYKDepositArgs = (args: any): PairsLiquidityDeposit => {
+export const parsePoolXYKDepositArgs = (
+  args: any,
+): PairsLiquidityDepositDto => {
   return {
     dexId: +BigInt(args[0]).toString(),
     inputAssetA: args[1].code,
@@ -13,7 +15,9 @@ export const parsePoolXYKDepositArgs = (args: any): PairsLiquidityDeposit => {
   };
 };
 
-export const parsePoolXYKWithdrawArgs = (args: any): PairsLiquidityWithdraw => {
+export const parsePoolXYKWithdrawArgs = (
+  args: any,
+): PairsLiquidityWithdrawDto => {
   return {
     dexId: +BigInt(args[0]).toString(),
     outputAssetA: args[1].code,
