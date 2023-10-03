@@ -2,9 +2,6 @@ import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity(`liquidity_pair`)
 export class PairsLiquidityChangesEntity {
-  @PrimaryColumn({ name: 'id' })
-  id: number;
-
   @Column({ name: 'first_asset_id' })
   firstAssetId: string;
 
