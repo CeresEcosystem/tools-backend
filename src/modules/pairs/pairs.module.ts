@@ -11,6 +11,7 @@ import { PairsController } from './pairs.controller';
 import { PairToDtoMapper } from './mapper/pair-to-dto.mapper';
 import { CeresClientModule } from '../ceres-client/ceres-client.module';
 import { PairsLockerSync } from './pairs-locker.sync';
+import { PairsLiquidityChangesListener } from './pairs-liquidity-changes.listener';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { PairsLockerSync } from './pairs-locker.sync';
     PairsRepository,
     PairsSync,
     PairsLockerSync,
+    PairsLiquidityChangesListener,
   ],
   exports: [PairsService],
 })
