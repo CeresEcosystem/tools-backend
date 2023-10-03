@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import {
   DENOMINATOR,
-  PROVIDER,
   VAL_BURN_ADDRESS,
   VAL_TOKEN_ID,
 } from './tracker.constants';
@@ -10,6 +9,7 @@ import { FPNumber } from '@sora-substrate/math';
 import { options } from '@sora-substrate/api';
 import { TrackerService } from './tracker.service';
 import { ValTbcTrackerToEntityMapper } from './mapper/val-tbc-tracker-to-entity.mapper';
+import { PROVIDER } from 'src/constants/constants';
 
 @Injectable()
 export class TrackerValTbcBurningsListener {

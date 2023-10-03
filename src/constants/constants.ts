@@ -1,5 +1,5 @@
 // SORA NETWORK //
-export const PROVIDER = 'wss://mof3.sora.org';
+export const PROVIDER = 'wss://ws.mof.sora.org';
 export const XOR_ADDRESS =
   '0x0200000000000000000000000000000000000000000000000000000000000000';
 export const XSTUSD_ADDRESS =

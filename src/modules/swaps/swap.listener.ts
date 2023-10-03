@@ -7,7 +7,6 @@ import { FPNumber } from '@sora-substrate/math';
 import { PROVIDER } from 'src/constants/constants';
 import { Swap } from './entity/swaps.entity';
 import { SwapGateway } from './swaps.gateway';
-import { SwapDto } from './dto/swap.dto';
 import { SwapEntityToDto } from './mapper/swap-entity-to-dto.mapper';
 
 @Injectable()
@@ -53,6 +52,7 @@ export class SwapListener {
         swap.assetOutputAmount =
           FPNumber.fromCodecValue(assetOutputAmount).toNumber();
         swap.swappedAt = new Date();
+
         try {
           await this.swapRepository.save(swap);
           const swapDto = this.swapMapper.toDto(swap);
