@@ -11,7 +11,7 @@ export class createPairsLiquidityChanges1696322819786
             second_asset_id varchar(128) NOT NULL, \
             first_asset_amount varchar(256) NOT NULL, \
             second_asset_amount varchar(256) NOT NULL, \
-            type varchar(16) NOT NULL, \
+            type varchar(128) NOT NULL, \
             timestamp bigint NOT NULL, \
             PRIMARY KEY (id) \
         )`,
