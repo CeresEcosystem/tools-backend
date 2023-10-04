@@ -1,20 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { options } from '@sora-substrate/api';
-
 import { PROVIDER } from 'src/constants/constants';
 import {
   parsePoolXYKDepositArgs,
   parsePoolXYKWithdrawArgs,
 } from './pairs-liquidity-changes.utils';
-import { FPNumber } from '@sora-substrate/math';
+import { PairsLiquidityChangeEntity } from './entity/pairs-liquidity-change.entity';
+import { PairsLiquidityChangesService } from './pairs-liquidity-changes.service';
 
 @Injectable()
 export class PairsLiquidityChangesListener {
   private readonly logger = new Logger(PairsLiquidityChangesListener.name);
   private soraAPI;
 
-  constructor() {
+  constructor(private readonly service: PairsLiquidityChangesService) {
     const provider = new WsProvider(PROVIDER);
     new ApiPromise(options({ provider, noInitWarn: true })).isReady.then(
       (api) => {
@@ -28,9 +28,7 @@ export class PairsLiquidityChangesListener {
     this.logger.log('Pairs liquidity changes listener initialized');
 
     this.soraAPI.rpc.chain.subscribeNewHeads(async (header) => {
-      const blockHash = await this.soraAPI.rpc.chain.getBlockHash(
-        header.number,
-      );
+      const blockHash = await this.soraAPI.rpc.chain.getBlockHash(12513368);
       const block = await this.soraAPI.rpc.chain.getBlock(blockHash);
       const timestamp = await this.soraAPI.query.timestamp.now();
 
@@ -51,12 +49,36 @@ export class PairsLiquidityChangesListener {
 
                   if (method === 'depositLiquidity') {
                     const parsedArgs = parsePoolXYKDepositArgs(args);
-                    console.log(parsedArgs);
+
+                    const data: PairsLiquidityChangeEntity = {
+                      firstAssetId: parsedArgs.inputAssetA,
+                      firstAssetAmount: parsedArgs.inputADesired,
+                      secondAssetId: parsedArgs.inputAssetB,
+                      secondAssetAmount: parsedArgs.inputBDesired,
+                      timestamp: timestamp.toNumber(),
+                      type: method,
+                    };
+
+                    this.service.insert(data);
+
+                    this.logger.log(`Saving new liquidity changes`);
                   }
 
                   if (method === 'withdrawLiquidity') {
                     const parsedArgs = parsePoolXYKWithdrawArgs(args);
-                    console.log(parsedArgs);
+
+                    const data: PairsLiquidityChangeEntity = {
+                      firstAssetId: parsedArgs.outputAssetA,
+                      firstAssetAmount: parsedArgs.outputAMin,
+                      secondAssetId: parsedArgs.outputAssetB,
+                      secondAssetAmount: parsedArgs.outputBMin,
+                      timestamp: timestamp.toNumber(),
+                      type: method,
+                    };
+
+                    this.service.insert(data);
+
+                    this.logger.log(`Saving new liquidity changes`);
                   }
                 }
               }
