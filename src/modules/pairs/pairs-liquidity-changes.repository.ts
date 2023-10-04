@@ -13,4 +13,11 @@ export class PairsLiquidityChangesRepository {
   public insert(data: PairsLiquidityChangeEntity) {
     this.repository.insert(data);
   }
+
+  public find(assetA: string, assetB: string) {
+    return this.repository.findOne({
+      where: { firstAssetId: assetA, secondAssetId: assetB },
+      order: { id: 'DESC' },
+    });
+  }
 }

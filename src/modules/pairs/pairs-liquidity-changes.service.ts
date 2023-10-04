@@ -9,4 +9,8 @@ export class PairsLiquidityChangesService {
   public insert(data: PairsLiquidityChangeEntity) {
     this.repository.insert(data);
   }
+
+  public find(assetA: string, assetB: string) {
+    return this.repository.find(assetA, assetB);
+  }
 }
