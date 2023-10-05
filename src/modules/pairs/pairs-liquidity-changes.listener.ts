@@ -8,6 +8,7 @@ import {
 } from './pairs-liquidity-changes.utils';
 import { PairsLiquidityChangeEntity } from './entity/pairs-liquidity-change.entity';
 import { PairsLiquidityChangesService } from './pairs-liquidity-changes.service';
+import { FPNumber } from '@sora-substrate/math';
 
 @Injectable()
 export class PairsLiquidityChangesListener {
@@ -38,7 +39,7 @@ export class PairsLiquidityChangesListener {
       const records = await specificAPI.query.system.events();
 
       block.block.extrinsics.forEach(
-        ({ method: { method, section, args } }, index) => {
+        ({ signer, method: { method, section, args } }, index) => {
           records
             .filter(
               ({ phase }) =>
@@ -53,6 +54,10 @@ export class PairsLiquidityChangesListener {
                     const parsedArgs = parsePoolXYKDepositArgs(args);
 
                     const data: PairsLiquidityChangeEntity = {
+                      signerId: signer.toHuman(),
+                      blockNumber: new FPNumber(
+                        header.number.toHuman(),
+                      ).toNumber(),
                       firstAssetId: parsedArgs.inputAssetA,
                       firstAssetAmount: parsedArgs.inputADesired,
                       secondAssetId: parsedArgs.inputAssetB,
@@ -62,14 +67,16 @@ export class PairsLiquidityChangesListener {
                     };
 
                     this.service.insert(data);
-
-                    this.logger.log(`Saving new liquidity changes`);
                   }
 
                   if (method === 'withdrawLiquidity') {
                     const parsedArgs = parsePoolXYKWithdrawArgs(args);
 
                     const data: PairsLiquidityChangeEntity = {
+                      signerId: signer.toHuman(),
+                      blockNumber: new FPNumber(
+                        header.number.toHuman(),
+                      ).toNumber(),
                       firstAssetId: parsedArgs.outputAssetA,
                       firstAssetAmount: parsedArgs.outputAMin,
                       secondAssetId: parsedArgs.outputAssetB,
@@ -79,8 +86,6 @@ export class PairsLiquidityChangesListener {
                     };
 
                     this.service.insert(data);
-
-                    this.logger.log(`Saving new liquidity changes`);
                   }
                 }
               }

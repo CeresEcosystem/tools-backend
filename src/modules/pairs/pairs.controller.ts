@@ -44,7 +44,7 @@ export class PairsController {
   public getLiquidityChanges(
     @Param('assetA') assetA: string,
     @Param('assetB') assetB: string,
-  ): Promise<PairsLiquidityChangeEntity> {
+  ): Promise<PairsLiquidityChangeEntity[]> {
     return this.pairsLiquidityChangesService.find(assetA, assetB);
   }
 }

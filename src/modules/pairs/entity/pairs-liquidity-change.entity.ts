@@ -5,6 +5,12 @@ export class PairsLiquidityChangeEntity {
   @PrimaryColumn({ name: 'id' })
   id?: number;
 
+  @Column({ name: 'block_number' })
+  blockNumber: number;
+
+  @Column({ name: 'signer_id' })
+  signerId: string;
+
   @Column({ name: 'first_asset_id' })
   firstAssetId: string;
 
