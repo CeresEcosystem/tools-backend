@@ -12,7 +12,7 @@ import { SwapEntityToDto } from './mapper/swap-entity-to-dto.mapper';
 @Injectable()
 export class SwapListener {
   private soraApi;
-  private readonly logger = new Logger('TokenSwap');
+  private readonly logger = new Logger(SwapListener.name);
 
   constructor(
     @InjectRepository(Swap)
@@ -26,12 +26,17 @@ export class SwapListener {
 
   async trackSwaps() {
     await this.soraApi.isReady;
+
     this.soraApi.query.system.events(async (events) => {
       for (const record of events) {
         const { event } = record;
 
-        if (event?.section != 'liquidityProxy' && event?.method != 'Exchange')
+        if (
+          event?.section !== 'liquidityProxy' &&
+          event?.method !== 'Exchange'
+        ) {
           continue;
+        }
 
         this.logger.log('Start fetching token swaps.');
         const swap = new Swap();

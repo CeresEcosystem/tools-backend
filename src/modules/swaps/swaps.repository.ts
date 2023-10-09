@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Swap } from './entity/swaps.entity';
 import { SwapDto } from './dto/swap.dto';
@@ -7,6 +7,7 @@ import { SwapEntityToDto } from './mapper/swap-entity-to-dto.mapper';
 import { PageDto } from 'src/utils/pagination/page.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
+import { subtractDays } from 'src/utils/date-utils';
 
 @Injectable()
 export class SwapRepository {
@@ -16,7 +17,7 @@ export class SwapRepository {
     private readonly swapMapper: SwapEntityToDto,
   ) {}
 
-  async findSwapsByAssetId(
+  public async findSwapsByAssetId(
     pageOptions: PageOptionsDto,
     assetId: string,
   ): Promise<PageDto<SwapDto>> {
@@ -27,14 +28,14 @@ export class SwapRepository {
       where: [{ inputAssetId: assetId }, { outputAssetId: assetId }],
     });
 
-    let swaps: SwapDto[] = [];
-
     const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
 
-    data.forEach((swap) => {
-      swaps.push(this.swapMapper.toDto(swap));
-    });
+    return new PageDto(this.swapMapper.toDtos(data), meta);
+  }
 
-    return new PageDto(swaps, meta);
+  public async deleteOlderThanDays(days: number) {
+    await this.swapRepository.delete({
+      swappedAt: LessThan(subtractDays(new Date(), days)),
+    });
   }
 }

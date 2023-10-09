@@ -8,3 +8,9 @@ export function getDateFormatted(date: Date): string {
 export function getTodayFormatted(): string {
   return getDateFormatted(new Date());
 }
+
+export function subtractDays(date: Date, days: number): Date {
+  date.setDate(date.getDate() - days);
+
+  return date;
+}
