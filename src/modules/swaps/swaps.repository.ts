@@ -37,4 +37,26 @@ export class SwapRepository {
 
     return new PageDto(swaps, meta);
   }
+
+  async findSwapsByAccountId(
+    pageOptions: PageOptionsDto,
+    accountId: string,
+  ): Promise<PageDto<SwapDto>> {
+    const [data, count] = await this.swapRepository.findAndCount({
+      skip: pageOptions.skip,
+      take: pageOptions.size,
+      order: { id: 'DESC' },
+      where: { accountId: accountId },
+    });
+
+    let swaps: SwapDto[] = [];
+
+    const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
+
+    data.forEach((swap) => {
+      swaps.push(this.swapMapper.toDto(swap));
+    });
+
+    return new PageDto(swaps, meta);
+  }
 }

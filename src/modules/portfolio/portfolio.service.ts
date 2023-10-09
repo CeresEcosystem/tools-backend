@@ -7,6 +7,7 @@ import { options } from '@sora-substrate/api';
 import { XOR_ADDRESS, XSTUSD_ADDRESS, PROVIDER } from 'src/constants/constants';
 import { TokenPriceService } from '../token-price/token-price.service';
 import { ChronoPriceService } from '../chrono-price/chrono-price.service';
+import { SwapService } from '../swaps/swaps.service';
 import { PairsService } from '../pairs/pairs.service';
 import { DeoClient } from '../deo-client/deo-client';
 
@@ -14,6 +15,9 @@ import { PortfolioDto } from './dto/portfolio.dto';
 import { StakingDto } from './dto/staking.dto';
 import { LiquidityDto } from './dto/liquidity.dto';
 import { PortfolioValueDifferenceDto } from './dto/portfolio-value-difference.dto';
+import { PageDto } from 'src/utils/pagination/page.dto';
+import { SwapDto } from '../swaps/dto/swap.dto';
+import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 
 const DENOMINATOR = FPNumber.fromNatural(Math.pow(10, 18));
 const intervals = [2, 48, 336, 1440];
@@ -27,6 +31,7 @@ export class PortfolioService {
     private chronoPriceService: ChronoPriceService,
     private pairsService: PairsService,
     private deoClient: DeoClient,
+    private swapsService: SwapService,
   ) {
     const provider = new WsProvider(PROVIDER);
     new ApiPromise(options({ provider, noInitWarn: true })).isReady.then(
@@ -287,5 +292,12 @@ export class PortfolioService {
     }
 
     return liquidityData;
+  }
+
+  async getSwapsPortfolio(
+    pageOptions: PageOptionsDto,
+    accountId: string,
+  ): Promise<PageDto<SwapDto>> {
+    return this.swapsService.findSwapsByAccount(pageOptions, accountId);
   }
 }
