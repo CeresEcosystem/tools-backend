@@ -6,8 +6,8 @@ export const parsePoolXYKDepositArgs = (
 ): PairsLiquidityDepositDto => {
   return {
     dexId: +BigInt(args[0]).toString(),
-    inputAssetA: args[1].code,
-    inputAssetB: args[2].code,
+    inputAssetA: args[1].code.toString(),
+    inputAssetB: args[2].code.toString(),
     inputADesired: BigInt(args[3]).toString(),
     inputBDesired: BigInt(args[4]).toString(),
     inputAMin: BigInt(args[5]).toString(),
@@ -20,8 +20,8 @@ export const parsePoolXYKWithdrawArgs = (
 ): PairsLiquidityWithdrawDto => {
   return {
     dexId: +BigInt(args[0]).toString(),
-    outputAssetA: args[1].code,
-    outputAssetB: args[2].code,
+    outputAssetA: args[1].code.toString(),
+    outputAssetB: args[2].code.toString(),
     markerAssetDesired: BigInt(args[3]).toString(),
     outputAMin: BigInt(args[4]).toString(),
     outputBMin: BigInt(args[5]).toString(),
