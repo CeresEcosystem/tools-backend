@@ -32,11 +32,20 @@ export class PairsLiquidityChangesListener {
       const blockHash = await this.soraAPI.rpc.chain.getBlockHash(
         header.number,
       );
+
+      this.logger.log(
+        `Fetching liquidity change data for block #${header.number.toNumber()}`,
+      );
+
       const block = await this.soraAPI.rpc.chain.getBlock(blockHash);
       const timestamp = await this.soraAPI.query.timestamp.now();
 
       const specificAPI = await this.soraAPI.at(blockHash);
       const records = await specificAPI.query.system.events();
+
+      this.logger.log(
+        `Checking for any liquidity changes at block #${header.number.toNumber()}`,
+      );
 
       block.block.extrinsics.forEach(
         ({ signer, method: { method, section, args } }, index) => {
@@ -47,9 +56,14 @@ export class PairsLiquidityChangesListener {
                 phase.asApplyExtrinsic.eq(index) &&
                 this.soraAPI.events.system.ExtrinsicSuccess.is(event) &&
                 section === 'poolXYK',
+              method === 'depositLiquidity' || method === 'withdrawLiquidity',
             )
             .forEach(() => {
               if (method === 'depositLiquidity') {
+                this.logger.log(
+                  `Parsing data for deposit liquidity transaction`,
+                );
+
                 const parsedArgs = parsePoolXYKDepositArgs(args);
 
                 const data: PairsLiquidityChangeEntity = {
@@ -63,10 +77,16 @@ export class PairsLiquidityChangesListener {
                   type: method,
                 };
 
+                this.logger.log(`Saving liquidity change (deposit) data`);
+
                 this.service.insert(data);
               }
 
               if (method === 'withdrawLiquidity') {
+                this.logger.log(
+                  `Parsing data for withdraw liquidity transaction`,
+                );
+
                 const parsedArgs = parsePoolXYKWithdrawArgs(args);
 
                 const data: PairsLiquidityChangeEntity = {
@@ -79,6 +99,8 @@ export class PairsLiquidityChangesListener {
                   timestamp: timestamp.toNumber(),
                   type: method,
                 };
+
+                this.logger.log(`Saving liquidity change (withdraw) data`);
 
                 this.service.insert(data);
               }
