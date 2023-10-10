@@ -12,9 +12,10 @@ import { PairToDtoMapper } from './mapper/pair-to-dto.mapper';
 import { CeresClientModule } from '../ceres-client/ceres-client.module';
 import { PairsLockerSync } from './pairs-locker.sync';
 import { PairsLiquidityChangesListener } from './pairs-liquidity-changes.listener';
-import { PairsLiquidityChangeEntity } from './entity/pairs-liquidity-change.entity';
+import { PairLiquidityChangeEntity } from './entity/pair-liquidity-change.entity';
 import { PairsLiquidityChangesService } from './pairs-liquidity-changes.service';
 import { PairsLiquidityChangesRepository } from './pairs-liquidity-changes.repository';
+import { PairsLiquidityEntityToDtoMapper } from './mapper/pair-liquidity-entity-to-dto.mapper';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { PairsLiquidityChangesRepository } from './pairs-liquidity-changes.repos
     TokenPriceModule,
     CeresClientModule,
     TypeOrmModule.forFeature([Pair]),
-    TypeOrmModule.forFeature([PairsLiquidityChangeEntity]),
+    TypeOrmModule.forFeature([PairLiquidityChangeEntity]),
   ],
   controllers: [PairsController],
   providers: [
@@ -35,6 +36,7 @@ import { PairsLiquidityChangesRepository } from './pairs-liquidity-changes.repos
     PairsLiquidityChangesListener,
     PairsLiquidityChangesService,
     PairsLiquidityChangesRepository,
+    PairsLiquidityEntityToDtoMapper,
   ],
   exports: [PairsService],
 })

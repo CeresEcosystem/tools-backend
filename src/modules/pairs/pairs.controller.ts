@@ -7,7 +7,7 @@ import { CACHE_KEYS, CACHE_TTL } from './pairs.constants';
 import { PairsService } from './pairs.service';
 import { PairDto } from './dto/pair.dto';
 import { PairsLiquidityChangesService } from './pairs-liquidity-changes.service';
-import { PairsLiquidityChangeEntity } from './entity/pairs-liquidity-change.entity';
+import { PairLiquidityChangeDto } from './dto/pair-liquidity-chage.dto';
 
 @Controller('pairs')
 @ApiTags('Pairs Controller')
@@ -44,7 +44,7 @@ export class PairsController {
   public getLiquidityChanges(
     @Param('assetA') assetA: string,
     @Param('assetB') assetB: string,
-  ): Promise<PairsLiquidityChangeEntity[]> {
+  ): Promise<PairLiquidityChangeDto[]> {
     return this.pairsLiquidityChangesService.find(assetA, assetB);
   }
 }

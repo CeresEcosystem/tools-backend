@@ -1,4 +1,4 @@
-export interface PairsLiquidityWithdrawDto {
+export interface PairLiquidityWithdrawDto {
   dexId: number;
   outputAssetA: string;
   outputAssetB: string;
