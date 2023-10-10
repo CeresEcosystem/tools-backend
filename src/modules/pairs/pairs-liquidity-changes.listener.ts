@@ -42,52 +42,45 @@ export class PairsLiquidityChangesListener {
         ({ signer, method: { method, section, args } }, index) => {
           records
             .filter(
-              ({ phase }) =>
-                phase.isApplyExtrinsic && phase.asApplyExtrinsic.eq(index),
+              ({ phase, event }) =>
+                phase.isApplyExtrinsic &&
+                phase.asApplyExtrinsic.eq(index) &&
+                this.soraAPI.events.system.ExtrinsicSuccess.is(event) &&
+                section === 'poolXYK',
             )
-            .forEach(({ event }) => {
-              if (this.soraAPI.events.system.ExtrinsicSuccess.is(event)) {
-                if (section === 'poolXYK') {
-                  args = JSON.parse(JSON.stringify(args));
+            .forEach(() => {
+              if (method === 'depositLiquidity') {
+                const parsedArgs = parsePoolXYKDepositArgs(args);
 
-                  if (method === 'depositLiquidity') {
-                    const parsedArgs = parsePoolXYKDepositArgs(args);
+                const data: PairsLiquidityChangeEntity = {
+                  signerId: signer.toHuman(),
+                  blockNumber: new FPNumber(header.number.toHuman()).toNumber(),
+                  firstAssetId: parsedArgs.inputAssetA,
+                  firstAssetAmount: parsedArgs.inputADesired,
+                  secondAssetId: parsedArgs.inputAssetB,
+                  secondAssetAmount: parsedArgs.inputBDesired,
+                  timestamp: timestamp.toNumber(),
+                  type: method,
+                };
 
-                    const data: PairsLiquidityChangeEntity = {
-                      signerId: signer.toHuman(),
-                      blockNumber: new FPNumber(
-                        header.number.toHuman(),
-                      ).toNumber(),
-                      firstAssetId: parsedArgs.inputAssetA,
-                      firstAssetAmount: parsedArgs.inputADesired,
-                      secondAssetId: parsedArgs.inputAssetB,
-                      secondAssetAmount: parsedArgs.inputBDesired,
-                      timestamp: timestamp.toNumber(),
-                      type: method,
-                    };
+                this.service.insert(data);
+              }
 
-                    this.service.insert(data);
-                  }
+              if (method === 'withdrawLiquidity') {
+                const parsedArgs = parsePoolXYKWithdrawArgs(args);
 
-                  if (method === 'withdrawLiquidity') {
-                    const parsedArgs = parsePoolXYKWithdrawArgs(args);
+                const data: PairsLiquidityChangeEntity = {
+                  signerId: signer.toHuman(),
+                  blockNumber: new FPNumber(header.number.toHuman()).toNumber(),
+                  firstAssetId: parsedArgs.outputAssetA,
+                  firstAssetAmount: parsedArgs.outputAMin,
+                  secondAssetId: parsedArgs.outputAssetB,
+                  secondAssetAmount: parsedArgs.outputBMin,
+                  timestamp: timestamp.toNumber(),
+                  type: method,
+                };
 
-                    const data: PairsLiquidityChangeEntity = {
-                      signerId: signer.toHuman(),
-                      blockNumber: new FPNumber(
-                        header.number.toHuman(),
-                      ).toNumber(),
-                      firstAssetId: parsedArgs.outputAssetA,
-                      firstAssetAmount: parsedArgs.outputAMin,
-                      secondAssetId: parsedArgs.outputAssetB,
-                      secondAssetAmount: parsedArgs.outputBMin,
-                      timestamp: timestamp.toNumber(),
-                      type: method,
-                    };
-
-                    this.service.insert(data);
-                  }
-                }
+                this.service.insert(data);
               }
             });
         },
