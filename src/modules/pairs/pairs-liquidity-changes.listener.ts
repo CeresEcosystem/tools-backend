@@ -8,7 +8,6 @@ import {
 } from './pairs-liquidity-changes.utils';
 import { PairLiquidityChangeEntity } from './entity/pair-liquidity-change.entity';
 import { PairsLiquidityChangesService } from './pairs-liquidity-changes.service';
-import { FPNumber } from '@sora-substrate/math';
 
 @Injectable()
 export class PairsLiquidityChangesListener {
@@ -72,8 +71,8 @@ export class PairsLiquidityChangesListener {
                 const parsedArgs = parsePoolXYKDepositArgs(args);
 
                 const data: PairLiquidityChangeEntity = {
-                  signerId: signer.toHuman(),
-                  blockNumber: new FPNumber(header.number.toHuman()).toNumber(),
+                  signerId: signer.toString(),
+                  blockNumber: header.number.toNumber(),
                   firstAssetId: parsedArgs.inputAssetA,
                   firstAssetAmount: parsedArgs.inputADesired,
                   secondAssetId: parsedArgs.inputAssetB,
@@ -95,8 +94,8 @@ export class PairsLiquidityChangesListener {
                 const parsedArgs = parsePoolXYKWithdrawArgs(args);
 
                 const data: PairLiquidityChangeEntity = {
-                  signerId: signer.toHuman(),
-                  blockNumber: new FPNumber(header.number.toHuman()).toNumber(),
+                  signerId: signer.toString(),
+                  blockNumber: header.number.toNumber(),
                   firstAssetId: parsedArgs.outputAssetA,
                   firstAssetAmount: parsedArgs.outputAMin,
                   secondAssetId: parsedArgs.outputAssetB,
