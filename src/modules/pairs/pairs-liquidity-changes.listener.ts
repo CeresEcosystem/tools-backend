@@ -62,7 +62,7 @@ export class PairsLiquidityChangesListener {
                 (method === 'depositLiquidity' ||
                   method === 'withdrawLiquidity'),
             )
-            .forEach(() => {
+            .forEach(async () => {
               if (method === 'depositLiquidity') {
                 this.logger.debug(
                   `Parsing data for deposit liquidity transaction`,
@@ -83,7 +83,9 @@ export class PairsLiquidityChangesListener {
 
                 this.logger.debug(`Saving liquidity change (deposit) data`);
 
-                this.service.insert(data);
+                await this.service.insert(data);
+
+                this.logger.debug(`Saved new liquidity change (deposit) data`);
               }
 
               if (method === 'withdrawLiquidity') {
@@ -106,7 +108,9 @@ export class PairsLiquidityChangesListener {
 
                 this.logger.debug(`Saving liquidity change (withdraw) data`);
 
-                this.service.insert(data);
+                await this.service.insert(data);
+
+                this.logger.debug(`Saved new liquidity change (withdraw) data`);
               }
             });
         },
