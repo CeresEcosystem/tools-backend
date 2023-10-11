@@ -8,8 +8,6 @@ export class PairsLiquidityEntityToDtoMapper extends BaseDtoMapper<
 > {
   toDto(entity: PairLiquidityChangeEntity): PairLiquidityChangeDto {
     const {
-      id,
-      blockNumber,
       signerId,
       firstAssetId,
       secondAssetId,
