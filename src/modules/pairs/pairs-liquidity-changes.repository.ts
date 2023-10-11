@@ -30,6 +30,6 @@ export class PairsLiquidityChangesRepository {
       order: { id: 'DESC' },
     });
 
-    return result.map((pair) => this.mapper.toDto(pair));
+    return this.mapper.toDtos(result);
   }
 }
