@@ -28,8 +28,8 @@ export class PairLiquidityChangeEntity {
   @Column({ name: 'second_asset_amount' })
   secondAssetAmount: string;
 
-  @Column({ type: 'enum', name: 'type', enum: EventType })
-  type: EventType;
+  @Column({ type: 'enum', name: 'transaction_type', enum: EventType })
+  transactionType: EventType;
 
   @Column({ name: 'timestamp' })
   timestamp: number;

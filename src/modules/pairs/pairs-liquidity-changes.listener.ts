@@ -78,7 +78,7 @@ export class PairsLiquidityChangesListener {
                   secondAssetId: parsedArgs.inputAssetB,
                   secondAssetAmount: parsedArgs.inputBDesired,
                   timestamp: timestamp.toNumber(),
-                  type: method,
+                  transactionType: method,
                 };
 
                 this.logger.debug(`Saving liquidity change (deposit) data`);
@@ -101,7 +101,7 @@ export class PairsLiquidityChangesListener {
                   secondAssetId: parsedArgs.outputAssetB,
                   secondAssetAmount: parsedArgs.outputBMin,
                   timestamp: timestamp.toNumber(),
-                  type: method,
+                  transactionType: method,
                 };
 
                 this.logger.debug(`Saving liquidity change (withdraw) data`);
