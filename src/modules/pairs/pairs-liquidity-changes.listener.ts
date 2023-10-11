@@ -33,7 +33,7 @@ export class PairsLiquidityChangesListener {
         header.number,
       );
 
-      this.logger.log(
+      this.logger.debug(
         `Fetching liquidity change data for block #${header.number.toNumber()}`,
       );
 
@@ -43,7 +43,7 @@ export class PairsLiquidityChangesListener {
       const specificAPI = await this.soraAPI.at(blockHash);
       const records = await specificAPI.query.system.events();
 
-      this.logger.log(
+      this.logger.debug(
         `Checking for any liquidity changes at block #${header.number.toNumber()}`,
       );
 
@@ -51,16 +51,21 @@ export class PairsLiquidityChangesListener {
         ({ signer, method: { method, section, args } }, index) => {
           records
             .filter(
-              ({ phase, event }) =>
-                phase.isApplyExtrinsic &&
-                phase.asApplyExtrinsic.eq(index) &&
-                this.soraAPI.events.system.ExtrinsicSuccess.is(event) &&
-                section === 'poolXYK',
-              method === 'depositLiquidity' || method === 'withdrawLiquidity',
+              ({ phase }) =>
+                phase.isApplyExtrinsic && phase.asApplyExtrinsic.eq(index),
+            )
+            .filter(({ event }) =>
+              this.soraAPI.events.system.ExtrinsicSuccess.is(event),
+            )
+            .filter(
+              () =>
+                section === 'poolXYK' &&
+                (method === 'depositLiquidity' ||
+                  method === 'withdrawLiquidity'),
             )
             .forEach(() => {
               if (method === 'depositLiquidity') {
-                this.logger.log(
+                this.logger.debug(
                   `Parsing data for deposit liquidity transaction`,
                 );
 
@@ -77,13 +82,13 @@ export class PairsLiquidityChangesListener {
                   type: method,
                 };
 
-                this.logger.log(`Saving liquidity change (deposit) data`);
+                this.logger.debug(`Saving liquidity change (deposit) data`);
 
                 this.service.insert(data);
               }
 
               if (method === 'withdrawLiquidity') {
-                this.logger.log(
+                this.logger.debug(
                   `Parsing data for withdraw liquidity transaction`,
                 );
 
@@ -100,7 +105,7 @@ export class PairsLiquidityChangesListener {
                   type: method,
                 };
 
-                this.logger.log(`Saving liquidity change (withdraw) data`);
+                this.logger.debug(`Saving liquidity change (withdraw) data`);
 
                 this.service.insert(data);
               }
