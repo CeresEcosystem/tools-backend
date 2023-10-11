@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PairLiquidityChangeEntity } from './entity/pair-liquidity-change.entity';
 import { PairsLiquidityEntityToDtoMapper } from './mapper/pair-liquidity-entity-to-dto.mapper';
+import { skip } from 'rxjs';
+import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 
 @Injectable()
 export class PairsLiquidityChangesRepository {
@@ -20,16 +22,20 @@ export class PairsLiquidityChangesRepository {
       'signerId',
       'firstAssetId',
       'secondAssetId',
-      'type',
+      'transaction_type',
     ]);
   }
 
-  public async find(assetA: string, assetB: string) {
-    const result = await this.repository.find({
+  public findAndCount(
+    assetA: string,
+    assetB: string,
+    pageOptions: PageOptionsDto,
+  ) {
+    return this.repository.findAndCount({
       where: { firstAssetId: assetA, secondAssetId: assetB },
       order: { id: 'DESC' },
+      skip: pageOptions.skip,
+      take: pageOptions.size,
     });
-
-    return this.mapper.toDtos(result);
   }
 }

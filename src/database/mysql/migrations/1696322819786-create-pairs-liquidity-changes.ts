@@ -16,7 +16,7 @@ export class createPairsLiquidityChanges1696322819786
             transaction_type enum('withdrawLiquidity', 'depositLiquidity') NOT NULL, \
             timestamp bigint NOT NULL, \
             PRIMARY KEY (id), \
-            CONSTRAINT non_duplicate_entry UNIQUE (signer_id, first_asset_id, second_asset_id, type, block_number) \
+            CONSTRAINT non_duplicate_entry UNIQUE (signer_id, first_asset_id, second_asset_id, transaction_type, block_number) \
         )`,
     );
   }

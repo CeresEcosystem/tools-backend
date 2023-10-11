@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Logger, Param } from '@nestjs/common';
+import { Controller, Get, Inject, Logger, Param, Query } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ApiTags } from '@nestjs/swagger';
 import { PairToDtoMapper } from './mapper/pair-to-dto.mapper';
@@ -8,6 +8,8 @@ import { PairsService } from './pairs.service';
 import { PairDto } from './dto/pair.dto';
 import { PairsLiquidityChangesService } from './pairs-liquidity-changes.service';
 import { PairLiquidityChangeDto } from './dto/pair-liquidity-chage.dto';
+import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
+import { PageDto } from 'src/utils/pagination/page.dto';
 
 @Controller('pairs')
 @ApiTags('Pairs Controller')
@@ -44,7 +46,8 @@ export class PairsController {
   public getLiquidityChanges(
     @Param('assetA') assetA: string,
     @Param('assetB') assetB: string,
-  ): Promise<PairLiquidityChangeDto[]> {
-    return this.pairsLiquidityChangesService.find(assetA, assetB);
+    @Query() pageOptions: PageOptionsDto,
+  ): Promise<PageDto<PairLiquidityChangeDto>> {
+    return this.pairsLiquidityChangesService.find(assetA, assetB, pageOptions);
   }
 }
