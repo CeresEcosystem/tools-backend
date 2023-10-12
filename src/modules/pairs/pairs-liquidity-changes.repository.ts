@@ -16,7 +16,7 @@ export class PairsLiquidityChangesRepository {
     private readonly mapper: PairLiquidityEntityToDtoMapper,
   ) {}
 
-  public async insert(data: PairLiquidityChangeEntity) {
+  public async insert(data: PairLiquidityChangeEntity): Promise<void> {
     await this.repository.upsert(data, [
       'blockNumber',
       'signerId',
