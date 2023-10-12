@@ -81,7 +81,7 @@ export class PairsLiquidityChangesListener {
                 `Saving new liquidity change data [block: #${rawData.blockNumber}; transaction type: ${rawData.transactionType}]`,
               );
 
-              this.service.insert(formatedData);
+              await this.service.insert(formatedData);
 
               this.logger.debug(
                 `Saved new liquidity change data [block: #${rawData.blockNumber}; transaction type: ${rawData.transactionType}]`,
