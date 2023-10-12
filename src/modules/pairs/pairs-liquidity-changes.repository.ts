@@ -30,7 +30,7 @@ export class PairsLiquidityChangesRepository {
     assetA: string,
     assetB: string,
     pageOptions: PageOptionsDto,
-  ) {
+  ): Promise<[PairLiquidityChangeEntity[], number]> {
     return this.repository.findAndCount({
       where: { firstAssetId: assetA, secondAssetId: assetB },
       order: { id: 'DESC' },
