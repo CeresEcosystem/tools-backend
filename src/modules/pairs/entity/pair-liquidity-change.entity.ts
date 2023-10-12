@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-export enum EventType {
+export enum TransactionType {
   DEPOSIT = 'depositLiquidity',
   WITHDRAW = 'withdrawLiquidity',
 }
@@ -28,8 +28,8 @@ export class PairLiquidityChangeEntity {
   @Column({ name: 'second_asset_amount' })
   secondAssetAmount: string;
 
-  @Column({ type: 'enum', name: 'transaction_type', enum: EventType })
-  transactionType: EventType;
+  @Column({ type: 'enum', name: 'transaction_type', enum: TransactionType })
+  transactionType: TransactionType;
 
   @Column({ name: 'timestamp' })
   timestamp: number;
