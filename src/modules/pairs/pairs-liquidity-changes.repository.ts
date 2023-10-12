@@ -13,7 +13,6 @@ export class PairsLiquidityChangesRepository {
   constructor(
     @InjectRepository(PairLiquidityChangeEntity)
     private readonly repository: Repository<PairLiquidityChangeEntity>,
-    private readonly mapper: PairLiquidityEntityToDtoMapper,
   ) {}
 
   public async insert(data: PairLiquidityChangeEntity): Promise<void> {
@@ -22,7 +21,7 @@ export class PairsLiquidityChangesRepository {
       'signerId',
       'firstAssetId',
       'secondAssetId',
-      'transaction_type',
+      'transactionType',
     ]);
   }
 

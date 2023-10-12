@@ -13,7 +13,7 @@ export class PairLiquidityEntityToDtoMapper extends BaseDtoMapper<
       secondAssetId,
       firstAssetAmount,
       secondAssetAmount,
-      transactionType: type,
+      transactionType,
       timestamp,
     } = entity;
 
@@ -23,7 +23,7 @@ export class PairLiquidityEntityToDtoMapper extends BaseDtoMapper<
       secondAssetId,
       firstAssetAmount,
       secondAssetAmount,
-      type,
+      transactionType,
       timestamp,
     };
   }
