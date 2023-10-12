@@ -6,10 +6,6 @@ import { Cache } from 'cache-manager';
 import { CACHE_KEYS, CACHE_TTL } from './pairs.constants';
 import { PairsService } from './pairs.service';
 import { PairDto } from './dto/pair.dto';
-import { PairsLiquidityChangesService } from './pairs-liquidity-changes.service';
-import { PairLiquidityChangeDto } from './dto/pair-liquidity-chage.dto';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
-import { PageDto } from 'src/utils/pagination/page.dto';
 
 @Controller('pairs')
 @ApiTags('Pairs Controller')
@@ -18,7 +14,6 @@ export class PairsController {
 
   constructor(
     private readonly pairsService: PairsService,
-    private readonly pairsLiquidityChangesService: PairsLiquidityChangesService,
     private readonly mapper: PairToDtoMapper,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
@@ -40,14 +35,5 @@ export class PairsController {
       () => this.pairsService.calculateTVL(),
       CACHE_TTL.ONE_MINUTE,
     );
-  }
-
-  @Get('/liquidity-changes/:assetA/:assetB')
-  public getLiquidityChanges(
-    @Param('assetA') assetA: string,
-    @Param('assetB') assetB: string,
-    @Query() pageOptions: PageOptionsDto,
-  ): Promise<PageDto<PairLiquidityChangeDto>> {
-    return this.pairsLiquidityChangesService.find(assetA, assetB, pageOptions);
   }
 }

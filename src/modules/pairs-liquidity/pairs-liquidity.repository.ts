@@ -2,13 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PairLiquidityChangeEntity } from './entity/pair-liquidity-change.entity';
-import { PairLiquidityEntityToDtoMapper } from './mapper/pair-liquidity-entity-to-dto.mapper';
-import { skip } from 'rxjs';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 
 @Injectable()
-export class PairsLiquidityChangesRepository {
-  private readonly logger = new Logger(PairsLiquidityChangesRepository.name);
+export class PairsLiquidityRepository {
+  private readonly logger = new Logger(PairsLiquidityRepository.name);
 
   constructor(
     @InjectRepository(PairLiquidityChangeEntity)

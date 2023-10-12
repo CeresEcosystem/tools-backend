@@ -2,17 +2,17 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { options } from '@sora-substrate/api';
 import { PROVIDER } from 'src/constants/constants';
-import { PairsLiquidityChangesService } from './pairs-liquidity-changes.service';
 import { PairLiquidityChangeDataDto } from './dto/pair-liquidity-change-data.dto';
 import { PairLiquidityChangeDataDtoToEntityMapper } from './mapper/pair-liquidity-change-data-dto-to-entity.mapper';
+import { PairsLiquidityService } from './pairs-liquidity.service';
 
 @Injectable()
-export class PairsLiquidityChangesListener {
-  private readonly logger = new Logger(PairsLiquidityChangesListener.name);
+export class PairsLiquidityListener {
+  private readonly logger = new Logger(PairsLiquidityListener.name);
   private soraAPI;
 
   constructor(
-    private readonly service: PairsLiquidityChangesService,
+    private readonly service: PairsLiquidityService,
     private readonly mapper: PairLiquidityChangeDataDtoToEntityMapper,
   ) {
     const provider = new WsProvider(PROVIDER);
@@ -33,7 +33,7 @@ export class PairsLiquidityChangesListener {
       );
 
       this.logger.debug(
-        `Fetching liquidity change data for block #${header.number.toNumber()}`,
+        `Fetching event data for block #${header.number.toNumber()}`,
       );
 
       const block = await this.soraAPI.rpc.chain.getBlock(blockHash);
