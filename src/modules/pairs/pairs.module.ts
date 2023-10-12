@@ -15,7 +15,8 @@ import { PairsLiquidityChangesListener } from './pairs-liquidity-changes.listene
 import { PairLiquidityChangeEntity } from './entity/pair-liquidity-change.entity';
 import { PairsLiquidityChangesService } from './pairs-liquidity-changes.service';
 import { PairsLiquidityChangesRepository } from './pairs-liquidity-changes.repository';
-import { PairsLiquidityEntityToDtoMapper } from './mapper/pair-liquidity-entity-to-dto.mapper';
+import { PairLiquidityEntityToDtoMapper } from './mapper/pair-liquidity-entity-to-dto.mapper';
+import { PairLiquidityChangeDataDtoToEntityMapper } from './mapper/pair-liquidity-change-data-dto-to-entity.mapper';
 
 @Module({
   imports: [
@@ -36,7 +37,8 @@ import { PairsLiquidityEntityToDtoMapper } from './mapper/pair-liquidity-entity-
     PairsLiquidityChangesListener,
     PairsLiquidityChangesService,
     PairsLiquidityChangesRepository,
-    PairsLiquidityEntityToDtoMapper,
+    PairLiquidityEntityToDtoMapper,
+    PairLiquidityChangeDataDtoToEntityMapper,
   ],
   exports: [PairsService],
 })

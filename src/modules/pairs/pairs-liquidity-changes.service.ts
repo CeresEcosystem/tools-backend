@@ -4,13 +4,13 @@ import { PairsLiquidityChangesRepository } from './pairs-liquidity-changes.repos
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
 import { PageDto } from 'src/utils/pagination/page.dto';
-import { PairsLiquidityEntityToDtoMapper } from './mapper/pair-liquidity-entity-to-dto.mapper';
+import { PairLiquidityEntityToDtoMapper } from './mapper/pair-liquidity-entity-to-dto.mapper';
 
 @Injectable()
 export class PairsLiquidityChangesService {
   constructor(
     private readonly repository: PairsLiquidityChangesRepository,
-    private readonly mapper: PairsLiquidityEntityToDtoMapper,
+    private readonly mapper: PairLiquidityEntityToDtoMapper,
   ) {}
 
   public insert(data: PairLiquidityChangeEntity) {

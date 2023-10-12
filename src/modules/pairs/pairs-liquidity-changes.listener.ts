@@ -2,19 +2,19 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { options } from '@sora-substrate/api';
 import { PROVIDER } from 'src/constants/constants';
-import {
-  parsePoolXYKDepositArgs,
-  parsePoolXYKWithdrawArgs,
-} from './pairs-liquidity-changes.utils';
-import { PairLiquidityChangeEntity } from './entity/pair-liquidity-change.entity';
 import { PairsLiquidityChangesService } from './pairs-liquidity-changes.service';
+import { PairLiquidityChangeDataDto } from './dto/pair-liquidity-change-data.dto';
+import { PairLiquidityChangeDataDtoToEntityMapper } from './mapper/pair-liquidity-change-data-dto-to-entity.mapper';
 
 @Injectable()
 export class PairsLiquidityChangesListener {
   private readonly logger = new Logger(PairsLiquidityChangesListener.name);
   private soraAPI;
 
-  constructor(private readonly service: PairsLiquidityChangesService) {
+  constructor(
+    private readonly service: PairsLiquidityChangesService,
+    private readonly mapper: PairLiquidityChangeDataDtoToEntityMapper,
+  ) {
     const provider = new WsProvider(PROVIDER);
     new ApiPromise(options({ provider, noInitWarn: true })).isReady.then(
       (api) => {
@@ -63,55 +63,29 @@ export class PairsLiquidityChangesListener {
                   method === 'withdrawLiquidity'),
             )
             .forEach(async () => {
-              if (method === 'depositLiquidity') {
-                this.logger.debug(
-                  `Parsing data for deposit liquidity transaction`,
-                );
+              const rawData: PairLiquidityChangeDataDto = {
+                transactionType: method,
+                signerId: signer.toString(),
+                blockNumber: header.number.toNumber(),
+                timestamp: timestamp.toNumber(),
+                eventArgs: args,
+              };
 
-                const parsedArgs = parsePoolXYKDepositArgs(args);
+              this.logger.debug(
+                `Parsing new liquidity change data [block: #${rawData.blockNumber}; transaction type: ${rawData.transactionType}]`,
+              );
 
-                const data: PairLiquidityChangeEntity = {
-                  signerId: signer.toString(),
-                  blockNumber: header.number.toNumber(),
-                  firstAssetId: parsedArgs.inputAssetA,
-                  firstAssetAmount: parsedArgs.inputADesired,
-                  secondAssetId: parsedArgs.inputAssetB,
-                  secondAssetAmount: parsedArgs.inputBDesired,
-                  timestamp: timestamp.toNumber(),
-                  transactionType: method,
-                };
+              const formatedData = this.mapper.toEntity(rawData);
 
-                this.logger.debug(`Saving liquidity change (deposit) data`);
+              this.logger.debug(
+                `Saving new liquidity change data [block: #${rawData.blockNumber}; transaction type: ${rawData.transactionType}]`,
+              );
 
-                await this.service.insert(data);
+              this.service.insert(formatedData);
 
-                this.logger.debug(`Saved new liquidity change (deposit) data`);
-              }
-
-              if (method === 'withdrawLiquidity') {
-                this.logger.debug(
-                  `Parsing data for withdraw liquidity transaction`,
-                );
-
-                const parsedArgs = parsePoolXYKWithdrawArgs(args);
-
-                const data: PairLiquidityChangeEntity = {
-                  signerId: signer.toString(),
-                  blockNumber: header.number.toNumber(),
-                  firstAssetId: parsedArgs.outputAssetA,
-                  firstAssetAmount: parsedArgs.outputAMin,
-                  secondAssetId: parsedArgs.outputAssetB,
-                  secondAssetAmount: parsedArgs.outputBMin,
-                  timestamp: timestamp.toNumber(),
-                  transactionType: method,
-                };
-
-                this.logger.debug(`Saving liquidity change (withdraw) data`);
-
-                await this.service.insert(data);
-
-                this.logger.debug(`Saved new liquidity change (withdraw) data`);
-              }
+              this.logger.debug(
+                `Saved new liquidity change data [block: #${rawData.blockNumber}; transaction type: ${rawData.transactionType}]`,
+              );
             });
         },
       );
