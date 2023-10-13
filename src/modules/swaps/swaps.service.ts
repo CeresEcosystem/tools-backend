@@ -13,6 +13,13 @@ export class SwapService {
 
   constructor(private readonly swapRepo: SwapRepository) {}
 
+  findSwapsByToken(
+    pageOptions: PageOptionsDto,
+    assetId: string,
+  ): Promise<PageDto<SwapDto>> {
+    return this.swapRepo.findSwapsByAssetId(pageOptions, assetId);
+  }
+
   findSwapsByTokens(
     pageOptions: PageOptionsDto,
     tokens: string[],
