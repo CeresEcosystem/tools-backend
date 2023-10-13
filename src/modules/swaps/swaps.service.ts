@@ -15,6 +15,13 @@ export class SwapService {
     return this.swapRepo.findSwapsByAssetId(pageOptions, assetId);
   }
 
+  findSwapsByTokens(
+    pageOptions: PageOptionsDto,
+    tokens: string[],
+  ): Promise<PageDto<SwapDto>> {
+    return this.swapRepo.findSwapsByAssetIds(pageOptions, tokens);
+  }
+
   findSwapsByAccount(
     pageOptions: PageOptionsDto,
     accountId: string,

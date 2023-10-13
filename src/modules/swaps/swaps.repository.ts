@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Swap } from './entity/swaps.entity';
 import { SwapDto } from './dto/swap.dto';
@@ -25,6 +25,28 @@ export class SwapRepository {
       take: pageOptions.size,
       order: { id: 'DESC' },
       where: [{ inputAssetId: assetId }, { outputAssetId: assetId }],
+    });
+
+    let swaps: SwapDto[] = [];
+
+    const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
+
+    data.forEach((swap) => {
+      swaps.push(this.swapMapper.toDto(swap));
+    });
+
+    return new PageDto(swaps, meta);
+  }
+
+  async findSwapsByAssetIds(
+    pageOptions: PageOptionsDto,
+    assetIds: string[],
+  ): Promise<PageDto<SwapDto>> {
+    const [data, count] = await this.swapRepository.findAndCount({
+      skip: pageOptions.skip,
+      take: pageOptions.size,
+      order: { id: 'DESC' },
+      where: [{ inputAssetId: In(assetIds) }, { outputAssetId: In(assetIds) }],
     });
 
     let swaps: SwapDto[] = [];
