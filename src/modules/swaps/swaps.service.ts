@@ -1,12 +1,17 @@
 import { SwapRepository } from './swaps.repository';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { SwapDto } from './dto/swap.dto';
 import { PageDto } from 'src/utils/pagination/page.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
+import { Cron, CronExpression } from '@nestjs/schedule';
+
+const SWAPS_TTL_DAYS = 30;
 
 @Injectable()
 export class SwapService {
-  constructor(private swapRepo: SwapRepository) {}
+  private readonly logger = new Logger(SwapService.name);
+
+  constructor(private readonly swapRepo: SwapRepository) {}
 
   findSwapsByTokens(
     pageOptions: PageOptionsDto,
@@ -20,5 +25,14 @@ export class SwapService {
     accountId: string,
   ): Promise<PageDto<SwapDto>> {
     return this.swapRepo.findSwapsByAccountId(pageOptions, accountId);
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  public async cleanUpSwaps() {
+    this.logger.log('Start cleaning up old token swaps.');
+
+    await this.swapRepo.deleteOlderThanDays(SWAPS_TTL_DAYS);
+
+    this.logger.log('Finished cleaning up old token swaps.');
   }
 }
