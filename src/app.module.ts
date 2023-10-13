@@ -20,7 +20,6 @@ import { BannerModule } from './modules/banner/banner.module';
 import { NestjsFormDataModule } from 'nestjs-form-data';
 import { TokenOrderModule } from './modules/token-order/token-order.module';
 import { SwapsModule } from './modules/swaps/swaps.module';
-import { PairsLiquidityModule } from './modules/pairs-liquidity/pairs-liquidity.module';
 
 @Module({
   imports: [
@@ -73,7 +72,6 @@ import { PairsLiquidityModule } from './modules/pairs-liquidity/pairs-liquidity.
     BannerModule,
     TokenOrderModule,
     SwapsModule,
-    PairsLiquidityModule,
   ],
   controllers: [],
   providers: [],
