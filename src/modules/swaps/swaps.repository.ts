@@ -16,28 +16,6 @@ export class SwapRepository {
     private readonly swapMapper: SwapEntityToDto,
   ) {}
 
-  async findSwapsByAssetId(
-    pageOptions: PageOptionsDto,
-    assetId: string,
-  ): Promise<PageDto<SwapDto>> {
-    const [data, count] = await this.swapRepository.findAndCount({
-      skip: pageOptions.skip,
-      take: pageOptions.size,
-      order: { id: 'DESC' },
-      where: [{ inputAssetId: assetId }, { outputAssetId: assetId }],
-    });
-
-    let swaps: SwapDto[] = [];
-
-    const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
-
-    data.forEach((swap) => {
-      swaps.push(this.swapMapper.toDto(swap));
-    });
-
-    return new PageDto(swaps, meta);
-  }
-
   async findSwapsByAssetIds(
     pageOptions: PageOptionsDto,
     assetIds: string[],
@@ -49,15 +27,9 @@ export class SwapRepository {
       where: [{ inputAssetId: In(assetIds) }, { outputAssetId: In(assetIds) }],
     });
 
-    let swaps: SwapDto[] = [];
-
     const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
 
-    data.forEach((swap) => {
-      swaps.push(this.swapMapper.toDto(swap));
-    });
-
-    return new PageDto(swaps, meta);
+    return new PageDto(this.swapMapper.toDtos(data), meta);
   }
 
   async findSwapsByAccountId(
@@ -71,14 +43,8 @@ export class SwapRepository {
       where: { accountId: accountId },
     });
 
-    let swaps: SwapDto[] = [];
-
     const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
 
-    data.forEach((swap) => {
-      swaps.push(this.swapMapper.toDto(swap));
-    });
-
-    return new PageDto(swaps, meta);
+    return new PageDto(this.swapMapper.toDtos(data), meta);
   }
 }

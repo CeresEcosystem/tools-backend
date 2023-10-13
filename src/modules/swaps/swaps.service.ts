@@ -8,13 +8,6 @@ import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 export class SwapService {
   constructor(private swapRepo: SwapRepository) {}
 
-  findSwapsByToken(
-    pageOptions: PageOptionsDto,
-    assetId: string,
-  ): Promise<PageDto<SwapDto>> {
-    return this.swapRepo.findSwapsByAssetId(pageOptions, assetId);
-  }
-
   findSwapsByTokens(
     pageOptions: PageOptionsDto,
     tokens: string[],
