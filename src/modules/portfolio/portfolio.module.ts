@@ -5,9 +5,16 @@ import { TokenPriceModule } from '../token-price/token-price.module';
 import { ChronoPriceModule } from '../chrono-price/chrono-price.module';
 import { PairsModule } from '../pairs/pairs.module';
 import { DeoClientModule } from '../deo-client/deo-client.module';
+import { SwapsModule } from '../swaps/swaps.module';
 
 @Module({
-  imports: [TokenPriceModule, ChronoPriceModule, PairsModule, DeoClientModule],
+  imports: [
+    TokenPriceModule,
+    ChronoPriceModule,
+    PairsModule,
+    DeoClientModule,
+    SwapsModule,
+  ],
   controllers: [PortfolioController],
   providers: [PortfolioService],
 })

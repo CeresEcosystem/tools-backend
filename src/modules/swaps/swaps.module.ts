@@ -12,12 +12,13 @@ import { SwapService } from './swaps.service';
   imports: [TypeOrmModule.forFeature([Swap])],
   controllers: [SwapsController],
   providers: [
-    SwapService,
     SwapRepository,
     SwapGateway,
     SwapListener,
     SwapEntityToDto,
+    SwapService,
   ],
+  exports: [SwapService],
 })
 export class SwapsModule {
   constructor(private swapListener: SwapListener) {
