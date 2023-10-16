@@ -5,6 +5,7 @@ import { SwapDto } from '../dto/swap.dto';
 export class SwapEntityToDto extends BaseDtoMapper<Swap, SwapDto> {
   toDto(entity: Swap): SwapDto {
     const {
+      id,
       swappedAt,
       accountId,
       inputAssetId,
@@ -14,6 +15,7 @@ export class SwapEntityToDto extends BaseDtoMapper<Swap, SwapDto> {
     } = entity;
 
     return {
+      id,
       swappedAt,
       accountId,
       inputAssetId,
