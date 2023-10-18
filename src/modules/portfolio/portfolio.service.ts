@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { WsProvider, ApiPromise } from '@polkadot/api';
 import { FPNumber } from '@sora-substrate/math';
@@ -46,14 +46,19 @@ export class PortfolioService {
     const assetIdsAndAssetBalances: PortfolioDto[] = [];
     let xor;
     let portfolio;
-
+    console.time('Retriving XOR tokens');
+    Logger.log('Retrive XOR tokens from SORA');
     try {
       xor = await this.api.rpc.assets.freeBalance(accountId, XOR_ADDRESS);
     } catch (error) {
       return assetIdsAndAssetBalances;
     }
+
     const value = !xor.isNone ? xor.unwrap() : { balance: 0 };
     const balance = new FPNumber(value.balance).toNumber();
+    Logger.log('XOR tokens retrived');
+    console.timeEnd('Retriving XOR tokens');
+
     const tokenEntity = await this.tokenPriceService.findByAssetId(XOR_ADDRESS);
 
     const { o: prices } = await this.chronoPriceService.getPriceForChart(
@@ -86,12 +91,18 @@ export class PortfolioService {
       oneMonthValueDifference: oneMonth.valueDifference,
     });
 
+    console.time('Retriving non-Xor tokens');
+    Logger.log('Retrive non-XOR tokens from SORA');
     try {
       portfolio = await this.api.query.tokens.accounts.entries(accountId);
     } catch (error) {
       return assetIdsAndAssetBalances;
     }
+    Logger.log('Non-XOR tokens retrived');
+    console.timeEnd('Retriving non-Xor tokens');
 
+    console.time('For-loop for portfolio');
+    Logger.log('Start for-loop for portfolio');
     for (const [assetsId, assetAmount] of portfolio) {
       const { free: assetBalance } = assetAmount.toHuman();
       const balance = new FPNumber(assetBalance).div(DENOMINATOR).toNumber();
@@ -133,6 +144,8 @@ export class PortfolioService {
       } catch (error) {}
     }
 
+    Logger.log('End for-loop for portfolio');
+    console.timeEnd('For-loop for portfolio');
     return assetIdsAndAssetBalances;
   }
 
