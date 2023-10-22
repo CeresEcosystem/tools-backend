@@ -44,22 +44,28 @@ export class PortfolioService {
     const assetIdsAndAssetBalances: PortfolioDto[] = [];
     let xor;
 
+    console.time('Load portfolio XOR');
     try {
       xor = await this.api.rpc.assets.freeBalance(accountId, XOR_ADDRESS);
     } catch (error) {
       return assetIdsAndAssetBalances;
     }
+    console.timeEnd('Load portfolio XOR');
 
     const value = !xor.isNone ? xor.unwrap() : { balance: 0 };
     const balance = new FPNumber(value.balance).toNumber();
 
+    console.time('Get XOR token entity');
     const tokenEntity = await this.tokenPriceService.findByAssetId(XOR_ADDRESS);
+    console.timeEnd('Get XOR token entity');
 
+    console.time('Price change for intervals XOR');
     const priceChanges =
       await this.chronoPriceService.getPriceChangePerIntervals(
         tokenEntity,
         HOUR_INTERVALS,
       );
+    console.timeEnd('Price change for intervals XOR');
 
     const [oneHour, oneDay, oneWeek, oneMonth] = this.calculatePriceChanges(
       priceChanges,
@@ -84,11 +90,13 @@ export class PortfolioService {
 
     let portfolio;
 
+    console.time('Load portfolio');
     try {
       portfolio = await this.api.query.tokens.accounts.entries(accountId);
     } catch (error) {
       return assetIdsAndAssetBalances;
     }
+    console.timeEnd('Load portfolio');
 
     console.time('For-loop for portfolio');
     Logger.log('Start for-loop for portfolio, count: ' + portfolio.length);

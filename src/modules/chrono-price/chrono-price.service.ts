@@ -24,23 +24,11 @@ export class ChronoPriceService {
     this.repository.insert(chronoPriceDtos);
   }
 
-  public async getPriceChangePerIntervals(
+  public getPriceChangePerIntervals(
     tokenPrice: TokenPrice,
     intervalsInHours: number[],
   ): Promise<PriceChangeDto[]> {
-    // const { created_at: latestEntry, price: currentPrice } =
-    //   await this.repository
-    //     .createQueryBuilder()
-    //     .select(['created_at', 'price'])
-    //     .where({ token })
-    //     .orderBy({ created_at: 'DESC' })
-    //     .limit(1)
-    //     .getRawOne<{
-    //       created_at: Date;
-    //       price: string;
-    //     }>();
-
-    return await Promise.all(
+    return Promise.all(
       intervalsInHours.map((intervalHours) =>
         this.getPriceChangeForInterval(
           tokenPrice.token,
@@ -87,7 +75,7 @@ export class ChronoPriceService {
     currentPrice: Big,
     intervalHours: number,
   ): Promise<PriceChangeDto> {
-    console.time('Price change for interval ' + intervalHours);
+    console.time(`Price change for interval ${intervalHours} ${token}`);
     const priceChange = await this.repository
       .createQueryBuilder()
       .select('price')
@@ -102,7 +90,7 @@ export class ChronoPriceService {
       .limit(1)
       .getRawOne<{ price: string }>();
 
-    console.time('Price change for interval ' + intervalHours);
+    console.timeEnd(`Price change for interval ${intervalHours} ${token}`);
 
     if (!priceChange) {
       return {
