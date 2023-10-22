@@ -89,42 +89,46 @@ export class PortfolioService {
 
     Logger.log('Relevant assets count: ' + relevantPortfolioAssets.length);
 
-    const result = await Promise.all(
-      relevantPortfolioAssets.map(async ({ assetId, assetAmount }) => {
-        const tokenEntity = allTokenEntities.find(
-          (token) => token.assetId === assetId,
-        );
-
-        console.time(`Price change for intervals ${tokenEntity.token}`);
-        const priceChanges =
-          await this.chronoPriceService.getPriceChangePerIntervals(
-            tokenEntity,
-            HOUR_INTERVALS,
-          );
-        console.timeEnd(`Price change for intervals ${tokenEntity.token}`);
-
-        const [oneHour, oneDay, oneWeek, oneMonth] = this.calculatePriceChanges(
-          priceChanges,
-          assetAmount,
-        );
-
-        return {
-          fullName: tokenEntity.fullName,
-          token: tokenEntity.token,
-          price: Number(tokenEntity.price),
-          balance: assetAmount,
-          value: Number(tokenEntity.price) * assetAmount,
-          oneHour: oneHour.percentageDifference,
-          oneHourValueDifference: oneHour.valueDifference,
-          oneDay: oneDay.percentageDifference,
-          oneDayValueDifference: oneDay.valueDifference,
-          oneWeek: oneWeek.percentageDifference,
-          oneWeekValueDifference: oneWeek.valueDifference,
-          oneMonth: oneMonth.percentageDifference,
-          oneMonthValueDifference: oneMonth.valueDifference,
-        };
-      }),
+    const relevantTokens = allTokenEntities.filter((token) =>
+      relevantPortfolioAssets.some((asset) => asset.assetId === token.assetId),
     );
+
+    const relevantTokenPriceChanges =
+      await this.chronoPriceService.getPriceChangePerIntervals(
+        relevantTokens,
+        HOUR_INTERVALS,
+      );
+
+    const result = relevantPortfolioAssets.map(({ assetId, assetAmount }) => {
+      const tokenEntity = allTokenEntities.find(
+        (token) => token.assetId === assetId,
+      );
+
+      const priceChanges = relevantTokenPriceChanges
+        .filter((priceChange) => priceChange.token === tokenEntity.token)
+        .sort((priceChange) => priceChange.intervalHours);
+
+      const [oneHour, oneDay, oneWeek, oneMonth] = this.calculatePriceChanges(
+        priceChanges,
+        assetAmount,
+      );
+
+      return {
+        fullName: tokenEntity.fullName,
+        token: tokenEntity.token,
+        price: Number(tokenEntity.price),
+        balance: assetAmount,
+        value: Number(tokenEntity.price) * assetAmount,
+        oneHour: oneHour.percentageDifference,
+        oneHourValueDifference: oneHour.valueDifference,
+        oneDay: oneDay.percentageDifference,
+        oneDayValueDifference: oneDay.valueDifference,
+        oneWeek: oneWeek.percentageDifference,
+        oneWeekValueDifference: oneWeek.valueDifference,
+        oneMonth: oneMonth.percentageDifference,
+        oneMonthValueDifference: oneMonth.valueDifference,
+      };
+    });
 
     Logger.log('End portfolio processing');
     console.timeEnd('Portfolio price changes');

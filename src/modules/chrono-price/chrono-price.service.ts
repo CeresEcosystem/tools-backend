@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { Between, DataSource, Repository } from 'typeorm';
+import { Between, DataSource, In, Repository } from 'typeorm';
 import { ChronoPriceDto } from './dto/chrono-price.dto';
 import { ChronoPrice } from './entity/chrono-price.entity';
 import { isNumberString } from 'class-validator';
@@ -24,20 +24,17 @@ export class ChronoPriceService {
     this.repository.insert(chronoPriceDtos);
   }
 
-  public getPriceChangePerIntervals(
-    tokenPrice: TokenPrice,
+  public async getPriceChangePerIntervals(
+    tokenEntities: TokenPrice[],
     intervalsInHours: number[],
   ): Promise<PriceChangeDto[]> {
-    return Promise.all(
+    const result = await Promise.all(
       intervalsInHours.map((intervalHours) =>
-        this.getPriceChangeForInterval(
-          tokenPrice.token,
-          tokenPrice.updatedAt,
-          new Big(tokenPrice.price),
-          intervalHours,
-        ),
+        this.getPriceChangeForInterval(tokenEntities, intervalHours),
       ),
     );
+
+    return result.flat();
   }
 
   public async getPriceForChart(
@@ -70,47 +67,59 @@ export class ChronoPriceService {
   }
 
   private async getPriceChangeForInterval(
-    token: string,
-    latestEntry: Date,
-    currentPrice: Big,
+    tokenEntities: TokenPrice[],
     intervalHours: number,
-  ): Promise<PriceChangeDto> {
-    console.time(`Price change for interval ${intervalHours} ${token}`);
-    const priceChange = await this.repository
+  ): Promise<PriceChangeDto[]> {
+    const tokens = tokenEntities.map((tokenEntity) => tokenEntity.token);
+    const latestEntry = tokenEntities.reduce((t1, t2) =>
+      t1.updatedAt > t2.updatedAt ? t1 : t2,
+    ).updatedAt;
+
+    console.time(`Price change for interval ${intervalHours}`);
+    const priceChanges = await this.repository
       .createQueryBuilder()
-      .select('price')
+      .distinctOn(['token'])
+      .select(['token', 'price'])
       .where({
-        token,
+        token: In(tokens),
         createdAt: Between(
           this.sub2Mins(subtractHours(new Date(latestEntry), intervalHours)),
           this.add2Mins(subtractHours(new Date(latestEntry), intervalHours)),
         ),
       })
-      // .orderBy({ created_at: 'DESC' })
-      .limit(1)
-      .getRawOne<{ price: string }>();
+      .getRawMany<{ token: string; price: string }>();
 
-    console.timeEnd(`Price change for interval ${intervalHours} ${token}`);
+    console.timeEnd(`Price change for interval ${intervalHours}`);
 
-    if (!priceChange) {
+    return tokenEntities.map((tokenEntity) => {
+      const priceChange = priceChanges.find(
+        (priceChange) => priceChange.token === tokenEntity.token,
+      );
+
+      const currentPrice = new Big(tokenEntity.price);
+
+      if (!priceChange) {
+        return {
+          token: tokenEntity.token,
+          intervalHours,
+          currentPrice,
+          oldPrice: new Big(0),
+          valueDiff: new Big(0),
+          percentageDiff: new Big(0),
+        };
+      }
+
+      const oldPrice = new Big(priceChange.price);
+
       return {
+        token: tokenEntity.token,
         intervalHours,
         currentPrice,
-        oldPrice: new Big(0),
-        valueDiff: currentPrice,
-        percentageDiff: new Big(100),
+        oldPrice,
+        valueDiff: currentPrice.minus(oldPrice),
+        percentageDiff: currentPrice.div(oldPrice).minus(1).mul(100),
       };
-    }
-
-    const oldPrice = new Big(priceChange.price);
-
-    return {
-      intervalHours,
-      currentPrice,
-      oldPrice,
-      valueDiff: currentPrice.minus(oldPrice),
-      percentageDiff: currentPrice.div(oldPrice).minus(1).mul(100),
-    };
+    });
   }
 
   private buildQuery(
