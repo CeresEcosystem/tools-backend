@@ -1,9 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { Between, DataSource, Repository } from 'typeorm';
 import { ChronoPriceDto } from './dto/chrono-price.dto';
 import { ChronoPrice } from './entity/chrono-price.entity';
 import { isNumberString } from 'class-validator';
+import Big from 'big.js';
+import { subtractHours } from 'src/utils/date-utils';
+import { PriceChangeDto } from './dto/price-change.dto';
 
 @Injectable()
 export class ChronoPriceService {
@@ -18,6 +21,34 @@ export class ChronoPriceService {
 
   public save(chronoPriceDtos: ChronoPriceDto[]) {
     this.repository.insert(chronoPriceDtos);
+  }
+
+  public async getPriceChangePerIntervals(
+    token: string,
+    intervalsInHours: number[],
+  ): Promise<PriceChangeDto[]> {
+    const { created_at: latestEntry, price: currentPrice } =
+      await this.repository
+        .createQueryBuilder()
+        .select(['created_at', 'price'])
+        .where({ token })
+        .orderBy({ created_at: 'DESC' })
+        .limit(1)
+        .getRawOne<{
+          created_at: Date;
+          price: string;
+        }>();
+
+    return await Promise.all(
+      intervalsInHours.map((intervalHours) =>
+        this.getPriceChangeForInterval(
+          token,
+          latestEntry,
+          new Big(currentPrice),
+          intervalHours,
+        ),
+      ),
+    );
   }
 
   public async getPriceForChart(
@@ -47,6 +78,47 @@ export class ChronoPriceService {
     tokenPrices.s = 'ok';
 
     return tokenPrices;
+  }
+
+  private async getPriceChangeForInterval(
+    token: string,
+    latestEntry: Date,
+    currentPrice: Big,
+    intervalHours: number,
+  ): Promise<PriceChangeDto> {
+    const priceChange = await this.repository
+      .createQueryBuilder()
+      .select(['created_at', 'price'])
+      .where({
+        token,
+        createdAt: Between(
+          this.sub2Mins(subtractHours(new Date(latestEntry), intervalHours)),
+          this.add2Mins(subtractHours(new Date(latestEntry), intervalHours)),
+        ),
+      })
+      .orderBy({ created_at: 'DESC' })
+      .limit(1)
+      .getRawOne<{ price: string }>();
+
+    if (!priceChange) {
+      return {
+        intervalHours,
+        currentPrice,
+        oldPrice: new Big(0),
+        valueDiff: currentPrice,
+        percentageDiff: new Big(100),
+      };
+    }
+
+    const oldPrice = new Big(priceChange.price);
+
+    return {
+      intervalHours,
+      currentPrice,
+      oldPrice,
+      valueDiff: currentPrice.minus(oldPrice),
+      percentageDiff: currentPrice.div(oldPrice).minus(1).mul(100),
+    };
   }
 
   private buildQuery(
@@ -109,5 +181,17 @@ export class ChronoPriceService {
     }
 
     return resolution;
+  }
+
+  private sub2Mins(date: Date): any {
+    date.setMinutes(date.getMinutes() - 2);
+
+    return date;
+  }
+
+  private add2Mins(date: Date): any {
+    date.setMinutes(date.getMinutes() + 2);
+
+    return date;
   }
 }

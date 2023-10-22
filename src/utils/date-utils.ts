@@ -14,3 +14,9 @@ export function subtractDays(date: Date, days: number): Date {
 
   return date;
 }
+
+export function subtractHours(date: Date, hours: number): Date {
+  date.setHours(date.getHours() - hours);
+
+  return date;
+}

@@ -18,9 +18,10 @@ import { PortfolioValueDifferenceDto } from './dto/portfolio-value-difference.dt
 import { PageDto } from 'src/utils/pagination/page.dto';
 import { SwapDto } from '../swaps/dto/swap.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
+import { PriceChangeDto } from '../chrono-price/dto/price-change.dto';
 
 const DENOMINATOR = FPNumber.fromNatural(Math.pow(10, 18));
-const intervals = [2, 48, 336, 1440];
+const HOUR_INTERVALS = [1, 24, 24 * 7, 24 * 30];
 
 @Injectable()
 export class PortfolioService {
@@ -39,15 +40,10 @@ export class PortfolioService {
     );
   }
 
-  async getPortfolio(accountId: string): Promise<PortfolioDto[]> {
-    const timestamp = Math.floor(Date.now() / 1000);
-    const timestampBefore30Days = timestamp - 2592000;
-
+  public async getPortfolio(accountId: string): Promise<PortfolioDto[]> {
     const assetIdsAndAssetBalances: PortfolioDto[] = [];
     let xor;
-    let portfolio;
-    console.time('Retriving XOR tokens');
-    Logger.log('Retrive XOR tokens from SORA');
+
     try {
       xor = await this.api.rpc.assets.freeBalance(accountId, XOR_ADDRESS);
     } catch (error) {
@@ -56,22 +52,17 @@ export class PortfolioService {
 
     const value = !xor.isNone ? xor.unwrap() : { balance: 0 };
     const balance = new FPNumber(value.balance).toNumber();
-    Logger.log('XOR tokens retrived');
-    console.timeEnd('Retriving XOR tokens');
 
     const tokenEntity = await this.tokenPriceService.findByAssetId(XOR_ADDRESS);
 
-    const { o: prices } = await this.chronoPriceService.getPriceForChart(
-      tokenEntity.token,
-      '30',
-      timestampBefore30Days,
-      timestamp,
-      0,
-    );
+    const priceChanges =
+      await this.chronoPriceService.getPriceChangePerIntervals(
+        tokenEntity.token,
+        HOUR_INTERVALS,
+      );
 
     const [oneHour, oneDay, oneWeek, oneMonth] = this.calculatePriceChanges(
-      prices,
-      Number(tokenEntity.price),
+      priceChanges,
       balance,
     );
 
@@ -91,57 +82,59 @@ export class PortfolioService {
       oneMonthValueDifference: oneMonth.valueDifference,
     });
 
-    console.time('Retriving non-Xor tokens');
-    Logger.log('Retrive non-XOR tokens from SORA');
+    let portfolio;
+
     try {
       portfolio = await this.api.query.tokens.accounts.entries(accountId);
     } catch (error) {
       return assetIdsAndAssetBalances;
     }
-    Logger.log('Non-XOR tokens retrived');
-    console.timeEnd('Retriving non-Xor tokens');
 
     console.time('For-loop for portfolio');
     Logger.log('Start for-loop for portfolio');
     for (const [assetsId, assetAmount] of portfolio) {
       const { free: assetBalance } = assetAmount.toHuman();
       const balance = new FPNumber(assetBalance).div(DENOMINATOR).toNumber();
-      if (balance === 0) continue;
+
+      if (balance === 0) {
+        continue;
+      }
 
       const [, { code: assetId }] = assetsId.toHuman();
-      try {
-        const tokenEntity = await this.tokenPriceService.findByAssetId(assetId);
+      //TODO: optimization - load all assets at once above the for loop
+      const tokenEntity = await this.tokenPriceService.findByAssetId(assetId);
 
-        const { o: prices } = await this.chronoPriceService.getPriceForChart(
+      if (!tokenEntity) {
+        continue;
+      }
+
+      const priceChanges =
+        await this.chronoPriceService.getPriceChangePerIntervals(
           tokenEntity.token,
-          '30',
-          timestampBefore30Days,
-          timestamp,
-          0,
+          HOUR_INTERVALS,
         );
 
-        const [oneHour, oneDay, oneWeek, oneMonth] = this.calculatePriceChanges(
-          prices,
-          Number(tokenEntity.price),
-          balance,
-        );
+      //TODO: optimization - load changes for all assets at once above the for loop
+      const [oneHour, oneDay, oneWeek, oneMonth] = this.calculatePriceChanges(
+        priceChanges,
+        balance,
+      );
 
-        assetIdsAndAssetBalances.push({
-          fullName: tokenEntity.fullName,
-          token: tokenEntity.token,
-          price: Number(tokenEntity.price),
-          balance,
-          value: Number(tokenEntity.price) * balance,
-          oneHour: oneHour.percentageDifference,
-          oneHourValueDifference: oneHour.valueDifference,
-          oneDay: oneDay.percentageDifference,
-          oneDayValueDifference: oneDay.valueDifference,
-          oneWeek: oneWeek.percentageDifference,
-          oneWeekValueDifference: oneWeek.valueDifference,
-          oneMonth: oneMonth.percentageDifference,
-          oneMonthValueDifference: oneMonth.valueDifference,
-        });
-      } catch (error) {}
+      assetIdsAndAssetBalances.push({
+        fullName: tokenEntity.fullName,
+        token: tokenEntity.token,
+        price: Number(tokenEntity.price),
+        balance,
+        value: Number(tokenEntity.price) * balance,
+        oneHour: oneHour.percentageDifference,
+        oneHourValueDifference: oneHour.valueDifference,
+        oneDay: oneDay.percentageDifference,
+        oneDayValueDifference: oneDay.valueDifference,
+        oneWeek: oneWeek.percentageDifference,
+        oneWeekValueDifference: oneWeek.valueDifference,
+        oneMonth: oneMonth.percentageDifference,
+        oneMonthValueDifference: oneMonth.valueDifference,
+      });
     }
 
     Logger.log('End for-loop for portfolio');
@@ -149,57 +142,53 @@ export class PortfolioService {
     return assetIdsAndAssetBalances;
   }
 
-  calculatePriceChanges(
-    prices,
-    tokenPrice,
-    balance,
-  ): PortfolioValueDifferenceDto[] {
-    const priceDifferenceInPercentageArr: PortfolioValueDifferenceDto[] = [];
-
-    intervals.forEach((interval) => {
-      const beforePrice = prices[prices.length - interval];
-      const priceInPercentage =
-        ((tokenPrice / beforePrice - 1) * 100 * 100) / 100;
-      const valueDifference = (tokenPrice - beforePrice) * balance;
-
-      priceDifferenceInPercentageArr.push({
-        percentageDifference: priceInPercentage,
-        valueDifference,
-      });
-    });
-    return priceDifferenceInPercentageArr;
-  }
-
-  async getStakingPortfolio(accountId: string): Promise<StakingDto[]> {
+  public async getStakingPortfolio(accountId: string): Promise<StakingDto[]> {
     const stakingData: StakingDto[] = [];
     const pools = await this.deoClient.fetchStakingData(accountId);
-    if (pools)
-      for (const pool of pools) {
-        const balance = FPNumber.fromCodecValue(pool.pooledTokens).toNumber();
-        if (balance === 0) continue;
-        const tokenEntity = await this.tokenPriceService.findByAssetId(
-          pool.poolAsset,
-        );
-        stakingData.push({
-          fullName: tokenEntity.fullName,
-          token: tokenEntity.token,
-          price: Number(tokenEntity.price),
-          balance,
-          value: Number(tokenEntity.price) * balance,
-        });
+
+    if (!pools) {
+      return [];
+    }
+
+    //TODO: Use .filter and .map on pools array to create response
+    for (const pool of pools) {
+      const balance = FPNumber.fromCodecValue(pool.pooledTokens).toNumber();
+
+      if (balance === 0) {
+        continue;
       }
+
+      //TODO: optimization - load all assets at once above the for loop
+      const tokenEntity = await this.tokenPriceService.findByAssetId(
+        pool.poolAsset,
+      );
+
+      stakingData.push({
+        fullName: tokenEntity.fullName,
+        token: tokenEntity.token,
+        price: Number(tokenEntity.price),
+        balance,
+        value: Number(tokenEntity.price) * balance,
+      });
+    }
+
     return stakingData;
   }
 
-  async getRewardsPortfolio(accountId: string): Promise<StakingDto[]> {
+  public async getRewardsPortfolio(accountId: string): Promise<StakingDto[]> {
     const rewardsData: StakingDto[] = [];
     const rewardsMap = new Map();
     const stakingPools = await this.deoClient.fetchStakingData(accountId);
     const farmingPools = await this.deoClient.fetchFarmingData(accountId);
+
     if (stakingPools && farmingPools) {
       for (const pool of stakingPools) {
         const stakingReward = FPNumber.fromCodecValue(pool.rewards).toNumber();
-        if (stakingReward === 0) continue;
+
+        if (stakingReward === 0) {
+          continue;
+        }
+
         if (rewardsMap.has(pool.rewardAsset)) {
           const existingReward = rewardsMap.get(pool.rewardAsset);
           rewardsMap.set(pool.rewardAsset, existingReward + stakingReward);
@@ -207,9 +196,14 @@ export class PortfolioService {
           rewardsMap.set(pool.rewardAsset, stakingReward);
         }
       }
+
       for (const pool of farmingPools) {
         const farmingReward = FPNumber.fromCodecValue(pool.rewards).toNumber();
-        if (farmingReward == 0) continue;
+
+        if (farmingReward == 0) {
+          continue;
+        }
+
         if (rewardsMap.has(pool.rewardAsset)) {
           const existingReward = rewardsMap.get(pool.rewardAsset);
           rewardsMap.set(pool.rewardAsset, existingReward + farmingReward);
@@ -219,10 +213,13 @@ export class PortfolioService {
       }
     }
 
+    //TODO: Use .map on rewardsMap array to create response, avoid loops where possible
     for (const [rewardAsset, balance] of rewardsMap) {
+      //TODO: optimization - load all assets at once above the for loop
       const tokenEntity = await this.tokenPriceService.findByAssetId(
         rewardAsset,
       );
+
       rewardsData.push({
         fullName: tokenEntity.fullName,
         token: tokenEntity.token,
@@ -235,7 +232,9 @@ export class PortfolioService {
     return rewardsData;
   }
 
-  async getLiquidityPortfolio(accountId: string): Promise<LiquidityDto[]> {
+  public async getLiquidityPortfolio(
+    accountId: string,
+  ): Promise<LiquidityDto[]> {
     let poolSetXOR;
     let poolSetXSTUSD;
 
@@ -267,7 +266,24 @@ export class PortfolioService {
     return [...liquidityXOR, ...liquidityXSTUSD];
   }
 
-  async getLiquidity(
+  public async getSwapsPortfolio(
+    pageOptions: PageOptionsDto,
+    accountId: string,
+  ): Promise<PageDto<SwapDto>> {
+    return this.swapsService.findSwapsByAccount(pageOptions, accountId);
+  }
+
+  private calculatePriceChanges(
+    priceChangeIntervals: PriceChangeDto[],
+    balance: number,
+  ): PortfolioValueDifferenceDto[] {
+    return priceChangeIntervals.map((priceChange) => ({
+      percentageDifference: priceChange.percentageDiff.toNumber(),
+      valueDifference: priceChange.valueDiff.mul(balance).toNumber(),
+    }));
+  }
+
+  private async getLiquidity(
     poolSet,
     baseAssetId: string,
     accountId: string,
@@ -305,12 +321,5 @@ export class PortfolioService {
     }
 
     return liquidityData;
-  }
-
-  async getSwapsPortfolio(
-    pageOptions: PageOptionsDto,
-    accountId: string,
-  ): Promise<PageDto<SwapDto>> {
-    return this.swapsService.findSwapsByAccount(pageOptions, accountId);
   }
 }

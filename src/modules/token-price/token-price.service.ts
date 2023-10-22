@@ -28,7 +28,7 @@ export class TokenPriceService {
   }
 
   public findByAssetId(assetId: string): Promise<TokenPrice> {
-    return this.tokenPriceRepository.findOneByOrFail({ assetId });
+    return this.tokenPriceRepository.findOneBy({ assetId });
   }
 
   public async save(tokenPriceDtos: TokenPriceBcDto[]): Promise<void> {

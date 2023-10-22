@@ -19,6 +19,12 @@ export class TokenPriceRepository {
     });
   }
 
+  public findOneBy(
+    where: FindOptionsWhere<TokenPrice> | FindOptionsWhere<TokenPrice>[],
+  ): Promise<TokenPrice> {
+    return this.repository.findOneBy(where);
+  }
+
   public findOneByOrFail(
     where: FindOptionsWhere<TokenPrice> | FindOptionsWhere<TokenPrice>[],
   ): Promise<TokenPrice> {
