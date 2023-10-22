@@ -57,7 +57,7 @@ export class PortfolioService {
 
     const priceChanges =
       await this.chronoPriceService.getPriceChangePerIntervals(
-        tokenEntity.token,
+        tokenEntity,
         HOUR_INTERVALS,
       );
 
@@ -111,7 +111,7 @@ export class PortfolioService {
       console.time('Price change for intervals');
       const priceChanges =
         await this.chronoPriceService.getPriceChangePerIntervals(
-          tokenEntity.token,
+          tokenEntity,
           HOUR_INTERVALS,
         );
       console.timeEnd('Price change for intervals');

@@ -7,6 +7,7 @@ import { isNumberString } from 'class-validator';
 import Big from 'big.js';
 import { subtractHours } from 'src/utils/date-utils';
 import { PriceChangeDto } from './dto/price-change.dto';
+import { TokenPrice } from '../token-price/entity/token-price.entity';
 
 @Injectable()
 export class ChronoPriceService {
@@ -24,27 +25,27 @@ export class ChronoPriceService {
   }
 
   public async getPriceChangePerIntervals(
-    token: string,
+    tokenPrice: TokenPrice,
     intervalsInHours: number[],
   ): Promise<PriceChangeDto[]> {
-    const { created_at: latestEntry, price: currentPrice } =
-      await this.repository
-        .createQueryBuilder()
-        .select(['created_at', 'price'])
-        .where({ token })
-        .orderBy({ created_at: 'DESC' })
-        .limit(1)
-        .getRawOne<{
-          created_at: Date;
-          price: string;
-        }>();
+    // const { created_at: latestEntry, price: currentPrice } =
+    //   await this.repository
+    //     .createQueryBuilder()
+    //     .select(['created_at', 'price'])
+    //     .where({ token })
+    //     .orderBy({ created_at: 'DESC' })
+    //     .limit(1)
+    //     .getRawOne<{
+    //       created_at: Date;
+    //       price: string;
+    //     }>();
 
     return await Promise.all(
       intervalsInHours.map((intervalHours) =>
         this.getPriceChangeForInterval(
-          token,
-          latestEntry,
-          new Big(currentPrice),
+          tokenPrice.token,
+          tokenPrice.updatedAt,
+          new Big(tokenPrice.price),
           intervalHours,
         ),
       ),
