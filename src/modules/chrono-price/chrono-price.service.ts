@@ -86,9 +86,10 @@ export class ChronoPriceService {
     currentPrice: Big,
     intervalHours: number,
   ): Promise<PriceChangeDto> {
+    console.time('Price change for interval ' + intervalHours);
     const priceChange = await this.repository
       .createQueryBuilder()
-      .select(['created_at', 'price'])
+      .select('price')
       .where({
         token,
         createdAt: Between(
@@ -99,6 +100,8 @@ export class ChronoPriceService {
       .orderBy({ created_at: 'DESC' })
       .limit(1)
       .getRawOne<{ price: string }>();
+
+    console.time('Price change for interval ' + intervalHours);
 
     if (!priceChange) {
       return {
