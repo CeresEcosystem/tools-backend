@@ -41,7 +41,6 @@ export class PortfolioService {
   }
 
   public async getPortfolio(accountId: string): Promise<PortfolioDto[]> {
-    // const assetIdsAndAssetBalances: PortfolioDto[] = [];
     let xor;
 
     try {
@@ -54,40 +53,6 @@ export class PortfolioService {
     const xorBalance = new FPNumber(value.balance).toNumber();
 
     const allTokenEntities = await this.tokenPriceService.findAll();
-
-    // const xorTokenEntity = allTokenEntities.find(
-    //   (token) => token.assetId === XOR_ADDRESS,
-    // );
-
-    // const priceChanges =
-    //   await this.chronoPriceService.getPriceChangePerIntervals(
-    //     xorTokenEntity,
-    //     HOUR_INTERVALS,
-    //   );
-
-    // const [oneHour, oneDay, oneWeek, oneMonth] = this.calculatePriceChanges(
-    //   priceChanges,
-    //   xorBalance,
-    // );
-
-    // assetIdsAndAssetBalances.push(
-
-    // const xorBalance = {
-    //   fullName: xorTokenEntity.fullName,
-    //   token: xorTokenEntity.token,
-    //   price: Number(xorTokenEntity.price),
-    //   balance,
-    //   value: Number(xorTokenEntity.price) * balance,
-    //   oneHour: oneHour.percentageDifference,
-    //   oneHourValueDifference: oneHour.valueDifference,
-    //   oneDay: oneDay.percentageDifference,
-    //   oneDayValueDifference: oneDay.valueDifference,
-    //   oneWeek: oneWeek.percentageDifference,
-    //   oneWeekValueDifference: oneWeek.valueDifference,
-    //   oneMonth: oneMonth.percentageDifference,
-    //   oneMonthValueDifference: oneMonth.valueDifference,
-    // };
-    // );
 
     let portfolio;
 
@@ -164,55 +129,6 @@ export class PortfolioService {
     Logger.log('End portfolio processing');
     console.timeEnd('Portfolio price changes');
     return result;
-
-    // assetIdsAndAssetBalances.push();
-
-    // assetId: assetsId.toHuman(), assetAmount }));
-
-    // portfolioAssetsWithBalance.filter.map((portfolioItem) => {
-    //   const [assetsId] = portfolioItem;
-
-    //   const [, { code: assetId }] = assetsId.toHuman();
-    // });
-
-    // for (const [assetsId, assetAmount] of portfolio) {
-    // const { free: assetBalance } = assetAmount.toHuman();
-    // const balance = new FPNumber(assetBalance).div(DENOMINATOR).toNumber();
-    // if (balance === 0) {
-    //   continue;
-    // }
-    // const [, { code: assetId }] = assetsId.toHuman();
-    //TODO: optimization - load all assets at once above the for loop
-    // const tokenEntity = await this.tokenPriceService.findByAssetId(assetId);
-    // if (!tokenEntity) {
-    //   continue;
-    // }
-    // const priceChanges =
-    //   await this.chronoPriceService.getPriceChangePerIntervals(
-    //     tokenEntity,
-    //     HOUR_INTERVALS,
-    //   );
-    //TODO: optimization - load changes for all assets at once above the for loop
-    // const [oneHour, oneDay, oneWeek, oneMonth] = this.calculatePriceChanges(
-    //   priceChanges,
-    //   balance,
-    // );
-    // assetIdsAndAssetBalances.push({
-    //   fullName: tokenEntity.fullName,
-    //   token: tokenEntity.token,
-    //   price: Number(tokenEntity.price),
-    //   balance,
-    //   value: Number(tokenEntity.price) * balance,
-    //   oneHour: oneHour.percentageDifference,
-    //   oneHourValueDifference: oneHour.valueDifference,
-    //   oneDay: oneDay.percentageDifference,
-    //   oneDayValueDifference: oneDay.valueDifference,
-    //   oneWeek: oneWeek.percentageDifference,
-    //   oneWeekValueDifference: oneWeek.valueDifference,
-    //   oneMonth: oneMonth.percentageDifference,
-    //   oneMonthValueDifference: oneMonth.valueDifference,
-    // });
-    // }
   }
 
   public async getStakingPortfolio(accountId: string): Promise<StakingDto[]> {

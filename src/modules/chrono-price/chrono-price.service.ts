@@ -86,7 +86,7 @@ export class ChronoPriceService {
           this.add2Mins(subtractHours(new Date(latestEntry), intervalHours)),
         ),
       })
-      .orderBy({ created_at: 'DESC' })
+      // .orderBy({ created_at: 'DESC' })
       .limit(1)
       .getRawOne<{ price: string }>();
 
