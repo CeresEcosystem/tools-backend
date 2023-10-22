@@ -91,7 +91,7 @@ export class PortfolioService {
     }
 
     console.time('For-loop for portfolio');
-    Logger.log('Start for-loop for portfolio');
+    Logger.log('Start for-loop for portfolio, count: ' + portfolio.length);
     for (const [assetsId, assetAmount] of portfolio) {
       const { free: assetBalance } = assetAmount.toHuman();
       const balance = new FPNumber(assetBalance).div(DENOMINATOR).toNumber();
@@ -108,11 +108,13 @@ export class PortfolioService {
         continue;
       }
 
+      console.time('Price change for intervals');
       const priceChanges =
         await this.chronoPriceService.getPriceChangePerIntervals(
           tokenEntity.token,
           HOUR_INTERVALS,
         );
+      console.timeEnd('Price change for intervals');
 
       //TODO: optimization - load changes for all assets at once above the for loop
       const [oneHour, oneDay, oneWeek, oneMonth] = this.calculatePriceChanges(
