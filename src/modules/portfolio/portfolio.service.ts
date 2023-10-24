@@ -136,36 +136,35 @@ export class PortfolioService {
   }
 
   public async getStakingPortfolio(accountId: string): Promise<StakingDto[]> {
-    const stakingData: StakingDto[] = [];
     const pools = await this.deoClient.fetchStakingData(accountId);
+    const allTokenEntities = await this.tokenPriceService.findAll();
 
     if (!pools) {
       return [];
     }
 
-    //TODO: Use .filter and .map on pools array to create response
-    for (const pool of pools) {
-      const balance = FPNumber.fromCodecValue(pool.pooledTokens).toNumber();
+    const stakedTokens = pools
+      .filter(
+        (pool) => FPNumber.fromCodecValue(pool.pooledTokens).toNumber() != 0,
+      )
+      .map((pool) => {
+        const tokenEntity = allTokenEntities.find(
+          (entity) => entity.assetId === pool.poolAsset,
+        );
 
-      if (balance === 0) {
-        continue;
-      }
+        const balance = FPNumber.fromCodecValue(pool.pooledTokens).toNumber();
+        const price = Number(tokenEntity.price);
 
-      //TODO: optimization - load all assets at once above the for loop
-      const tokenEntity = await this.tokenPriceService.findByAssetId(
-        pool.poolAsset,
-      );
-
-      stakingData.push({
-        fullName: tokenEntity.fullName,
-        token: tokenEntity.token,
-        price: Number(tokenEntity.price),
-        balance,
-        value: Number(tokenEntity.price) * balance,
+        return {
+          fullName: tokenEntity.fullName,
+          token: tokenEntity.token,
+          price,
+          balance,
+          value: price * balance,
+        };
       });
-    }
 
-    return stakingData;
+    return stakedTokens;
   }
 
   public async getRewardsPortfolio(accountId: string): Promise<StakingDto[]> {
