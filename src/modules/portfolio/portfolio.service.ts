@@ -136,93 +136,75 @@ export class PortfolioService {
   }
 
   public async getStakingPortfolio(accountId: string): Promise<StakingDto[]> {
-    const stakingData: StakingDto[] = [];
     const pools = await this.deoClient.fetchStakingData(accountId);
+    const allTokenEntities = await this.tokenPriceService.findAll();
 
     if (!pools) {
       return [];
     }
 
-    //TODO: Use .filter and .map on pools array to create response
-    for (const pool of pools) {
-      const balance = FPNumber.fromCodecValue(pool.pooledTokens).toNumber();
+    const stakedTokens = pools
+      .filter(
+        (pool) => FPNumber.fromCodecValue(pool.pooledTokens).toNumber() > 0,
+      )
+      .map((pool) => {
+        const tokenEntity = allTokenEntities.find(
+          (entity) => entity.assetId === pool.poolAsset,
+        );
 
-      if (balance === 0) {
-        continue;
-      }
+        const balance = FPNumber.fromCodecValue(pool.pooledTokens).toNumber();
+        const price = Number(tokenEntity.price);
 
-      //TODO: optimization - load all assets at once above the for loop
-      const tokenEntity = await this.tokenPriceService.findByAssetId(
-        pool.poolAsset,
-      );
-
-      stakingData.push({
-        fullName: tokenEntity.fullName,
-        token: tokenEntity.token,
-        price: Number(tokenEntity.price),
-        balance,
-        value: Number(tokenEntity.price) * balance,
+        return {
+          fullName: tokenEntity.fullName,
+          token: tokenEntity.token,
+          price,
+          balance,
+          value: price * balance,
+        };
       });
-    }
 
-    return stakingData;
+    return stakedTokens;
   }
 
   public async getRewardsPortfolio(accountId: string): Promise<StakingDto[]> {
-    const rewardsData: StakingDto[] = [];
-    const rewardsMap = new Map();
     const stakingPools = await this.deoClient.fetchStakingData(accountId);
     const farmingPools = await this.deoClient.fetchFarmingData(accountId);
+    const allTokenEntities = await this.tokenPriceService.findAll();
 
-    if (stakingPools && farmingPools) {
-      for (const pool of stakingPools) {
-        const stakingReward = FPNumber.fromCodecValue(pool.rewards).toNumber();
+    if (!stakingPools || !farmingPools) return;
+    const rewards: StakingDto[] = [...stakingPools, ...farmingPools]
+      .filter(({ rewards }) => FPNumber.fromCodecValue(rewards).toNumber() > 0)
+      .reduce((accumulatedTokens, pool) => {
+        const rewardAsset = pool.rewardAsset;
+        const rewardAmount = FPNumber.fromCodecValue(pool.rewards).toNumber();
 
-        if (stakingReward === 0) {
-          continue;
-        }
+        const existingAsset = accumulatedTokens.find(
+          (token) => token.rewardAsset === rewardAsset,
+        );
 
-        if (rewardsMap.has(pool.rewardAsset)) {
-          const existingReward = rewardsMap.get(pool.rewardAsset);
-          rewardsMap.set(pool.rewardAsset, existingReward + stakingReward);
+        if (existingAsset) {
+          existingAsset.rewardAmount += rewardAmount;
         } else {
-          rewardsMap.set(pool.rewardAsset, stakingReward);
-        }
-      }
-
-      for (const pool of farmingPools) {
-        const farmingReward = FPNumber.fromCodecValue(pool.rewards).toNumber();
-
-        if (farmingReward == 0) {
-          continue;
+          accumulatedTokens.push({ rewardAsset, rewardAmount });
         }
 
-        if (rewardsMap.has(pool.rewardAsset)) {
-          const existingReward = rewardsMap.get(pool.rewardAsset);
-          rewardsMap.set(pool.rewardAsset, existingReward + farmingReward);
-        } else {
-          rewardsMap.set(pool.rewardAsset, farmingReward);
-        }
-      }
-    }
+        return accumulatedTokens;
+      }, [])
+      .map((accumulatedTokens) => {
+        const entity = allTokenEntities.find(
+          (token) => token.assetId === accumulatedTokens.rewardAsset,
+        );
 
-    //TODO: Use .map on rewardsMap array to create response, avoid loops where possible
-    for (const [rewardAsset, balance] of rewardsMap) {
-      //TODO: optimization - load all assets at once above the for loop
-      const tokenEntity = await this.tokenPriceService.findByAssetId(
-        rewardAsset,
-      );
-
-      rewardsData.push({
-        fullName: tokenEntity.fullName,
-        token: tokenEntity.token,
-        price: Number(tokenEntity.price),
-        balance,
-        value: Number(tokenEntity.price) * balance,
+        return {
+          fullName: entity.fullName,
+          token: entity.token,
+          price: Number(entity.price),
+          balance: accumulatedTokens.rewardAmount,
+          value: Number(entity.price) * accumulatedTokens.rewardAmount,
+        };
       });
-    }
-
-    return rewardsData;
+    return rewards;
   }
 
   public async getLiquidityPortfolio(

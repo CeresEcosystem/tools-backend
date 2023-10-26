@@ -8,14 +8,6 @@ import { SwapDto } from './dto/swap.dto';
 export class SwapsController {
   constructor(private swapService: SwapService) {}
 
-  @Get(':assetId')
-  async findAll(
-    @Query() pageOptions: PageOptionsDto,
-    @Param('assetId') assetId: string,
-  ): Promise<PageDto<SwapDto>> {
-    return this.swapService.findSwapsByToken(pageOptions, assetId);
-  }
-
   @Get()
   async getSwapsByTokens(
     @Query() pageOptions: PageOptionsDto,
