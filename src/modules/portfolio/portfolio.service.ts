@@ -145,7 +145,7 @@ export class PortfolioService {
 
     const stakedTokens = pools
       .filter(
-        (pool) => FPNumber.fromCodecValue(pool.pooledTokens).toNumber() != 0,
+        (pool) => FPNumber.fromCodecValue(pool.pooledTokens).toNumber() > 0,
       )
       .map((pool) => {
         const tokenEntity = allTokenEntities.find(
@@ -172,42 +172,39 @@ export class PortfolioService {
     const farmingPools = await this.deoClient.fetchFarmingData(accountId);
     const allTokenEntities = await this.tokenPriceService.findAll();
 
-    if (stakingPools && farmingPools) {
-      const rewards: StakingDto[] = [...stakingPools, ...farmingPools]
-        .filter(
-          ({ rewards }) => FPNumber.fromCodecValue(rewards).toNumber() > 0,
-        )
-        .reduce((accumulatedTokens, pool) => {
-          const rewardAsset = pool.rewardAsset;
-          const rewardAmount = FPNumber.fromCodecValue(pool.rewards).toNumber();
+    if (!stakingPools || !farmingPools) return;
+    const rewards: StakingDto[] = [...stakingPools, ...farmingPools]
+      .filter(({ rewards }) => FPNumber.fromCodecValue(rewards).toNumber() > 0)
+      .reduce((accumulatedTokens, pool) => {
+        const rewardAsset = pool.rewardAsset;
+        const rewardAmount = FPNumber.fromCodecValue(pool.rewards).toNumber();
 
-          const existingAsset = accumulatedTokens.find(
-            (token) => token.rewardAsset === rewardAsset,
-          );
+        const existingAsset = accumulatedTokens.find(
+          (token) => token.rewardAsset === rewardAsset,
+        );
 
-          if (existingAsset) {
-            existingAsset.rewardAmount += rewardAmount;
-          } else {
-            accumulatedTokens.push({ rewardAsset, rewardAmount });
-          }
+        if (existingAsset) {
+          existingAsset.rewardAmount += rewardAmount;
+        } else {
+          accumulatedTokens.push({ rewardAsset, rewardAmount });
+        }
 
-          return accumulatedTokens;
-        }, [])
-        .map((accumulatedTokens) => {
-          const entity = allTokenEntities.find(
-            (token) => token.assetId === accumulatedTokens.rewardAsset,
-          );
+        return accumulatedTokens;
+      }, [])
+      .map((accumulatedTokens) => {
+        const entity = allTokenEntities.find(
+          (token) => token.assetId === accumulatedTokens.rewardAsset,
+        );
 
-          return {
-            fullName: entity.fullName,
-            token: entity.token,
-            price: Number(entity.price),
-            balance: accumulatedTokens.rewardAmount,
-            value: Number(entity.price) * accumulatedTokens.rewardAmount,
-          };
-        });
-      return rewards;
-    }
+        return {
+          fullName: entity.fullName,
+          token: entity.token,
+          price: Number(entity.price),
+          balance: accumulatedTokens.rewardAmount,
+          value: Number(entity.price) * accumulatedTokens.rewardAmount,
+        };
+      });
+    return rewards;
   }
 
   public async getLiquidityPortfolio(
@@ -301,18 +298,3 @@ export class PortfolioService {
     return liquidityData;
   }
 }
-
-// for (const pool of stakingPools) {
-//   const stakingReward = FPNumber.fromCodecValue(pool.rewards).toNumber();
-
-//   if (stakingReward === 0) {
-//     continue;
-//   }
-
-//   if (rewardsMap.has(pool.rewardAsset)) {
-//     const existingReward = rewardsMap.get(pool.rewardAsset);
-//     rewardsMap.set(pool.rewardAsset, existingReward + stakingReward);
-//   } else {
-//     rewardsMap.set(pool.rewardAsset, stakingReward);
-//   }
-// }
