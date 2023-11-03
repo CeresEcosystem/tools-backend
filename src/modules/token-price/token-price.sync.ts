@@ -17,6 +17,7 @@ const DAI_ADDRESS =
   '0x0200060000000000000000000000000000000000000000000000000000000000';
 const HUNDREDS = ['HOT', 'UMI', 'SOSHIBA'];
 const BILLIONS = ['MEOW'];
+const MILLI = ['ETH'];
 
 @Injectable()
 export class TokenPriceSync {
@@ -64,6 +65,8 @@ export class TokenPriceSync {
           amount = 100;
         } else if (BILLIONS.includes(symbol)) {
           amount = 1000000000;
+        } else if (MILLI.includes(symbol)) {
+          amount = 0.001;
         }
 
         await this.soraApi.rpc.liquidityProxy.quote(
@@ -85,6 +88,9 @@ export class TokenPriceSync {
               : price;
             price = BILLIONS.includes(symbol)
               ? (price / 1000000000).toFixed(12)
+              : price;
+            price = MILLI.includes(symbol)
+              ? (price / 0.001).toFixed(12)
               : price;
 
             pricesToUpsert.push({
