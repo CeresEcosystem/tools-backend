@@ -13,7 +13,11 @@ export default new DataSource({
   username: configService.get('MYSQL_USER'),
   password: configService.get('MYSQL_PASSWORD'),
   database: configService.get('MYSQL_DB_NAME'),
-  entities: ['src/modules/swaps/entity/swaps.entity.ts'],
+  entities: [
+    'src/modules/swaps/entity/swaps.entity.ts',
+    'src/modules/price-notifications/entity/user-device.entity.ts',
+    'src/modules/token-price/entity/token-price.entity.ts',
+  ],
   migrations: ['src/database/mysql/migrations/*'],
   migrationsTableName: 'migrations_tools',
 });

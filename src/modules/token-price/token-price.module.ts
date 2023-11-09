@@ -32,6 +32,6 @@ import { TokenOrderModule } from '../token-order/token-order.module';
     TokenPriceToDtoMapper,
     TokenLockerSync,
   ],
-  exports: [TokenPriceService],
+  exports: [TokenPriceService, TokenPriceRepository],
 })
 export class TokenPriceModule {}
