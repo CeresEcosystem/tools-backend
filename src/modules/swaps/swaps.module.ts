@@ -7,9 +7,10 @@ import { SwapListener } from './swaps.listener';
 import { SwapGateway } from './swaps.gateway';
 import { SwapEntityToDto } from './mapper/swap-entity-to-dto.mapper';
 import { SwapService } from './swaps.service';
+import { SoraClientModule } from '../sora-client/sora-client-module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Swap])],
+  imports: [SoraClientModule, TypeOrmModule.forFeature([Swap])],
   controllers: [SwapsController],
   providers: [
     SwapRepository,
@@ -20,8 +21,4 @@ import { SwapService } from './swaps.service';
   ],
   exports: [SwapService],
 })
-export class SwapsModule {
-  constructor(private swapListener: SwapListener) {
-    this.swapListener.trackSwaps();
-  }
-}
+export class SwapsModule {}

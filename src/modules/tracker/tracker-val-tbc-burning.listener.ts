@@ -1,45 +1,34 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ApiPromise, WsProvider } from '@polkadot/api';
 import {
   DENOMINATOR,
   VAL_BURN_ADDRESS,
   VAL_TOKEN_ID,
 } from './tracker.constants';
 import { FPNumber } from '@sora-substrate/math';
-import { options } from '@sora-substrate/api';
 import { TrackerService } from './tracker.service';
 import { ValTbcTrackerToEntityMapper } from './mapper/val-tbc-tracker-to-entity.mapper';
-import { PROVIDER } from 'src/constants/constants';
+import { SoraClient } from '../sora-client/sora-client';
 
 @Injectable()
 export class TrackerValTbcBurningsListener {
   private readonly logger = new Logger(TrackerValTbcBurningsListener.name);
-  private soraApi;
 
   constructor(
     private readonly trackerService: TrackerService,
     private readonly mapper: ValTbcTrackerToEntityMapper,
+    private readonly soraClient: SoraClient,
   ) {
-    const provider = new WsProvider(PROVIDER);
-    new ApiPromise(options({ provider, noInitWarn: true })).isReady.then(
-      (api) => {
-        this.soraApi = api;
-        this.runListener();
-      },
-    );
+    this.runListener();
   }
 
   async runListener() {
     this.logger.log('VAL TBC burning listener initialized');
+    const soraApi: any = await this.soraClient.getSoraApi();
 
-    this.soraApi.rpc.chain.subscribeNewHeads(async (header) => {
-      const blockHash = await this.soraApi.rpc.chain.getBlockHash(
-        header.number,
-      );
-
-      const events = await (
-        await this.soraApi.at(blockHash)
-      ).query.system.events();
+    soraApi.rpc.chain.subscribeNewHeads(async (header) => {
+      const blockHash = await soraApi.rpc.chain.getBlockHash(header.number);
+      const block = await soraApi.at(blockHash);
+      const events = await block.query.system.events();
 
       let burnTotal = new FPNumber(0);
 

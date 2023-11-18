@@ -16,10 +16,12 @@ import { TokenSupplySeeder } from './seeder/token-supply-seeder';
 import { ValFeesTrackerBlockBcToEntityMapper } from './mapper/val-fees-tracker-to-entity.mapper';
 import { ValTbcTrackerToEntityMapper } from './mapper/val-tbc-tracker-to-entity.mapper';
 import { TrackerValTbcBurningsListener } from './tracker-val-tbc-burning.listener';
+import { SoraClientModule } from '../sora-client/sora-client-module';
 
 @Module({
   imports: [
     HttpModule,
+    SoraClientModule,
     TypeOrmModule.forFeature([Tracker, TrackerSupply]),
     TokenPriceModule,
   ],

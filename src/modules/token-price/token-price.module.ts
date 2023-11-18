@@ -13,6 +13,7 @@ import { TokenPriceToDtoMapper } from './mapper/token-price-to-dto.mapper';
 import { CeresClientModule } from '../ceres-client/ceres-client.module';
 import { TokenLockerSync } from './token-locker.sync';
 import { TokenOrderModule } from '../token-order/token-order.module';
+import { SoraClientModule } from '../sora-client/sora-client-module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { TokenOrderModule } from '../token-order/token-order.module';
     ChronoPriceModule,
     CeresClientModule,
     TokenOrderModule,
+    SoraClientModule,
     TypeOrmModule.forFeature([TokenPrice]),
   ],
   controllers: [TokenPriceController],
