@@ -205,7 +205,7 @@ export class PortfolioService {
   public async getLiquidityPortfolio(
     accountId: string,
   ): Promise<LiquidityDto[]> {
-    const soraApi: any = await this.soraClient.getSoraApi();
+    const soraApi = await this.soraClient.getSoraApi();
 
     let poolSetXOR;
     let poolSetXSTUSD;

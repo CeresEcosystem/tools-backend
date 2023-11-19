@@ -22,7 +22,7 @@ export class SwapListener {
   }
 
   private async trackSwaps() {
-    const soraApi: any = await this.soraClient.getSoraApi();
+    const soraApi = await this.soraClient.getSoraApi();
 
     soraApi.query.system.events(async (events) => {
       for (const record of events) {
