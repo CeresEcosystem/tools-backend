@@ -67,7 +67,7 @@ export class PriceNotifService {
     this.userDeviceRepo.deleteUser(user);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async checkPriceDifferences() {
     this.logger.log('Start prices comparison');
     const allRelevantPrices = await this.relevantPricesRepo.findAll();
@@ -82,7 +82,7 @@ export class PriceNotifService {
       const significantChange = this.calculate_change(
         relevantPrice.tokenPrice,
         Number(currentPrice.price),
-        0.00001,
+        5,
       );
 
       if (significantChange) {
