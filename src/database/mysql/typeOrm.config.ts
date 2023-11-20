@@ -16,6 +16,7 @@ export default new DataSource({
   entities: [
     'src/modules/swaps/entity/swaps.entity.ts',
     'src/modules/price-notifications/entity/user-device.entity.ts',
+    'src/modules/notification-relevant-prices/entity/relevant-prices.entity.ts',
     'src/modules/token-price/entity/token-price.entity.ts',
   ],
   migrations: ['src/database/mysql/migrations/*'],

@@ -10,7 +10,7 @@ export class UserDevicesRepository {
     private userDeviceRepo: Repository<UserDevice>,
   ) {}
 
-  findUser(deviceId) {
+  findUserByDevice(deviceId: string): Promise<UserDevice> {
     return this.userDeviceRepo.findOne({
       where: {
         deviceId: deviceId,
@@ -19,7 +19,17 @@ export class UserDevicesRepository {
     });
   }
 
-  saveUser(newUser) {
+  findAll(): Promise<UserDevice[]> {
+    return this.userDeviceRepo.find({
+      relations: ['tokens'],
+    });
+  }
+
+  saveUser(newUser: UserDevice): Promise<UserDevice> {
     return this.userDeviceRepo.save(newUser);
+  }
+
+  deleteUser(user: UserDevice): Promise<UserDevice> {
+    return this.userDeviceRepo.remove(user);
   }
 }

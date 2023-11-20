@@ -20,7 +20,7 @@ export class TokenPrice {
   @Column()
   order: number;
 
-  @Column({ name: 'locked_tokens' })
+  @Column({ name: 'locked_tokens', default: '0' })
   lockedTokens: string;
 
   @Column()
