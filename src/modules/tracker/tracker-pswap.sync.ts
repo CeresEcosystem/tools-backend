@@ -4,41 +4,32 @@ import { CronExpression } from 'src/utils/cron-expression.enum';
 import { PSWAPTrackerBlockBcToEntityMapper } from './mapper/pswap-tracker-to-entity.mapper';
 import { TrackerService } from './tracker.service';
 import { FPNumber } from '@sora-substrate/math';
-import { WsProvider } from '@polkadot/rpc-provider';
-import { PROVIDER } from '../../constants/constants';
-import { ApiPromise } from '@polkadot/api/promise';
-import { options } from '@sora-substrate/api';
 import { DENOMINATOR } from './tracker.constants';
+import { SoraClient } from '../sora-client/sora-client';
 
 const DAY = 14400;
 
 @Injectable()
 export class TrackerPswapSync {
   private readonly logger = new Logger(TrackerPswapSync.name);
-  private soraApi;
 
   constructor(
     private readonly trackerService: TrackerService,
     private readonly mapper: PSWAPTrackerBlockBcToEntityMapper,
-  ) {
-    const provider = new WsProvider(PROVIDER);
-    new ApiPromise(options({ provider, noInitWarn: true })).isReady.then(
-      (api) => {
-        this.soraApi = api;
-      },
-    );
-  }
+    private readonly soraClient: SoraClient,
+  ) {}
 
   @Cron(CronExpression.EVERY_10_MINUTES)
   async fetchTrackerData(): Promise<void> {
     this.logger.log('Start fetching PSWAP burning data.');
+    const soraApi: any = await this.soraClient.getSoraApi();
 
     const burningData = [];
     const startBlock = await this.trackerService.findLastBlockNumber(
       'PSWAP',
       'FEES',
     );
-    const headBlock = await this.soraApi.query.system.number();
+    const headBlock = await soraApi.query.system.number();
     const blocksWithDistribution = await this.getAllBlocksWithDistribution(
       startBlock,
       headBlock,
@@ -75,9 +66,10 @@ export class TrackerPswapSync {
     startBlock: number,
     endBlock: number,
   ): Promise<any> {
+    const soraApi: any = await this.soraClient.getSoraApi();
     const blocksWithDistribution = new Set<number>();
     const queryResult =
-      await this.soraApi.query.pswapDistribution.subscribedAccounts.entries();
+      await soraApi.query.pswapDistribution.subscribedAccounts.entries();
 
     for (let [, v] of queryResult) {
       v = v.toHuman();
@@ -94,9 +86,10 @@ export class TrackerPswapSync {
   }
 
   private async parseBlockWithDistribution(blockNum): Promise<any> {
+    const soraApi: any = await this.soraClient.getSoraApi();
     const result = [];
-    const blockHash = await this.soraApi.rpc.chain.getBlockHash(blockNum);
-    const apiAt = await this.soraApi.at(blockHash);
+    const blockHash = await soraApi.rpc.chain.getBlockHash(blockNum);
+    const apiAt = await soraApi.at(blockHash);
     let events = await apiAt.query.system.events();
     events = events.toHuman();
 

@@ -11,12 +11,14 @@ import { PairsController } from './pairs.controller';
 import { PairToDtoMapper } from './mapper/pair-to-dto.mapper';
 import { CeresClientModule } from '../ceres-client/ceres-client.module';
 import { PairsLockerSync } from './pairs-locker.sync';
+import { SoraClientModule } from '../sora-client/sora-client-module';
 
 @Module({
   imports: [
     HttpModule,
     TokenPriceModule,
     CeresClientModule,
+    SoraClientModule,
     TypeOrmModule.forFeature([Pair]),
   ],
   controllers: [PairsController],

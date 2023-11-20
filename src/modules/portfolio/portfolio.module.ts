@@ -6,6 +6,7 @@ import { ChronoPriceModule } from '../chrono-price/chrono-price.module';
 import { PairsModule } from '../pairs/pairs.module';
 import { DeoClientModule } from '../deo-client/deo-client.module';
 import { SwapsModule } from '../swaps/swaps.module';
+import { SoraClientModule } from '../sora-client/sora-client-module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { SwapsModule } from '../swaps/swaps.module';
     PairsModule,
     DeoClientModule,
     SwapsModule,
+    SoraClientModule,
   ],
   controllers: [PortfolioController],
   providers: [PortfolioService],

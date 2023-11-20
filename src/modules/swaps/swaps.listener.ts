@@ -1,33 +1,30 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, QueryFailedError } from 'typeorm';
-import { ApiPromise } from '@polkadot/api/promise';
-import { WsProvider } from '@polkadot/rpc-provider';
 import { FPNumber } from '@sora-substrate/math';
-import { PROVIDER } from 'src/constants/constants';
 import { Swap } from './entity/swaps.entity';
 import { SwapGateway } from './swaps.gateway';
 import { SwapEntityToDto } from './mapper/swap-entity-to-dto.mapper';
+import { SoraClient } from '../sora-client/sora-client';
 
 @Injectable()
 export class SwapListener {
-  private soraApi;
   private readonly logger = new Logger(SwapListener.name);
 
   constructor(
     @InjectRepository(Swap)
     private readonly swapRepository: Repository<Swap>,
-    private swapGateway: SwapGateway,
-    private swapMapper: SwapEntityToDto,
+    private readonly swapGateway: SwapGateway,
+    private readonly swapMapper: SwapEntityToDto,
+    private readonly soraClient: SoraClient,
   ) {
-    const provider = new WsProvider(PROVIDER);
-    this.soraApi = new ApiPromise({ provider, noInitWarn: true });
+    this.trackSwaps();
   }
 
-  async trackSwaps() {
-    await this.soraApi.isReady;
+  private async trackSwaps() {
+    const soraApi = await this.soraClient.getSoraApi();
 
-    this.soraApi.query.system.events(async (events) => {
+    soraApi.query.system.events(async (events) => {
       for (const record of events) {
         const { event } = record;
 

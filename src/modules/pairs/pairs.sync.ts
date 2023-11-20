@@ -2,9 +2,6 @@ import { HttpService } from '@nestjs/axios';
 import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { catchError, firstValueFrom, retry } from 'rxjs';
-import { WsProvider } from '@polkadot/rpc-provider';
-import { ApiPromise } from '@polkadot/api/promise';
-import { options } from '@sora-substrate/api';
 import { FPNumber } from '@sora-substrate/math';
 import { AxiosError } from 'axios';
 
@@ -14,12 +11,8 @@ import { TokenPrice } from '../token-price/entity/token-price.entity';
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import { PairBcDto } from './dto/pair-bc.dto';
 import { PairsService } from './pairs.service';
-
-import {
-  PROVIDER,
-  XOR_ADDRESS,
-  XSTUSD_ADDRESS,
-} from '../../constants/constants';
+import { SoraClient } from '../sora-client/sora-client';
+import { XOR_ADDRESS, XSTUSD_ADDRESS } from '../../constants/constants';
 
 import * as whitelist from '../../utils/files/whitelist.json';
 import * as synthetics from 'src/utils/files/synthetics.json';
@@ -38,27 +31,21 @@ const DENOMINATOR = FPNumber.fromNatural(Math.pow(10, 18));
 @Injectable()
 export class PairsSync {
   private readonly logger = new Logger(PairsSync.name);
-  private soraApi;
   private pairs: PairBcDto[] = [];
 
   constructor(
     private readonly pairsService: PairsService,
     private readonly tokenPriceService: TokenPriceService,
     private readonly httpService: HttpService,
+    private readonly soraClient: SoraClient,
   ) {
-    const provider = new WsProvider(PROVIDER);
-    new ApiPromise(options({ provider, noInitWarn: true })).isReady.then(
-      (api) => {
-        this.soraApi = api;
-        this.getPairs().then();
-      },
-    );
+    this.getPairs();
   }
 
   @Cron(CronExpression.EVERY_3_MINUTES)
   async fetchLiquidityPairs(): Promise<void> {
     this.logger.log('Start fetching pairs data.');
-
+    const soraApi: any = await this.soraClient.getSoraApi();
     const volumeData = await this.fetchSoraPairs();
 
     if (!volumeData) {
@@ -78,7 +65,7 @@ export class PairsSync {
         continue;
       }
 
-      let liqArray = await this.soraApi.query.poolXYK.reserves(
+      let liqArray = await soraApi.query.poolXYK.reserves(
         baseAssetId,
         tokenAssetId,
       );
@@ -133,8 +120,10 @@ export class PairsSync {
   }
 
   private async getPairs(): Promise<void> {
+    const soraApi: any = await this.soraClient.getSoraApi();
+
     for (const [index, baseAsset] of BASE_ASSETS.entries()) {
-      await this.soraApi.rpc.tradingPair.listEnabledPairs(index, (pairList) => {
+      await soraApi.rpc.tradingPair.listEnabledPairs(index, (pairList) => {
         pairList = pairList.toHuman();
 
         for (const pair of pairList) {
@@ -144,7 +133,7 @@ export class PairsSync {
             continue;
           }
 
-          this.soraApi.rpc.assets.getAssetInfo(assetId, (info) => {
+          soraApi.rpc.assets.getAssetInfo(assetId, (info) => {
             info = info.toHuman();
             const assetSymbol = info['symbol'];
             const fullName = `${info['name']} (${assetSymbol})`;

@@ -1,49 +1,42 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { ApiPromise } from '@polkadot/api/promise';
-import { WsProvider } from '@polkadot/rpc-provider';
-import { options } from '@sora-substrate/api';
 import { FPNumber } from '@sora-substrate/math';
 
 import { TokenPriceBcDto } from './dto/token-price-bc.dto';
 import { TokenPriceService } from './token-price.service';
 
-import { PROVIDER } from '../../constants/constants';
-
 import * as whitelist from 'src/utils/files/whitelist.json';
 import * as synthetics from 'src/utils/files/synthetics.json';
+import { SoraClient } from '../sora-client/sora-client';
 
 const DAI_ADDRESS =
   '0x0200060000000000000000000000000000000000000000000000000000000000';
 const HUNDREDS = ['HOT', 'UMI', 'SOSHIBA'];
 const BILLIONS = ['MEOW'];
+const MILLI = ['ETH'];
 
 @Injectable()
 export class TokenPriceSync {
   private readonly logger = new Logger(TokenPriceSync.name);
-  private soraApi;
   private tokens: TokenPriceBcDto[] = [];
 
-  constructor(private readonly tokenPriceService: TokenPriceService) {
-    const provider = new WsProvider(PROVIDER);
-    new ApiPromise(options({ provider, noInitWarn: true })).isReady.then(
-      async (api) => {
-        this.soraApi = api;
-        await this.getTokens();
-        await this.fetchTokenPrices();
-      },
-    );
+  constructor(
+    private readonly tokenPriceService: TokenPriceService,
+    private readonly soraClient: SoraClient,
+  ) {
+    this.loadTokens();
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
   async fetchTokenPrices(): Promise<void> {
     this.logger.log('Start fetching tokens prices.');
+    const soraApi: any = await this.soraClient.getSoraApi();
     const pricesToUpsert: TokenPriceBcDto[] = [];
 
     for (const token of this.tokens) {
       if (synthetics.includes(token.assetId)) {
         // Get price via band query
-        const result = await this.soraApi.query.band.symbolRates(
+        const result = await soraApi.query.band.symbolRates(
           token.symbol.substring(3),
         );
 
@@ -64,9 +57,11 @@ export class TokenPriceSync {
           amount = 100;
         } else if (BILLIONS.includes(symbol)) {
           amount = 1000000000;
+        } else if (MILLI.includes(symbol)) {
+          amount = 0.001;
         }
 
-        await this.soraApi.rpc.liquidityProxy.quote(
+        await soraApi.rpc.liquidityProxy.quote(
           0,
           token.assetId,
           DAI_ADDRESS,
@@ -86,6 +81,9 @@ export class TokenPriceSync {
             price = BILLIONS.includes(symbol)
               ? (price / 1000000000).toFixed(12)
               : price;
+            price = MILLI.includes(symbol)
+              ? (price / 0.001).toFixed(12)
+              : price;
 
             pricesToUpsert.push({
               ...token,
@@ -103,8 +101,10 @@ export class TokenPriceSync {
     this.logger.log('Fetching of tokens prices was successful!');
   }
 
-  private async getTokens(): Promise<void> {
-    const tokens = await this.soraApi.query.assets.assetInfos.entries();
+  private async loadTokens(): Promise<void> {
+    this.tokens = [];
+    const soraApi: any = await this.soraClient.getSoraApi();
+    const tokens = await soraApi.query.assets.assetInfos.entries();
 
     for (let [assetId, token] of tokens) {
       assetId = assetId.toHuman()[0].code;
@@ -123,5 +123,7 @@ export class TokenPriceSync {
         fullName,
       } as TokenPriceBcDto);
     }
+
+    this.fetchTokenPrices();
   }
 }

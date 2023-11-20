@@ -2,37 +2,28 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import { TrackerService } from './tracker.service';
-import { WsProvider } from '@polkadot/rpc-provider';
-import { PROVIDER } from '../../constants/constants';
-import { ApiPromise } from '@polkadot/api/promise';
-import { options } from '@sora-substrate/api';
 import { FPNumber } from '@sora-substrate/math';
 import { DENOMINATOR } from './tracker.constants';
 import { ValFeesTrackerBlockBcToEntityMapper } from './mapper/val-fees-tracker-to-entity.mapper';
 import { ValFeesTrackerBlockDto } from './dto/val-fees-tracker-bc-block';
+import { SoraClient } from '../sora-client/sora-client';
 
 const techAccount = 'cnTQ1kbv7PBNNQrEb1tZpmK7hhnohXfYrx5GuD1H9ShjdGoBh';
 
 @Injectable()
 export class TrackerValSync {
   private readonly logger = new Logger(TrackerValSync.name);
-  private soraApi;
 
   constructor(
     private readonly trackerService: TrackerService,
     private readonly mapper: ValFeesTrackerBlockBcToEntityMapper,
-  ) {
-    const provider = new WsProvider(PROVIDER);
-    new ApiPromise(options({ provider, noInitWarn: true })).isReady.then(
-      (api) => {
-        this.soraApi = api;
-      },
-    );
-  }
+    private readonly soraClient: SoraClient,
+  ) {}
 
   @Cron(CronExpression.EVERY_HOUR)
   async fetchTrackerData(): Promise<void> {
     this.logger.log('Start fetching VAL burning data.');
+    const soraApi: any = await this.soraClient.getSoraApi();
 
     const burningData: ValFeesTrackerBlockDto[] = [];
     const lastSavedBlock = await this.trackerService.findLastBlockNumber(
@@ -40,11 +31,11 @@ export class TrackerValSync {
       'FEES',
     );
     const startBlock = lastSavedBlock + 1;
-    const headBlock = await this.soraApi.query.system.number();
+    const headBlock = await soraApi.query.system.number();
 
     for (let blockNum = startBlock; blockNum <= headBlock; blockNum++) {
-      const blockHash = await this.soraApi.rpc.chain.getBlockHash(blockNum);
-      const apiAt = await this.soraApi.at(blockHash);
+      const blockHash = await soraApi.rpc.chain.getBlockHash(blockNum);
+      const apiAt = await soraApi.at(blockHash);
       let events = await apiAt.query.system.events();
       let found = false;
       events = events.toHuman();

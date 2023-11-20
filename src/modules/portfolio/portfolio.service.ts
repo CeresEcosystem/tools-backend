@@ -1,10 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-
-import { WsProvider, ApiPromise } from '@polkadot/api';
 import { FPNumber } from '@sora-substrate/math';
-import { options } from '@sora-substrate/api';
-
-import { XOR_ADDRESS, XSTUSD_ADDRESS, PROVIDER } from 'src/constants/constants';
+import { XOR_ADDRESS, XSTUSD_ADDRESS } from 'src/constants/constants';
 import { TokenPriceService } from '../token-price/token-price.service';
 import { ChronoPriceService } from '../chrono-price/chrono-price.service';
 import { SwapService } from '../swaps/swaps.service';
@@ -19,32 +15,31 @@ import { PageDto } from 'src/utils/pagination/page.dto';
 import { SwapDto } from '../swaps/dto/swap.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { PriceChangeDto } from '../chrono-price/dto/price-change.dto';
+import { SoraClient } from '../sora-client/sora-client';
 
 const DENOMINATOR = FPNumber.fromNatural(Math.pow(10, 18));
 const HOUR_INTERVALS = [1, 24, 24 * 7, 24 * 30];
 
 @Injectable()
 export class PortfolioService {
-  private api;
+  private readonly logger = new Logger(PortfolioService.name);
 
   constructor(
-    private tokenPriceService: TokenPriceService,
-    private chronoPriceService: ChronoPriceService,
-    private pairsService: PairsService,
-    private deoClient: DeoClient,
-    private swapsService: SwapService,
-  ) {
-    const provider = new WsProvider(PROVIDER);
-    new ApiPromise(options({ provider, noInitWarn: true })).isReady.then(
-      (api) => (this.api = api),
-    );
-  }
+    private readonly tokenPriceService: TokenPriceService,
+    private readonly chronoPriceService: ChronoPriceService,
+    private readonly pairsService: PairsService,
+    private readonly deoClient: DeoClient,
+    private readonly swapsService: SwapService,
+    private readonly soraClient: SoraClient,
+  ) {}
 
   public async getPortfolio(accountId: string): Promise<PortfolioDto[]> {
+    const soraApi: any = await this.soraClient.getSoraApi();
+
     let xor;
 
     try {
-      xor = await this.api.rpc.assets.freeBalance(accountId, XOR_ADDRESS);
+      xor = await soraApi.rpc.assets.freeBalance(accountId, XOR_ADDRESS);
     } catch (error) {
       return [];
     }
@@ -57,7 +52,7 @@ export class PortfolioService {
     let portfolio;
 
     try {
-      portfolio = await this.api.query.tokens.accounts.entries(accountId);
+      portfolio = await soraApi.query.tokens.accounts.entries(accountId);
     } catch (error) {
       return [];
     }
@@ -210,15 +205,17 @@ export class PortfolioService {
   public async getLiquidityPortfolio(
     accountId: string,
   ): Promise<LiquidityDto[]> {
+    const soraApi = await this.soraClient.getSoraApi();
+
     let poolSetXOR;
     let poolSetXSTUSD;
 
     try {
-      poolSetXOR = await this.api.query.poolXYK.accountPools(
+      poolSetXOR = await soraApi.query.poolXYK.accountPools(
         accountId,
         XOR_ADDRESS,
       );
-      poolSetXSTUSD = await this.api.query.poolXYK.accountPools(
+      poolSetXSTUSD = await soraApi.query.poolXYK.accountPools(
         accountId,
         XSTUSD_ADDRESS,
       );
@@ -263,18 +260,20 @@ export class PortfolioService {
     baseAssetId: string,
     accountId: string,
   ): Promise<LiquidityDto[]> {
+    const soraApi: any = await this.soraClient.getSoraApi();
     const liquidityData: LiquidityDto[] = [];
+
     for (const { code: tokenAddress } of poolSet) {
       const [poolAddress] = (
-        await this.api.query.poolXYK.properties(baseAssetId, tokenAddress)
+        await soraApi.query.poolXYK.properties(baseAssetId, tokenAddress)
       ).toHuman();
 
-      const liquidityProviding = await this.api.query.poolXYK.poolProviders(
+      const liquidityProviding = await soraApi.query.poolXYK.poolProviders(
         poolAddress,
         accountId,
       );
 
-      const totalLiquidity = await this.api.query.poolXYK.totalIssuances(
+      const totalLiquidity = await soraApi.query.poolXYK.totalIssuances(
         poolAddress,
       );
 
