@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class createDeviceFavoritesTable1700481559556 implements MigrationInterface {
-    name = 'createDeviceFavoritesTable1700481559556'
+export class createDeviceFavoritesTable1700573659325 implements MigrationInterface {
+    name = 'createDeviceFavoritesTable1700573659325'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE \`user_device\` (\`id\` int NOT NULL AUTO_INCREMENT, \`device_id\` varchar(255) NOT NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
