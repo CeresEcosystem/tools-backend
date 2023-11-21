@@ -6,7 +6,6 @@ export class createDeviceFavoritesTable1700575161050
   name = 'createDeviceFavoritesTable1700575161050';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX \`token\` ON \`current_price\``);
     await queryRunner.query(
       `CREATE TABLE \`user_device\` (\`id\` int NOT NULL AUTO_INCREMENT, \`device_id\` varchar(255) NOT NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
     );
@@ -36,8 +35,5 @@ export class createDeviceFavoritesTable1700575161050
     );
     await queryRunner.query(`DROP TABLE \`device_favorite_tokens\``);
     await queryRunner.query(`DROP TABLE \`user_device\``);
-    await queryRunner.query(
-      `CREATE UNIQUE INDEX \`token\` ON \`current_price\` (\`token\`)`,
-    );
   }
 }
