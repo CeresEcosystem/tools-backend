@@ -1,4 +1,4 @@
-export abstract class BaseDtoMapper<Entity = any, DTO = any> {
+export abstract class BaseDtoMapper<Entity = unknown, DTO = unknown> {
   abstract toDto(entity: Entity): DTO;
 
   toDtos(entities: Entity[]): DTO[] {

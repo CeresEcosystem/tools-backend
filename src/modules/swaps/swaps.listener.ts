@@ -21,7 +21,7 @@ export class SwapListener {
     this.trackSwaps();
   }
 
-  private async trackSwaps() {
+  private async trackSwaps(): Promise<void> {
     const soraApi = await this.soraClient.getSoraApi();
 
     soraApi.query.system.events(async (events) => {
@@ -62,10 +62,9 @@ export class SwapListener {
           this.logger.log('Fetching token swaps was successful.');
         } catch (error) {
           if (error instanceof QueryFailedError) {
-            const driverError = error.driverError;
-            console.log(driverError);
+            const { driverError } = error;
+            this.logger.log(driverError);
           } else {
-            console.error('An error occurred: ', error.message);
             throw error;
           }
         }

@@ -16,8 +16,9 @@ export class PairsLiquidityListener {
     this.runListener();
   }
 
-  private async runListener() {
+  private async runListener(): Promise<void> {
     this.logger.log('Pairs liquidity changes listener initialized');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraAPI: any = await this.soraClient.getSoraApi();
 
     soraAPI.rpc.chain.subscribeNewHeads(async (header) => {
@@ -63,19 +64,22 @@ export class PairsLiquidityListener {
               };
 
               this.logger.debug(
-                `Parsing new liquidity change data [block: #${rawData.blockNumber}; transaction type: ${rawData.transactionType}]`,
+                `Parsing new liquidity change data [block: #${rawData.blockNumber}; 
+                transaction type: ${rawData.transactionType}]`,
               );
 
               const formatedData = this.mapper.toEntity(rawData);
 
               this.logger.debug(
-                `Saving new liquidity change data [block: #${rawData.blockNumber}; transaction type: ${rawData.transactionType}]`,
+                `Saving new liquidity change data [block: #${rawData.blockNumber}; 
+                transaction type: ${rawData.transactionType}]`,
               );
 
               await this.service.insert(formatedData);
 
               this.logger.debug(
-                `Saved new liquidity change data [block: #${rawData.blockNumber}; transaction type: ${rawData.transactionType}]`,
+                `Saved new liquidity change data [block: #${rawData.blockNumber}; 
+                transaction type: ${rawData.transactionType}]`,
               );
             });
         },

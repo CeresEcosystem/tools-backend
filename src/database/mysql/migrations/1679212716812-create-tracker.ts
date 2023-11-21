@@ -21,6 +21,6 @@ export class CreateTracker1679212716812 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE tracker`);
+    await queryRunner.query('DROP TABLE tracker');
   }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { TokenSymbol } from 'src/modules/symbols/entity/symbol.entity';
 import { SymbolChartDto } from '../dto/symbol-chart-dto';
 import { BaseDtoMapper } from 'src/utils/mappers/base-dto-mapper';

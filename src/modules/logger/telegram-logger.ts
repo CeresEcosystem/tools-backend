@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { ConsoleLogger, Injectable, LogLevel } from '@nestjs/common';
 import { TelegramService } from 'nestjs-telegram';
 
@@ -15,22 +16,27 @@ export class TelegramLogger extends ConsoleLogger {
     );
   }
 
-  async error(message: any, stack?: string, context?: string) {
+  override async error(
+    message: string,
+    stack?: string,
+    context?: string,
+  ): Promise<void> {
     await this.telegram
       .sendMessage({
         chat_id: process.env.TELEGRAM_CHAT_ID,
         text:
           `🚨 <b>Application:</b> ${process.env.APP_NAME} 🚨\n` +
           `<b>Environment:</b> ${process.env.APP_ENV}\n` +
-          `<b>Log Level:</b> ERROR\n` +
-          (context ? `<b>Context:</b> ${context}\n` : ``) +
-          `<b>Message:</b> <pre>${message}</pre>\n` +
-          (stack ? `<b>Stack:</b> <pre>${stack}</pre>` : ``),
+          `<b>Log Level:</b> ERROR\n${
+            context ? `<b>Context:</b> ${context}\n` : ''
+          }<b>Message:</b> <pre>${message}</pre>\n${
+            stack ? `<b>Stack:</b> <pre>${stack}</pre>` : ''
+          }`,
         parse_mode: 'html',
       })
       .toPromise()
       .catch((reason) => {
-        super.error('Error sending error msg to telegram: ' + reason);
+        super.error(`Error sending error msg to telegram: ${reason}`);
       });
 
     super.error(message, stack, context);

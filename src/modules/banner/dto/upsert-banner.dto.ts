@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsString } from 'class-validator';
 import { DeviceType } from '../banner-device-type.enum';

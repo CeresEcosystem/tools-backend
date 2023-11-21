@@ -14,6 +14,6 @@ export class createRelevantPricesTable1700064309286
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE \`relevant_prices\``);
+    await queryRunner.query('DROP TABLE `relevant_prices`');
   }
 }

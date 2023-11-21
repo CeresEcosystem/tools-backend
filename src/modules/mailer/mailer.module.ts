@@ -25,7 +25,7 @@ import { MailerController } from './mailer.controller';
       defaults: {
         from: `"Support CBS" <${process.env.EMAIL_FROM_USER}>`,
         to: process.env.EMAIL_TO,
-        subject: `Contact us form notification`,
+        subject: 'Contact us form notification',
       },
     }),
   ],

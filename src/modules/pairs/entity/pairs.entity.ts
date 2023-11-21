@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryColumn, Unique } from 'typeorm';
 
-@Entity(`liquidity_pair`)
+@Entity('liquidity_pair')
 @Unique(['baseAsset', 'token'])
 export class Pair {
   @PrimaryColumn({ name: 'id' })
@@ -42,6 +42,6 @@ export class Pair {
   @Column({ name: 'deleted' })
   deleted: boolean;
 
-  @Column(`timestamp`, { name: `updated_at` })
+  @Column('timestamp', { name: 'updated_at' })
   updatedAt: Date;
 }

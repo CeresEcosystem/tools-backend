@@ -26,7 +26,7 @@ const BASE_ASSETS = [
     address: XSTUSD_ADDRESS,
   },
 ];
-const DENOMINATOR = FPNumber.fromNatural(Math.pow(10, 18));
+const DENOMINATOR = FPNumber.fromNatural(10 ** 18);
 
 @Injectable()
 export class PairsSync {
@@ -45,11 +45,13 @@ export class PairsSync {
   @Cron(CronExpression.EVERY_3_MINUTES)
   async fetchLiquidityPairs(): Promise<void> {
     this.logger.log('Start fetching pairs data.');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
     const volumeData = await this.fetchSoraPairs();
 
     if (!volumeData) {
       this.logger.log('Cancel updating pairs data.');
+
       return;
     }
 
@@ -88,7 +90,7 @@ export class PairsSync {
       }
 
       const pairData = volumeData[`${tokenAssetId}_${baseAssetId}`];
-      const volume = pairData ? pairData['quote_volume'] * basePrice : 0;
+      const volume = pairData ? pairData.quote_volume * basePrice : 0;
 
       this.pairsService.save([
         {
@@ -121,23 +123,24 @@ export class PairsSync {
   }
 
   private async getPairs(): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
 
     for (const [index, baseAsset] of BASE_ASSETS.entries()) {
       await soraApi.rpc.tradingPair.listEnabledPairs(index, (pairList) => {
-        pairList = pairList.toHuman();
+        const pairListHuman = pairList.toHuman();
 
-        for (const pair of pairList) {
-          const assetId = pair['targetAssetId'];
+        for (const pair of pairListHuman) {
+          const assetId = pair.targetAssetId;
 
           if (!whitelist.includes(assetId) && !synthetics.includes(assetId)) {
             continue;
           }
 
           soraApi.rpc.assets.getAssetInfo(assetId, (info) => {
-            info = info.toHuman();
-            const assetSymbol = info['symbol'];
-            const fullName = `${info['name']} (${assetSymbol})`;
+            const infoHuman = info.toHuman();
+            const assetSymbol = infoHuman.symbol;
+            const fullName = `${infoHuman.name} (${assetSymbol})`;
 
             this.pairs.push({
               token: assetSymbol,
@@ -153,9 +156,9 @@ export class PairsSync {
     }
   }
 
-  private async fetchSoraPairs() {
+  private async fetchSoraPairs<T>(): Promise<T> {
     const { data } = await firstValueFrom(
-      this.httpService.get<any>(VOLUME_URL, { timeout: 2000 }).pipe(
+      this.httpService.get<T>(VOLUME_URL, { timeout: 2000 }).pipe(
         retry({ count: 30, delay: 1000 }),
         catchError((error: AxiosError) => {
           this.logWarning(error);
@@ -188,7 +191,7 @@ export class PairsSync {
     };
   }
 
-  private logWarning(error: AxiosError) {
+  private logWarning(error: AxiosError): void {
     this.logger.warn(
       `An error happened while fetching pairs from sora stats!
       msg: ${error.message}, code: ${error.code}, cause: ${error.cause}`,

@@ -12,7 +12,6 @@ import { TrackerPswapSync } from './tracker-pswap.sync';
 import { PSWAPTrackerBlockBcToEntityMapper } from './mapper/pswap-tracker-to-entity.mapper';
 import { TrackerValSync } from './tracker-val.sync';
 import { TokenPriceModule } from '../token-price/token-price.module';
-import { TokenSupplySeeder } from './seeder/token-supply-seeder';
 import { ValFeesTrackerBlockBcToEntityMapper } from './mapper/val-fees-tracker-to-entity.mapper';
 import { ValTbcTrackerToEntityMapper } from './mapper/val-tbc-tracker-to-entity.mapper';
 import { TrackerValTbcBurningsListener } from './tracker-val-tbc-burning.listener';
@@ -35,7 +34,6 @@ import { SoraClientModule } from '../sora-client/sora-client-module';
     TrackerValSync,
     PSWAPTrackerBlockBcToEntityMapper,
     ValFeesTrackerBlockBcToEntityMapper,
-    TokenSupplySeeder,
     TrackerValTbcBurningsListener,
     ValTbcTrackerToEntityMapper,
   ],

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PairBcDto } from './dto/pair-bc.dto';
 import { Pair } from './entity/pairs.entity';
 import { PairsMapper } from './mapper/pairs.mapper';
@@ -6,8 +6,6 @@ import { PairsRepository } from './pairs.repository';
 
 @Injectable()
 export class PairsService {
-  private readonly logger = new Logger(PairsService.name);
-
   constructor(
     private readonly pairsRepository: PairsRepository,
     private readonly mapper: PairsMapper,

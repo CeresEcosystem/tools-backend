@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import {
   Body,
   Controller,
@@ -146,7 +147,11 @@ export class BannerController {
     sm: Express.Multer.File[];
     md: Express.Multer.File[];
     lg: Express.Multer.File[];
-  }) {
+  }): {
+    sm: Express.Multer.File;
+    md: Express.Multer.File;
+    lg: Express.Multer.File;
+  } {
     const sm = this.destructOrNull(files.sm);
     const md = this.destructOrNull(files.md);
     const lg = this.destructOrNull(files.lg);
@@ -154,7 +159,9 @@ export class BannerController {
     return { sm, md, lg };
   }
 
-  private destructOrNull(fileArray: Express.Multer.File[]) {
+  private destructOrNull(
+    fileArray: Express.Multer.File[],
+  ): Express.Multer.File {
     return fileArray ? fileArray[0] : null;
   }
 }

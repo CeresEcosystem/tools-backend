@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Logger } from '@nestjs/common';
+import { Controller, Get, Inject } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -9,8 +9,6 @@ import { RewardsDto } from './rewards.dto';
 @Controller('rewards')
 @ApiTags('Rewards Controller')
 export class RewardsController {
-  private readonly logger = new Logger(RewardsController.name);
-
   constructor(
     private readonly rewardsService: RewardsService,
     @Inject(CACHE_MANAGER)

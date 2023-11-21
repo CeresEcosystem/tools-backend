@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Logger } from '@nestjs/common';
+import { Controller, Get, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ApiTags } from '@nestjs/swagger';
 import { PairToDtoMapper } from './mapper/pair-to-dto.mapper';
@@ -10,8 +10,6 @@ import { PairDto } from './dto/pair.dto';
 @Controller('pairs')
 @ApiTags('Pairs Controller')
 export class PairsController {
-  private readonly logger = new Logger(PairsController.name);
-
   constructor(
     private readonly pairsService: PairsService,
     private readonly mapper: PairToDtoMapper,

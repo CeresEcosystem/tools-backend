@@ -5,12 +5,11 @@ export class AddTrackerUniqueConstraint1686338576336
 {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `ALTER TABLE tracker \
-        ADD CONSTRAINT tracker_unique UNIQUE KEY (token, block_num)`,
+      'ALTER TABLE tracker ADD CONSTRAINT tracker_unique UNIQUE KEY (token, block_num)',
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`ALTER TABLE tracker DROP INDEX tracker_unique`);
+    await queryRunner.query('ALTER TABLE tracker DROP INDEX tracker_unique');
   }
 }

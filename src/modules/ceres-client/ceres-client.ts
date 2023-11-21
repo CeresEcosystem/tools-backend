@@ -17,19 +17,19 @@ export class CeresClient {
     private readonly configs: ConfigService,
   ) {}
 
-  public async getTokenLocks(): Promise<TokenLockDto[]> {
-    const url = this.configs.get(CERES_BACKEND_URL) + `/lock/tokens/totals`;
+  public getTokenLocks(): Promise<TokenLockDto[]> {
+    const url = `${this.configs.get(CERES_BACKEND_URL)}/lock/tokens/totals`;
 
     return this.sendGetRequest<TokenLockDto[]>(url);
   }
 
-  public async getLiquidityLocks(): Promise<LiquidityLockDto[]> {
-    const url = this.configs.get(CERES_BACKEND_URL) + `/lock/pairs/totals`;
+  public getLiquidityLocks(): Promise<LiquidityLockDto[]> {
+    const url = `${this.configs.get(CERES_BACKEND_URL)}/lock/pairs/totals`;
 
     return this.sendGetRequest<LiquidityLockDto[]>(url);
   }
 
-  private async sendGetRequest<T>(url: string) {
+  private async sendGetRequest<T>(url: string): Promise<T> {
     const { data } = await firstValueFrom(
       this.httpService.get<T>(url, { timeout: 1000 }).pipe(
         retry({ count: 10, delay: 1000 }),
@@ -43,7 +43,7 @@ export class CeresClient {
     return data;
   }
 
-  private logWarning(error: AxiosError) {
+  private logWarning(error: AxiosError): void {
     this.logger.warn(
       `An error happened while contacting ceres-backend!
       msg: ${error.message}, code: ${error.code}, cause: ${error.cause}`,

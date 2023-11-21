@@ -1,12 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOptionsWhere, Repository } from 'typeorm';
 import { TokenPrice } from './entity/token-price.entity';
 
 @Injectable()
 export class TokenPriceRepository {
-  private readonly logger = new Logger(TokenPriceRepository.name);
-
   constructor(
     @InjectRepository(TokenPrice)
     private readonly repository: Repository<TokenPrice>,
@@ -35,17 +33,17 @@ export class TokenPriceRepository {
     return this.repository.find(options);
   }
 
-  public update(tokenPrice: TokenPrice) {
+  public update(tokenPrice: TokenPrice): void {
     this.repository.update({ id: tokenPrice.id }, tokenPrice);
   }
 
-  public upsertAll(tokenPrices: TokenPrice[]) {
+  public upsertAll(tokenPrices: TokenPrice[]): void {
     tokenPrices.forEach((tokenPrice) => {
       this.upsert(tokenPrice);
     });
   }
 
-  private async upsert(tokenPrice: TokenPrice) {
+  private async upsert(tokenPrice: TokenPrice): Promise<void> {
     tokenPrice.updatedAt = new Date();
 
     const existingPrice = await this.repository.findOneBy({

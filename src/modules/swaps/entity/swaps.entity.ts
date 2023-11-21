@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn, Index } from 'typeorm';
 
-@Entity(`swap`)
+@Entity('swap')
 @Index(
   [
     'swappedAt',
@@ -16,7 +16,7 @@ export class Swap {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column(`timestamp`, { name: 'swapped_at' })
+  @Column('timestamp', { name: 'swapped_at' })
   swappedAt: Date;
 
   @Column({ name: 'account_id' })

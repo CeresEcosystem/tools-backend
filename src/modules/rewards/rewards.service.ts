@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { KeyValueData } from './key-value-data.entity';
@@ -7,8 +7,6 @@ import { RewardsDto } from './rewards.dto';
 
 @Injectable()
 export class RewardsService {
-  private readonly logger = new Logger(RewardsService.name);
-
   constructor(
     @InjectRepository(KeyValueData)
     private readonly keyValueRepository: Repository<KeyValueData>,
@@ -30,12 +28,12 @@ export class RewardsService {
     };
   }
 
-  public async save(apr: string, rewards: string): Promise<void> {
+  public save(apr: string, rewards: string): void {
     this.upsertKeyValue(FARMING_APR_KEY, apr);
     this.upsertKeyValue(FARMING_REWARDS_KEY, rewards);
   }
 
-  private async upsertKeyValue(key: string, value: string) {
+  private async upsertKeyValue(key: string, value: string): Promise<void> {
     const existingKey = await this.keyValueRepository.findOneBy({ id: key });
 
     if (!existingKey) {
@@ -48,7 +46,7 @@ export class RewardsService {
       return;
     }
 
-    if (existingKey.value != value) {
+    if (existingKey.value !== value) {
       this.keyValueRepository.update(
         { id: key },
         {

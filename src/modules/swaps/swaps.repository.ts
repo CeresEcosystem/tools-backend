@@ -41,7 +41,7 @@ export class SwapRepository {
       skip: pageOptions.skip,
       take: pageOptions.size,
       order: { id: 'DESC' },
-      where: { accountId: accountId },
+      where: { accountId },
     });
 
     const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
@@ -49,7 +49,7 @@ export class SwapRepository {
     return new PageDto(this.swapMapper.toDtos(data), meta);
   }
 
-  public async deleteOlderThanDays(days: number) {
+  public async deleteOlderThanDays(days: number): Promise<void> {
     await this.swapRepository.delete({
       swappedAt: LessThan(subtractDays(new Date(), days)),
     });

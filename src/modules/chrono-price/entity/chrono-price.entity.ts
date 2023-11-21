@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-@Entity(`prices`)
+@Entity('prices')
 export class ChronoPrice {
   @PrimaryColumn()
   id: string;
@@ -11,6 +11,6 @@ export class ChronoPrice {
   @Column('float')
   price: number;
 
-  @Column(`timestamp`, { name: `created_at` })
+  @Column('timestamp', { name: 'created_at' })
   createdAt: Date;
 }

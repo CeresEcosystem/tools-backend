@@ -8,7 +8,7 @@ import {
 
 import { TokenPrice } from '../../token-price/entity/token-price.entity';
 
-@Entity(`user_device`)
+@Entity('user_device')
 export class UserDevice {
   @PrimaryGeneratedColumn()
   id: number;

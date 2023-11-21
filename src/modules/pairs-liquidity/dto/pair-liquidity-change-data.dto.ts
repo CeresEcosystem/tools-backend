@@ -5,5 +5,6 @@ export interface PairLiquidityChangeDataDto {
   signerId: string;
   blockNumber: number;
   timestamp: number;
-  eventArgs: any;
+  // TODO: define type
+  eventArgs: unknown;
 }

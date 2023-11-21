@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { CronExpression } from 'src/utils/cron-expression.enum';
@@ -41,7 +42,7 @@ export class TrackerPswapSync {
       for (const elem of distributions) {
         retStr = blockNum.toString();
         for (const x of elem) {
-          retStr = retStr + ',' + new FPNumber(x).div(DENOMINATOR).toString();
+          retStr = `${retStr },${ new FPNumber(x).div(DENOMINATOR).toString()}`;
         }
         retStr = retStr.slice(0, -1);
         if (retStr !== '') {
@@ -52,6 +53,7 @@ export class TrackerPswapSync {
 
     if (!burningData || burningData.length === 0) {
       this.logger.log('No new burning data to load, exiting.');
+
       return;
     }
 

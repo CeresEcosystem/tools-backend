@@ -81,7 +81,7 @@ import { PriceNotifModule } from './modules/price-notifications/price-notif.modu
   providers: [],
 })
 export class AppModule {
-  configure(consumer: MiddlewareConsumer) {
+  configure(consumer: MiddlewareConsumer): void {
     consumer.apply(LoggerMiddleware).forRoutes('*');
   }
 }
