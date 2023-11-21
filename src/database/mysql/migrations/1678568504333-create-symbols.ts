@@ -26,6 +26,6 @@ export class CreateSymbols1678568504333 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE symbols`);
+    await queryRunner.query('DROP TABLE symbols');
   }
 }

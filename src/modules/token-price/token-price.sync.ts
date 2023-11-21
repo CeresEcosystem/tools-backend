@@ -31,6 +31,7 @@ export class TokenPriceSync {
   @Cron(CronExpression.EVERY_MINUTE)
   async fetchTokenPrices(): Promise<void> {
     this.logger.log('Start fetching tokens prices.');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
     const pricesToUpsert: TokenPriceBcDto[] = [];
 
@@ -48,7 +49,7 @@ export class TokenPriceSync {
       } else {
         // Get price via token liquidity
 
-        const symbol = token.symbol;
+        const { symbol } = token;
         let amount = 1;
 
         if (HUNDREDS.includes(symbol)) {
@@ -68,24 +69,24 @@ export class TokenPriceSync {
           ['XYKPool'],
           'Disabled',
           (result) => {
-            const value = !result.isNone
-              ? result.unwrap()
-              : { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0 };
+            const value = result.isNone
+              ? { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0 }
+              : result.unwrap();
 
-            let price: any = new FPNumber(value.amount).toNumber();
+            let price = new FPNumber(value.amount).toNumber();
             price = HUNDREDS.includes(symbol)
-              ? (price / 100).toFixed(8)
+              ? Number((price / 100).toFixed(8))
               : price;
             price = BILLIONS.includes(symbol)
-              ? (price / 1000000000).toFixed(12)
+              ? Number((price / 1000000000).toFixed(12))
               : price;
             price = MILLI.includes(symbol)
-              ? (price / 0.001).toFixed(12)
+              ? Number((price / 0.001).toFixed(12))
               : price;
 
             pricesToUpsert.push({
               ...token,
-              price: symbol === 'DAI' ? 1 : Number(price),
+              price: symbol === 'DAI' ? 1 : price,
             });
           },
         );
@@ -101,6 +102,7 @@ export class TokenPriceSync {
 
   private async loadTokens(): Promise<void> {
     this.tokens = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
     const tokens = await soraApi.query.assets.assetInfos.entries();
 
@@ -112,8 +114,8 @@ export class TokenPriceSync {
       }
 
       token = token.toHuman();
-      const assetSymbol = token[0];
-      const fullName = token[1] + ' (' + assetSymbol + ')';
+      const [assetSymbol] = token;
+      const fullName = `${token[1]} (${assetSymbol})`;
 
       this.tokens.push({
         symbol: assetSymbol,

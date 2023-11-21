@@ -13,12 +13,17 @@ export class RelevantPricesInit implements OnModuleInit {
 
   public async onModuleInit(): Promise<void> {
     const relevantTokens = await this.relevantPricesRepo.findAll();
-    if (relevantTokens.length > 0) return;
+
+    if (relevantTokens.length > 0) {
+      return;
+    }
+
     this.setRelevantPrices();
   }
 
   private async setRelevantPrices(): Promise<void> {
     const allTokens = await this.tokenPriceService.findAll();
+
     allTokens.forEach((token) => {
       const relevantPrices = new RelevantPrices();
       relevantPrices.token = token.fullName;
@@ -33,11 +38,12 @@ export class RelevantPricesInit implements OnModuleInit {
     const allTokens = await this.tokenPriceService.findAll();
     const allRelevantTokens = await this.relevantPricesRepo.findAll();
 
-    const newTokens = allTokens.filter((token) => {
-      return !allRelevantTokens.some(
-        (relevantToken) => relevantToken.assetId === token.assetId,
-      );
-    });
+    const newTokens = allTokens.filter(
+      (token) =>
+        !allRelevantTokens.some(
+          (relevantToken) => relevantToken.assetId === token.assetId,
+        ),
+    );
 
     newTokens.forEach((token) => {
       const newRelevantToken = new RelevantPrices();

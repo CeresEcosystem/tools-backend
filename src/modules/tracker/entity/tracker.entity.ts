@@ -2,7 +2,7 @@ import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 export type BurnType = 'FEES' | 'TBC';
 
-@Entity(`tracker`)
+@Entity('tracker')
 export class Tracker {
   @PrimaryColumn()
   id: number;
@@ -34,12 +34,12 @@ export class Tracker {
   @Column({ name: 'xor_dedicated_for_buy_back' })
   xorDedicatedForBuyBack: string;
 
-  @Column(`timestamp`, { name: `created_at` })
+  @Column('timestamp', { name: 'created_at' })
   createdAt: Date;
 
-  @Column(`timestamp`, { name: `updated_at` })
+  @Column('timestamp', { name: 'updated_at' })
   updatedAt: Date;
 
-  @Column(`date`, { name: 'date_raw' })
+  @Column('date', { name: 'date_raw' })
   dateRaw: string;
 }

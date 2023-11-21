@@ -8,7 +8,9 @@ export class PriceNotifController {
   constructor(private priceNotifService: PriceNotifService) {}
 
   @Post('initial-favs')
-  addInitialFavoriteTokens(@Body() initialFavTokens: InitFavTokensDto) {
+  public addInitialFavoriteTokens(
+    @Body() initialFavTokens: InitFavTokensDto,
+  ): void {
     this.priceNotifService.addInitFavorites(
       initialFavTokens.deviceId,
       initialFavTokens.tokens,
@@ -16,7 +18,7 @@ export class PriceNotifController {
   }
 
   @Post('add-token')
-  addToken(@Body() favTokenDto: FavTokenDto) {
+  public addToken(@Body() favTokenDto: FavTokenDto): void {
     this.priceNotifService.addNewFavoriteToken(
       favTokenDto.deviceId,
       favTokenDto.token,
@@ -24,10 +26,10 @@ export class PriceNotifController {
   }
 
   @Delete('remove-token/:deviceId/:token')
-  deleteToken(
+  public deleteToken(
     @Param('deviceId') deviceId: string,
     @Param('token') token: string,
-  ) {
+  ): void {
     this.priceNotifService.deleteFavoriteToken(deviceId, token);
   }
 }

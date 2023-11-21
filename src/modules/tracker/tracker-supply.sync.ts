@@ -63,7 +63,7 @@ export class TrackerSupplySync {
     return tokenPrices.map((tokenPrices) => tokenPrices.token);
   }
 
-  private logWarning(token: string, error: AxiosError) {
+  private logWarning(token: string, error: AxiosError): void {
     this.logger.warn(
       `An error happened while fetching ${token} supply!
       msg: ${error.message}, code: ${error.code}, cause: ${error.cause}`,

@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync } from 'fs';
 import { writeFile } from 'fs/promises';
 
-export const createFile = async (
+export const createFile = (
   path: string,
   fileName: string,
   data: string,
@@ -10,5 +10,5 @@ export const createFile = async (
     mkdirSync(path, { recursive: true });
   }
 
-  return await writeFile(`${path}/${fileName}`, data);
+  return writeFile(`${path}/${fileName}`, data);
 };

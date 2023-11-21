@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Logger, Param } from '@nestjs/common';
+import { Controller, Get, Inject, Param } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ApiTags } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
@@ -9,8 +9,6 @@ import { TrackerService } from './tracker.service';
 @Controller('tracker')
 @ApiTags('Tracker Controller')
 export class TrackerController {
-  private readonly logger = new Logger(TrackerController.name);
-
   constructor(
     private readonly trackerService: TrackerService,
     @Inject(CACHE_MANAGER)

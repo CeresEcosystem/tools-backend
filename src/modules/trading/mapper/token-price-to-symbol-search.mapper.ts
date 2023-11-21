@@ -1,8 +1,9 @@
+/* eslint-disable camelcase */
 import { BaseDtoMapper } from 'src/utils/mappers/base-dto-mapper';
 import { SymbolChartSearchDto } from '../dto/symbol-chart-search.dto';
 import { TokenPrice } from '../../token-price/entity/token-price.entity';
 
-export class TokenPriceToSymbolChartSearchMapper extends BaseDtoMapper<
+export class TokenPriceToSymbolSearchMapper extends BaseDtoMapper<
   TokenPrice,
   SymbolChartSearchDto
 > {

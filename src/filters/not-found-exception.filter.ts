@@ -12,7 +12,7 @@ import { EntityNotFoundError } from 'typeorm';
 export class NotFoundExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(NotFoundExceptionFilter.name);
 
-  catch(exception: EntityNotFoundError, host: ArgumentsHost) {
+  catch(exception: EntityNotFoundError, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();

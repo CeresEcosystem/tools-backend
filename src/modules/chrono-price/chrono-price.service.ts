@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Between, DataSource, In, Repository } from 'typeorm';
 import { ChronoPriceDto } from './dto/chrono-price.dto';
@@ -11,8 +11,6 @@ import { TokenPrice } from '../token-price/entity/token-price.entity';
 
 @Injectable()
 export class ChronoPriceService {
-  private readonly logger = new Logger(ChronoPriceService.name);
-
   constructor(
     @InjectDataSource('pg')
     private readonly dataSource: DataSource,
@@ -20,7 +18,7 @@ export class ChronoPriceService {
     private readonly repository: Repository<ChronoPrice>,
   ) {}
 
-  public save(chronoPriceDtos: ChronoPriceDto[]) {
+  public save(chronoPriceDtos: ChronoPriceDto[]): void {
     this.repository.insert(chronoPriceDtos);
   }
 
@@ -37,13 +35,14 @@ export class ChronoPriceService {
     return result.flat();
   }
 
+  // TODO: Define return type
   public async getPriceForChart(
     symbol: string,
     resolution: string,
     from: number,
     to: number,
     countback: number,
-  ) {
+  ): Promise<unknown> {
     const { query, params } = this.buildQuery(
       symbol,
       resolution,
@@ -52,7 +51,7 @@ export class ChronoPriceService {
       countback,
     );
 
-    const tokenPrices = (await this.dataSource.query(query, params))[0];
+    const [tokenPrices] = await this.dataSource.query(query, params);
 
     if (!tokenPrices || !tokenPrices.t) {
       return {
@@ -75,7 +74,6 @@ export class ChronoPriceService {
       t1.updatedAt > t2.updatedAt ? t1 : t2,
     ).updatedAt;
 
-    console.time(`Price change for interval ${intervalHours}`);
     const priceChanges = await this.repository
       .createQueryBuilder()
       .distinctOn(['token'])
@@ -88,8 +86,6 @@ export class ChronoPriceService {
         ),
       })
       .getRawMany<{ token: string; price: string }>();
-
-    console.timeEnd(`Price change for interval ${intervalHours}`);
 
     return tokenEntities.map((tokenEntity) => {
       const priceChange = priceChanges.find(
@@ -128,11 +124,12 @@ export class ChronoPriceService {
     from: number,
     to: number,
     countback: number,
-  ) {
+  ): { query: string; params: string[] } {
     const params = [this.resolveResolution(resolution), symbol];
 
     let query = `
-        select array_agg(t) as t, array_agg(o) as o, array_agg(c) as c, array_agg(h) as h, array_agg(l) as l from (
+        select array_agg(t) as t, array_agg(o) as o, array_agg(c) as c, 
+               array_agg(h) as h, array_agg(l) as l from (
             select ts as t, open as o, close as c, high as h, low as l, 0 as v from (
                 select * from (
                     select extract(epoch from day) as ts, open, close, high, low from (
@@ -176,21 +173,21 @@ export class ChronoPriceService {
     };
   }
 
-  private resolveResolution(resolution: string) {
+  private resolveResolution(resolution: string): string {
     if (isNumberString(resolution)) {
-      return resolution + 'm';
+      return `${resolution}m`;
     }
 
     return resolution;
   }
 
-  private sub2Mins(date: Date): any {
+  private sub2Mins(date: Date): Date {
     date.setMinutes(date.getMinutes() - 2);
 
     return date;
   }
 
-  private add2Mins(date: Date): any {
+  private add2Mins(date: Date): Date {
     date.setMinutes(date.getMinutes() + 2);
 
     return date;

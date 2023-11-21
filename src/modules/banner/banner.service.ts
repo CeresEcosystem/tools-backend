@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
@@ -106,7 +107,7 @@ export class BannerService {
     sm: Express.Multer.File,
     md: Express.Multer.File,
     lg: Express.Multer.File,
-  ) {
+  ): Promise<void> {
     if (sm) {
       banner.sm = await this.uploadFile(sm);
     }
@@ -120,10 +121,10 @@ export class BannerService {
     }
   }
 
-  private async uploadFile(file: Express.Multer.File): Promise<string> {
+  private uploadFile(file: Express.Multer.File): Promise<string> {
     const fileName = this.generateFileName(file.originalname);
 
-    return await this.s3Client.upload(BANNERS_PATH, file, fileName);
+    return this.s3Client.upload(BANNERS_PATH, file, fileName);
   }
 
   private generateFileName(originalFileName: string): string {

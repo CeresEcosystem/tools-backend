@@ -58,7 +58,7 @@ export class TokenPriceService {
     const whereStatements = searchTerms.map(
       (term) =>
         ({
-          fullName: Like('%' + term + '%'),
+          fullName: Like(`%${ term }%`),
           deleted: false,
         } as FindOptionsWhere<TokenPrice>),
     );
@@ -69,7 +69,7 @@ export class TokenPriceService {
     });
   }
 
-  private saveChronoPrices(tokenPrices: TokenPrice[]) {
+  private saveChronoPrices(tokenPrices: TokenPrice[]): void {
     const chronoPrices = tokenPrices.map((tokenPrice) => ({
       token: tokenPrice.token,
       price: tokenPrice.price,

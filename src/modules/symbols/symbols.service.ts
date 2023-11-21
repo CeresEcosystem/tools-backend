@@ -44,7 +44,7 @@ export class SymbolsService {
     return this.symbolsRepo.findOneByOrFail({ id });
   }
 
-  public async createSymbolIfMissing(newSymbol: CreateSymbolDto) {
+  public async createSymbolIfMissing(newSymbol: CreateSymbolDto): Promise<void> {
     const symbolExists = await this.symbolsRepo.exist({
       where: { id: newSymbol.token },
     });
@@ -54,7 +54,7 @@ export class SymbolsService {
     }
   }
 
-  private async create(newSymbol: CreateSymbolDto) {
+  private async create(newSymbol: CreateSymbolDto): Promise<void> {
     this.logger.log(
       `Creating new Symbol: ${newSymbol.token}, \
        price: ${newSymbol.price}`,

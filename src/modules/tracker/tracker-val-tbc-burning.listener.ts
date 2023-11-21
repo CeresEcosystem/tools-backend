@@ -21,8 +21,9 @@ export class TrackerValTbcBurningsListener {
     this.runListener();
   }
 
-  async runListener() {
+  async runListener(): Promise<void> {
     this.logger.log('VAL TBC burning listener initialized');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
 
     soraApi.rpc.chain.subscribeNewHeads(async (header) => {

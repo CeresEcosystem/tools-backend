@@ -23,6 +23,7 @@ export class TrackerValSync {
   @Cron(CronExpression.EVERY_HOUR)
   async fetchTrackerData(): Promise<void> {
     this.logger.log('Start fetching VAL burning data.');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
 
     const burningData: ValFeesTrackerBlockDto[] = [];
@@ -33,7 +34,7 @@ export class TrackerValSync {
     const startBlock = lastSavedBlock + 1;
     const headBlock = await soraApi.query.system.number();
 
-    for (let blockNum = startBlock; blockNum <= headBlock; blockNum++) {
+    for (let blockNum = startBlock; blockNum <= headBlock; blockNum += 1) {
       const blockHash = await soraApi.rpc.chain.getBlockHash(blockNum);
       const apiAt = await soraApi.at(blockHash);
       let events = await apiAt.query.system.events();
@@ -43,9 +44,13 @@ export class TrackerValSync {
       events.forEach((e) => {
         const module = e.event.section;
         const event = e.event.method;
+
         if (module === 'session' && event === 'NewSession') {
           events.forEach((ev, iddx) => {
-            if (found) return;
+            if (found) {
+              return;
+            }
+
             const module = ev.event.section;
             const event = ev.event.method;
             if (module === 'balances' && event === 'Deposit') {
@@ -87,6 +92,7 @@ export class TrackerValSync {
 
     if (!burningData || burningData.length === 0) {
       this.logger.log('No new VAL burning data to load, exiting.');
+
       return;
     }
 

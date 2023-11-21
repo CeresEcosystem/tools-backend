@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { getTodayFormatted } from 'src/utils/date-utils';
 import { Repository } from 'typeorm';
@@ -7,8 +7,6 @@ import { TrackerSupplyGraphPointDto } from './dto/tracker.dto';
 
 @Injectable()
 export class TrackerSupplyRepository {
-  private readonly logger = new Logger(TrackerSupplyRepository.name);
-
   constructor(
     @InjectRepository(TrackerSupply)
     private readonly repository: Repository<TrackerSupply>,
@@ -38,7 +36,7 @@ export class TrackerSupplyRepository {
       return;
     }
 
-    if (existingSupply.supply != trackerSupply) {
+    if (existingSupply.supply !== trackerSupply) {
       await this.repository.update(
         { token, dateRaw },
         {
@@ -49,7 +47,7 @@ export class TrackerSupplyRepository {
     }
   }
 
-  public async getSupplyGraphData(
+  public getSupplyGraphData(
     token: string,
   ): Promise<TrackerSupplyGraphPointDto[]> {
     return this.repository

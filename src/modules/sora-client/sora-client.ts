@@ -35,6 +35,7 @@ export class SoraClient {
 
   private async waitIfInitInProgress(): Promise<void> {
     while (this.initInProgress) {
+      // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
   }

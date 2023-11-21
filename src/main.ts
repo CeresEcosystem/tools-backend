@@ -2,13 +2,13 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { SwaggerModule, DocumentBuilder, OpenAPIObject } from '@nestjs/swagger';
 import { NotFoundExceptionFilter } from './filters/not-found-exception.filter';
 import { TelegramLogger } from './modules/logger/telegram-logger';
 
 const DEV_ENV = 'dev';
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true, // waits for TelegramLogger to be instantiated
   });
@@ -43,7 +43,7 @@ async function bootstrap() {
   await app.listen(process.env.PORT);
 }
 
-function buildSwaggerConfig() {
+function buildSwaggerConfig(): Omit<OpenAPIObject, 'paths'> {
   return new DocumentBuilder()
     .setTitle('Tools Backend')
     .setVersion('1.0')

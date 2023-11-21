@@ -20,7 +20,7 @@ export class IconsService {
   constructor(private readonly httpService: HttpService) {}
 
   @Cron(CronExpression.EVERY_3_HOURS)
-  async fetchIcons() {
+  async fetchIcons(): Promise<void> {
     this.logger.log('Start downloading token icons.');
 
     const { data } = await firstValueFrom(
@@ -53,9 +53,9 @@ export class IconsService {
     createFile(ICONS_STORAGE_PATH, symbol + SVG_EXTENSION, iconFile);
   }
 
-  private parseIcon(icon: string) {
-    const iconType = icon.split(',', 1)[0];
-    const iconContent = icon.replace(iconType + ',', '');
+  private parseIcon(icon: string): { iconType: string; iconContent: string } {
+    const [iconType] = icon.split(',', 1);
+    const iconContent = icon.replace(`${iconType},`, '');
 
     return {
       iconType,
@@ -63,11 +63,11 @@ export class IconsService {
     };
   }
 
-  private decodeIconContent(iconContent: string) {
+  private decodeIconContent(iconContent: string): string {
     return decodeURIComponent(iconContent);
   }
 
-  private logWarning(error: AxiosError) {
+  private logWarning(error: AxiosError): void {
     this.logger.warn(
       `An error happened while contacting icons API!
       msg: ${error.message}, code: ${error.code}, cause: ${error.cause}`,

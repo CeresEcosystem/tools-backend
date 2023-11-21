@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-@Entity(`key_value_data`)
+@Entity('key_value_data')
 export class KeyValueData {
   @PrimaryColumn()
   id: string;
@@ -8,6 +8,6 @@ export class KeyValueData {
   @Column()
   value: string;
 
-  @Column(`timestamp`, { name: `updated_at` })
+  @Column('timestamp', { name: 'updated_at' })
   updatedAt: Date;
 }

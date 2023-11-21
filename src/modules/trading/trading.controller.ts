@@ -6,8 +6,10 @@ import { ChronoPriceService } from '../chrono-price/chrono-price.service';
 import { TokenPricesQuery } from './dto/token-prices-dto';
 import { SymbolsService } from '../symbols/symbols.service';
 import { TokenPriceService } from '../token-price/token-price.service';
-import { TokenPriceToSymbolChartSearchMapper } from './mapper/token-price-to-symbol-search-chart.mapper';
+import { TokenPriceToSymbolSearchMapper } from './mapper/token-price-to-symbol-search.mapper';
 import { SymbolChartMapper } from './mapper/symbol-to-chart-dto.mapper';
+import { SymbolChartDto } from './dto/symbol-chart-dto';
+import { ChartConfigDto } from './dto/chart-config-dto';
 
 @Controller('trading')
 @ApiTags('Trading Controller')
@@ -16,17 +18,17 @@ export class TradingController {
     private readonly symbolsService: SymbolsService,
     private readonly tokenPriceService: TokenPriceService,
     private readonly chronoPriceService: ChronoPriceService,
-    private readonly tokenPriceToSymbolMapper: TokenPriceToSymbolChartSearchMapper,
+    private readonly tokenPriceToSymbolMapper: TokenPriceToSymbolSearchMapper,
     private readonly symbolChartMapper: SymbolChartMapper,
   ) {}
 
   @Get('config')
-  public getChartConfig() {
+  public getChartConfig(): ChartConfigDto {
     return CHART_CONFIG;
   }
 
   @Get('symbols')
-  public getSymbol(@Query('symbol') symbol: string) {
+  public getSymbol(@Query('symbol') symbol: string): Promise<SymbolChartDto> {
     return this.symbolChartMapper.toDtoAsync(
       this.symbolsService.findOneOrFail(symbol),
     );
@@ -42,8 +44,11 @@ export class TradingController {
     return this.tokenPriceToSymbolMapper.toDtosAsync(prices);
   }
 
+  // TODO: Define return type
   @Get('history')
-  public getTokenHistoricPrices(@Query() queryParams: TokenPricesQuery) {
+  public getTokenHistoricPrices(
+    @Query() queryParams: TokenPricesQuery,
+  ): unknown {
     return this.chronoPriceService.getPriceForChart(
       queryParams.symbol,
       queryParams.resolution,

@@ -15,6 +15,6 @@ export class CreatePrices1678473271465 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE prices`);
+    await queryRunner.query('DROP TABLE prices');
   }
 }

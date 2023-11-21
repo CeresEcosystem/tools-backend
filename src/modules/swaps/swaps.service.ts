@@ -13,14 +13,14 @@ export class SwapService {
 
   constructor(private readonly swapRepo: SwapRepository) {}
 
-  findSwapsByTokens(
+  public findSwapsByTokens(
     pageOptions: PageOptionsDto,
     tokens: string[],
   ): Promise<PageDto<SwapDto>> {
     return this.swapRepo.findSwapsByAssetIds(pageOptions, tokens);
   }
 
-  findSwapsByAccount(
+  public findSwapsByAccount(
     pageOptions: PageOptionsDto,
     accountId: string,
   ): Promise<PageDto<SwapDto>> {
@@ -28,7 +28,7 @@ export class SwapService {
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  public async cleanUpSwaps() {
+  public async cleanUpSwaps(): Promise<void> {
     this.logger.log('Start cleaning up old token swaps.');
 
     await this.swapRepo.deleteOlderThanDays(SWAPS_TTL_DAYS);

@@ -10,10 +10,10 @@ export class UserDevicesRepository {
     private userDeviceRepo: Repository<UserDevice>,
   ) {}
 
-  public findUserByDevice(deviceId: string): Promise<UserDevice> {
+  public findUserByDevice(deviceId: string): Promise<UserDevice | null> {
     return this.userDeviceRepo.findOne({
       where: {
-        deviceId: deviceId,
+        deviceId,
       },
       relations: ['tokens'],
     });

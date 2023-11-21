@@ -1,11 +1,10 @@
+/* eslint-disable no-console */
 import { BootstrapConsole, ConsoleModule } from 'nestjs-console';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TelegramLoggerModule } from './modules/logger/telegram-logger.module';
-import { ValTbcTrackerToEntityMapper } from './modules/tracker/mapper/val-tbc-tracker-to-entity.mapper';
-import { ValBurningSeeder } from './modules/tracker/seeder/val-burning-seeder';
 import { TrackerModule } from './modules/tracker/tracker.module';
 import { CacheModule } from '@nestjs/cache-manager';
 
@@ -40,7 +39,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     ConsoleModule,
   ],
   controllers: [],
-  providers: [ValBurningSeeder, ValTbcTrackerToEntityMapper],
+  providers: [],
 })
 class AppConsoleModule {}
 

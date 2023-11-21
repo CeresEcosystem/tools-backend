@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { Injectable, Logger } from '@nestjs/common';
 import { S3 } from 'aws-sdk';
 import { ManagedUpload } from 'aws-sdk/clients/s3';

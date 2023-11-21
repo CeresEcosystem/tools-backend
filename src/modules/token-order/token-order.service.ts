@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TokenOrder } from './entity/token-order.entity';
@@ -11,8 +11,6 @@ import { TokenOrderDto } from './dto/token-order.dto';
 
 @Injectable()
 export class TokenOrderService {
-  private readonly logger = new Logger(TokenOrderService.name);
-
   constructor(
     @InjectRepository(TokenOrder)
     private readonly tokenOrderRepo: Repository<TokenOrder>,
@@ -58,7 +56,7 @@ export class TokenOrderService {
     return new PageDto(this.toDtoMapper.toDtos(data), pageMeta);
   }
 
-  public async upsert(tokenOrderDto: UpsertTokenOrderDto): Promise<TokenOrder> {
+  public upsert(tokenOrderDto: UpsertTokenOrderDto): Promise<TokenOrder> {
     return this.tokenOrderRepo.save(tokenOrderDto);
   }
 

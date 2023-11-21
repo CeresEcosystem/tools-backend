@@ -6,17 +6,15 @@ import { RelevantPrices } from './entity/relevant-prices.entity';
 export class RelevantPricesService {
   constructor(private relevantPricesRepo: RelevantPricesRepository) {}
 
-  public async findRelevantToken(tokenName: string): Promise<RelevantPrices> {
+  public findRelevantToken(tokenName: string): Promise<RelevantPrices> {
     return this.relevantPricesRepo.findToken(tokenName);
   }
 
-  public async findAllRelevantTokens(): Promise<RelevantPrices[]> {
+  public findAllRelevantTokens(): Promise<RelevantPrices[]> {
     return this.relevantPricesRepo.findAll();
   }
 
-  public async saveRelevantToken(
-    token: RelevantPrices,
-  ): Promise<RelevantPrices> {
+  public saveRelevantToken(token: RelevantPrices): Promise<RelevantPrices> {
     return this.relevantPricesRepo.saveToken(token);
   }
 }

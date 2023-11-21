@@ -8,5 +8,5 @@ export interface PairBcDto {
   liquidity: number;
   baseAssetLiq: string;
   targetAssetLiq: string;
-  volume: any;
+  volume: string;
 }

@@ -6,6 +6,8 @@ import { UserDevice } from './entity/user-device.entity';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { OneSignalClient } from '../one-signal-client/one-signal-client';
 
+const PERCENTAGE_THRESHOLD = 5;
+
 @Injectable()
 export class PriceNotifService {
   private readonly logger = new Logger(PriceNotifService.name);
@@ -29,13 +31,14 @@ export class PriceNotifService {
 
     const newUser = new UserDevice();
     const allTokens = await this.tokenPriceService.findAll();
-    const userTokens = allTokens.filter((relevantTokens) => {
-      return tokens.includes(relevantTokens.assetId);
-    });
+    const userTokens = allTokens.filter((relevantTokens) =>
+      tokens.includes(relevantTokens.assetId),
+    );
 
     newUser.deviceId = deviceId;
     newUser.tokens = userTokens;
-    this.userDeviceRepo.saveUser(newUser);
+
+    await this.userDeviceRepo.saveUser(newUser);
   }
 
   public async addNewFavoriteToken(
@@ -44,14 +47,15 @@ export class PriceNotifService {
   ): Promise<void> {
     const user = await this.userDeviceRepo.findUserByDevice(deviceId);
     const favToken = await this.tokenPriceService.findByAssetId(token);
-    if (!user) {
+
+    if (user) {
+      user.tokens.push(favToken);
+      this.userDeviceRepo.saveUser(user);
+    } else {
       const newUser = new UserDevice();
       newUser.deviceId = deviceId;
       newUser.tokens = [favToken];
       this.userDeviceRepo.saveUser(newUser);
-    } else {
-      user.tokens.push(favToken);
-      this.userDeviceRepo.saveUser(user);
     }
   }
 
@@ -66,9 +70,9 @@ export class PriceNotifService {
       return;
     }
 
-    const userTokens = user.tokens.filter((token) => {
-      return token.assetId !== favToken.assetId;
-    });
+    const userTokens = user.tokens.filter(
+      (token) => token.assetId !== favToken.assetId,
+    );
 
     user.tokens = userTokens;
 
@@ -80,7 +84,7 @@ export class PriceNotifService {
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
-  public async checkPriceDifferences() {
+  public async checkPriceDifferences(): Promise<void> {
     this.logger.log('Start prices comparison');
     const allRelevantPrices =
       await this.relevantPricesService.findAllRelevantTokens();
@@ -88,14 +92,14 @@ export class PriceNotifService {
     const allUsers = await this.userDeviceRepo.findAll();
 
     for (const relevantPrice of allRelevantPrices) {
-      const [currentPrice] = allCurrentPrices.filter((currentPrice) => {
-        return currentPrice.assetId === relevantPrice.assetId;
-      });
+      const [currentPrice] = allCurrentPrices.filter(
+        (currentPrice) => currentPrice.assetId === relevantPrice.assetId,
+      );
 
-      const significantChange = this.calculate_change(
+      const significantChange = this.isSignificantChange(
         relevantPrice.tokenPrice,
-        Number(currentPrice.price),
-        5,
+        currentPrice.price,
+        PERCENTAGE_THRESHOLD,
       );
 
       if (significantChange) {
@@ -103,27 +107,30 @@ export class PriceNotifService {
           const hasToken = user.tokens.some(
             (token) => token.assetId === relevantPrice.assetId,
           );
+
           return hasToken;
         });
+
+        relevantPrice.tokenPrice = currentPrice.price;
 
         await this.oneSignalClient.sendPriceChangeNotification(
           usersWithToken,
           currentPrice,
         );
-        relevantPrice.tokenPrice = Number(currentPrice.price);
         await this.relevantPricesService.saveRelevantToken(relevantPrice);
       }
     }
-    this.logger.log('Prices comparison successfull');
+    this.logger.log('Prices comparison successful');
   }
 
-  private calculate_change(
+  private isSignificantChange(
     relevantPrice: number,
     currentPrice: number,
-    percentegeThreshold: number,
-  ): Boolean {
+    percentageThreshold: number,
+  ): boolean {
     const percentageChange =
       ((currentPrice - relevantPrice) / relevantPrice) * 100;
-    return Math.abs(percentageChange) >= percentegeThreshold;
+
+    return Math.abs(percentageChange) >= percentageThreshold;
   }
 }

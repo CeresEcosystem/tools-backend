@@ -5,7 +5,7 @@ export enum TransactionType {
   WITHDRAW = 'withdrawLiquidity',
 }
 
-@Entity(`pairs_liquidity_changes`)
+@Entity('pairs_liquidity_changes')
 export class PairLiquidityChangeEntity {
   @PrimaryColumn({ name: 'id' })
   id?: number;

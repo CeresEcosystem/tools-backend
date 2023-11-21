@@ -6,7 +6,7 @@ import { getClientIp } from 'request-ip';
 export class ThrottlerBehindProxyGuard extends ThrottlerGuard {
   private readonly logger = new Logger(ThrottlerBehindProxyGuard.name);
 
-  getTracker(req: Record<string, any>): Promise<string> {
+  override getTracker(req: Record<string, unknown>): Promise<string> {
     const clientIp = getClientIp(req);
 
     this.logger.debug(

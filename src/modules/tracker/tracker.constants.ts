@@ -10,7 +10,7 @@ export const CACHE_TTL = {
   ONE_HOUR: 1 * 60 * 60 * 1000,
 };
 
-export const DENOMINATOR = FPNumber.fromNatural(Math.pow(10, 18));
+export const DENOMINATOR = FPNumber.fromNatural(10 ** 18);
 
 export const VAL_BURN_ADDRESS =
   'cnTQ1kbv7PBNNQrEb1tZpmK7ftiv4yCCpUQy1J2y7Y54Taiaw';

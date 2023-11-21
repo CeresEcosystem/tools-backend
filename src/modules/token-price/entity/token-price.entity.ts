@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity(`current_price`)
+@Entity('current_price')
 export class TokenPrice {
   @PrimaryGeneratedColumn()
   id: number;
@@ -26,6 +26,6 @@ export class TokenPrice {
   @Column()
   deleted: boolean;
 
-  @Column(`timestamp`, { name: `updated_at` })
+  @Column('timestamp', { name: 'updated_at' })
   updatedAt: Date;
 }

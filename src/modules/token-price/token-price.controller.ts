@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Logger, Param } from '@nestjs/common';
+import { Controller, Get, Inject, Param } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { TokenPriceService } from './token-price.service';
 import { TokenPriceDto } from './dto/token-price.dto';
@@ -11,8 +11,6 @@ import Big from 'big.js';
 @Controller('prices')
 @ApiTags('Prices Controller')
 export class TokenPriceController {
-  private readonly logger = new Logger(TokenPriceController.name);
-
   constructor(
     private readonly tokenPriceService: TokenPriceService,
     private readonly mapper: TokenPriceToDtoMapper,
@@ -35,6 +33,7 @@ export class TokenPriceController {
       `${CACHE_KEYS.PRICES}-${token}`,
       async () => {
         const { price } = await this.tokenPriceService.findByToken(token);
+
         return new Big(price).toFixed();
       },
       CACHE_TTL.TWO_MINUTES,

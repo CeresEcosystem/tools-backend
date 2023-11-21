@@ -13,7 +13,7 @@ export class SwapGateway {
   server: Server;
 
   @SubscribeMessage('newSwap')
-  onSwap(@MessageBody() swap: SwapDto) {
+  onSwap(@MessageBody() swap: SwapDto): void {
     this.server.emit(swap.inputAssetId, swap);
     this.server.emit(swap.outputAssetId, swap);
   }

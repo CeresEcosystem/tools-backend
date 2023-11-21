@@ -17,7 +17,7 @@ import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { PriceChangeDto } from '../chrono-price/dto/price-change.dto';
 import { SoraClient } from '../sora-client/sora-client';
 
-const DENOMINATOR = FPNumber.fromNatural(Math.pow(10, 18));
+const DENOMINATOR = FPNumber.fromNatural(10 ** 18);
 const HOUR_INTERVALS = [1, 24, 24 * 7, 24 * 30];
 
 @Injectable()
@@ -34,6 +34,7 @@ export class PortfolioService {
   ) {}
 
   public async getPortfolio(accountId: string): Promise<PortfolioDto[]> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
 
     let xor;
@@ -44,7 +45,7 @@ export class PortfolioService {
       return [];
     }
 
-    const value = !xor.isNone ? xor.unwrap() : { balance: 0 };
+    const value = xor.isNone ? { balance: 0 } : xor.unwrap();
     const xorBalance = new FPNumber(value.balance).toNumber();
 
     const allTokenEntities = await this.tokenPriceService.findAll();
@@ -57,8 +58,7 @@ export class PortfolioService {
       return [];
     }
 
-    console.time('Portfolio price changes');
-    Logger.log('Start portfolio processing, count: ' + portfolio.length);
+    this.logger.log(`Start portfolio processing, count: ${portfolio.length}`);
 
     const relevantPortfolioAssets: {
       assetId: string;
@@ -82,7 +82,7 @@ export class PortfolioService {
         ),
     ];
 
-    Logger.log('Relevant assets count: ' + relevantPortfolioAssets.length);
+    this.logger.log(`Relevant assets count: ${relevantPortfolioAssets.length}`);
 
     const relevantTokens = allTokenEntities.filter((token) =>
       relevantPortfolioAssets.some((asset) => asset.assetId === token.assetId),
@@ -125,8 +125,8 @@ export class PortfolioService {
       };
     });
 
-    Logger.log('End portfolio processing');
-    console.timeEnd('Portfolio price changes');
+    this.logger.log('End portfolio processing');
+
     return result;
   }
 
@@ -167,11 +167,14 @@ export class PortfolioService {
     const farmingPools = await this.deoClient.fetchFarmingData(accountId);
     const allTokenEntities = await this.tokenPriceService.findAll();
 
-    if (!stakingPools || !farmingPools) return;
+    if (!stakingPools || !farmingPools) {
+      return [];
+    }
+
     const rewards: StakingDto[] = [...stakingPools, ...farmingPools]
       .filter(({ rewards }) => FPNumber.fromCodecValue(rewards).toNumber() > 0)
       .reduce((accumulatedTokens, pool) => {
-        const rewardAsset = pool.rewardAsset;
+        const { rewardAsset } = pool;
         const rewardAmount = FPNumber.fromCodecValue(pool.rewards).toNumber();
 
         const existingAsset = accumulatedTokens.find(
@@ -199,6 +202,7 @@ export class PortfolioService {
           value: Number(entity.price) * accumulatedTokens.rewardAmount,
         };
       });
+
     return rewards;
   }
 
@@ -238,7 +242,7 @@ export class PortfolioService {
     return [...liquidityXOR, ...liquidityXSTUSD];
   }
 
-  public async getSwapsPortfolio(
+  public getSwapsPortfolio(
     pageOptions: PageOptionsDto,
     accountId: string,
   ): Promise<PageDto<SwapDto>> {
@@ -260,6 +264,7 @@ export class PortfolioService {
     baseAssetId: string,
     accountId: string,
   ): Promise<LiquidityDto[]> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
     const liquidityData: LiquidityDto[] = [];
 

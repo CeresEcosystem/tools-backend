@@ -1,4 +1,4 @@
-export abstract class BaseEntityMapper<Entity = any, DTO = any> {
+export abstract class BaseEntityMapper<Entity = unknown, DTO = unknown> {
   abstract toEntity(dto: DTO): Entity;
 
   toEntities(dtos: DTO[]): Entity[] {

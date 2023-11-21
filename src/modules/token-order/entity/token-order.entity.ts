@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-@Entity(`token_order`)
+@Entity('token_order')
 export class TokenOrder {
   @PrimaryColumn()
   symbol: string;
@@ -8,9 +8,9 @@ export class TokenOrder {
   @Column()
   order: number;
 
-  @Column(`timestamp`, { name: `created_at` })
+  @Column('timestamp', { name: 'created_at' })
   createdAt: Date;
 
-  @Column(`timestamp`, { name: `updated_at` })
+  @Column('timestamp', { name: 'updated_at' })
   updatedAt: Date;
 }
