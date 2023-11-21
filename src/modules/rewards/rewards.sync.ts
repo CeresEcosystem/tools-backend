@@ -41,8 +41,7 @@ export class RewardsSync {
 
     const pswapRewards = 2500000 / baseAssetLiquidity;
     const apr =
-      (365 * 2500000 * parseFloat(pswapPrice) * 100) /
-      (baseAssetLiquidity * parseFloat(xorPrice) * 2);
+      (365 * 2500000 * pswapPrice * 100) / (baseAssetLiquidity * xorPrice * 2);
 
     this.rewardsService.save(apr.toFixed(2), pswapRewards.toFixed(2));
 

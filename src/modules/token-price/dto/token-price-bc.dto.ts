@@ -1,6 +1,6 @@
 export interface TokenPriceBcDto {
   symbol: string;
-  price: string;
+  price: number;
   assetId: string;
   fullName: string;
 }

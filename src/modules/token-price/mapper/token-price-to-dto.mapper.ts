@@ -1,6 +1,7 @@
 import { BaseDtoMapper } from 'src/utils/mappers/base-dto-mapper';
 import { TokenPrice } from '../entity/token-price.entity';
 import { TokenPriceDto } from '../dto/token-price.dto';
+import Big from 'big.js';
 
 export class TokenPriceToDtoMapper extends BaseDtoMapper<
   TokenPrice,
@@ -11,10 +12,10 @@ export class TokenPriceToDtoMapper extends BaseDtoMapper<
 
     return {
       token,
-      price,
+      price: new Big(price).toFixed(),
       assetId,
       fullName,
-      lockedTokens: Number(lockedTokens),
+      lockedTokens,
       updatedAt,
     };
   }

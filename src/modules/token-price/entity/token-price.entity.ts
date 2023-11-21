@@ -8,8 +8,8 @@ export class TokenPrice {
   @Column()
   token: string;
 
-  @Column()
-  price: string;
+  @Column('float')
+  price: number;
 
   @Column({ name: 'asset_id' })
   assetId: string;
@@ -20,8 +20,8 @@ export class TokenPrice {
   @Column()
   order: number;
 
-  @Column({ name: 'locked_tokens', default: '0' })
-  lockedTokens: string;
+  @Column('float', { name: 'locked_tokens', default: 0 })
+  lockedTokens: number;
 
   @Column()
   deleted: boolean;

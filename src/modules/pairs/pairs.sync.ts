@@ -109,14 +109,15 @@ export class PairsSync {
     targetAsset: string,
     baseAsset: string,
   ): { basePrice: number; targetPrice: number } {
-    const basePrice = parseFloat(
-      tokenPrices.find((tp) => tp.token === baseAsset).price,
-    );
-    const targetPrice = parseFloat(
-      tokenPrices.find((tp) => tp.token === targetAsset).price,
-    );
+    const basePrice = tokenPrices.find((tp) => tp.token === baseAsset).price;
+    const targetPrice = tokenPrices.find(
+      (tp) => tp.token === targetAsset,
+    ).price;
 
-    return { basePrice, targetPrice };
+    return {
+      basePrice,
+      targetPrice,
+    };
   }
 
   private async getPairs(): Promise<void> {

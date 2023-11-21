@@ -1,4 +1,4 @@
 export interface TokenLockDto {
   token: string;
-  total: string;
+  total: number;
 }

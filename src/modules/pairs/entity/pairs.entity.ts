@@ -33,8 +33,8 @@ export class Pair {
   @Column({ name: 'target_asset_liq' })
   targetAssetLiq: number;
 
-  @Column({ name: 'locked_liquidity' })
-  lockedLiquidity: string;
+  @Column('float', { name: 'locked_liquidity' })
+  lockedLiquidity: number;
 
   @Column({ name: 'volume' })
   volume: number;

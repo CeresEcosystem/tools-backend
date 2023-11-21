@@ -6,7 +6,6 @@ import { TokenPriceBcDtoToEntityMapper } from './mapper/token-price.mapper';
 import { TokenPriceRepository } from './token-price.repository';
 import { SymbolsService } from '../symbols/symbols.service';
 import { ChronoPriceService } from '../chrono-price/chrono-price.service';
-import { ChronoPriceDto } from '../chrono-price/dto/chrono-price.dto';
 import { TokenOrderService } from '../token-order/token-order.service';
 
 @Injectable()
@@ -40,7 +39,11 @@ export class TokenPriceService {
       const { token, price, fullName } = tokenPrice;
       tokenPrice.order = tokenOrderBySymbol[token] ?? defaultOrder;
 
-      this.symbolsService.createSymbolIfMissing({ token, fullName, price });
+      this.symbolsService.createSymbolIfMissing({
+        token,
+        fullName,
+        price,
+      });
     });
 
     this.tokenPriceRepository.upsertAll(tokenPrices);
@@ -67,13 +70,10 @@ export class TokenPriceService {
   }
 
   private saveChronoPrices(tokenPrices: TokenPrice[]) {
-    const chronoPrices = tokenPrices.map(
-      (tokenPrice) =>
-        ({
-          token: tokenPrice.token,
-          price: tokenPrice.price,
-        } as ChronoPriceDto),
-    );
+    const chronoPrices = tokenPrices.map((tokenPrice) => ({
+      token: tokenPrice.token,
+      price: tokenPrice.price,
+    }));
 
     this.chronoPriceService.save(chronoPrices);
   }

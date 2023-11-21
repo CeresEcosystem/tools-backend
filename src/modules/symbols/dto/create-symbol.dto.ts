@@ -1,5 +1,5 @@
 export interface CreateSymbolDto {
   token: string;
   fullName: string;
-  price: string;
+  price: number;
 }

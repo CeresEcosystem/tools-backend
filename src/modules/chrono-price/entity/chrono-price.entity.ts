@@ -8,8 +8,8 @@ export class ChronoPrice {
   @Column()
   token: string;
 
-  @Column()
-  price: string;
+  @Column('float')
+  price: number;
 
   @Column(`timestamp`, { name: `created_at` })
   createdAt: Date;

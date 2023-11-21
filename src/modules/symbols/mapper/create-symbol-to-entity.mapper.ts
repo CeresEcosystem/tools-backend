@@ -21,7 +21,7 @@ export class SymbolsMapper extends BaseEntityMapper<
     } as TokenSymbol;
   }
 
-  private calculatePriceScale(price: string): number {
+  private calculatePriceScale(price: number): number {
     let scale = new Big(100);
     let priceNum = new Big(price);
 

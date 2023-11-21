@@ -6,6 +6,7 @@ import { TokenPriceToDtoMapper } from './mapper/token-price-to-dto.mapper';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { CACHE_KEYS, CACHE_TTL } from './token-price.constants';
+import Big from 'big.js';
 
 @Controller('prices')
 @ApiTags('Prices Controller')
@@ -34,7 +35,7 @@ export class TokenPriceController {
       `${CACHE_KEYS.PRICES}-${token}`,
       async () => {
         const { price } = await this.tokenPriceService.findByToken(token);
-        return price;
+        return new Big(price).toFixed();
       },
       CACHE_TTL.TWO_MINUTES,
     );

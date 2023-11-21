@@ -9,6 +9,7 @@ import * as whitelist from 'src/utils/files/whitelist.json';
 import * as synthetics from 'src/utils/files/synthetics.json';
 import { SoraClient } from '../sora-client/sora-client';
 
+const DENOMINATOR = FPNumber.fromNatural(10 ** 18);
 const DAI_ADDRESS =
   '0x0200060000000000000000000000000000000000000000000000000000000000';
 const HUNDREDS = ['HOT', 'UMI', 'SOSHIBA'];
@@ -41,12 +42,9 @@ export class TokenPriceSync {
         );
 
         const data = result.toHuman();
+        const price = new FPNumber(data.value).div(DENOMINATOR).toNumber();
 
-        const price = new FPNumber(data.value).div(
-          new FPNumber(Math.pow(10, 18)),
-        );
-
-        pricesToUpsert.push({ ...token, price: price.toString() });
+        pricesToUpsert.push({ ...token, price });
       } else {
         // Get price via token liquidity
 
@@ -87,7 +85,7 @@ export class TokenPriceSync {
 
             pricesToUpsert.push({
               ...token,
-              price: symbol === 'DAI' ? '1' : price.toString(),
+              price: symbol === 'DAI' ? 1 : Number(price),
             });
           },
         );
