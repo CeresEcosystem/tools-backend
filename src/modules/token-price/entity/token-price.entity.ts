@@ -1,9 +1,9 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity(`current_price`)
 export class TokenPrice {
-  @PrimaryColumn()
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column()
   token: string;
@@ -20,7 +20,7 @@ export class TokenPrice {
   @Column()
   order: number;
 
-  @Column({ name: 'locked_tokens' })
+  @Column({ name: 'locked_tokens', default: '0' })
   lockedTokens: string;
 
   @Column()

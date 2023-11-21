@@ -21,6 +21,7 @@ import { NestjsFormDataModule } from 'nestjs-form-data';
 import { TokenOrderModule } from './modules/token-order/token-order.module';
 import { SwapsModule } from './modules/swaps/swaps.module';
 import { PairsLiquidityModule } from './modules/pairs-liquidity/pairs-liquidity.module';
+import { PriceNotifModule } from './modules/price-notifications/price-notif.module';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { PairsLiquidityModule } from './modules/pairs-liquidity/pairs-liquidity.
     TokenOrderModule,
     SwapsModule,
     PairsLiquidityModule,
+    PriceNotifModule,
   ],
   controllers: [],
   providers: [],
