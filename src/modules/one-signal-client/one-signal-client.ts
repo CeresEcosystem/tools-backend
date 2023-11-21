@@ -19,12 +19,20 @@ export class OneSignalClient {
     private readonly configs: ConfigService,
   ) {}
 
-  async sendPriceChangeNotification(users: UserDevice[], token: TokenPrice) {
+  public async sendPriceChangeNotification(
+    users: UserDevice[],
+    token: TokenPrice,
+  ): Promise<void> {
     const userIds = users.map((user) => user.deviceId);
-    if (userIds.length === 0) return;
+
+    if (userIds.length === 0) {
+      return;
+    }
+
     const oneSignalApi = this.configs.get(ONE_SIGNAL_API);
     const oneSignalAppId = this.configs.get(ONE_SIGNAL_APP_ID);
     const oneSignalApiKey = this.configs.get(ONE_SIGNAL_API_KEY);
+
     const title = 'Price Alert';
     const message = `${token.fullName} price changed more than 5%! New price: ${token.price}$`;
     const header = {
@@ -32,7 +40,6 @@ export class OneSignalClient {
       accept: 'application/json',
       'Content-Type': 'application/json; charset=UTF-8',
     };
-
     const data = {
       app_id: oneSignalAppId,
       include_aliases: { external_id: userIds },

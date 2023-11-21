@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TokenPriceService } from '../token-price/token-price.service';
+import { RelevantPricesService } from '../notification-relevant-prices/relevant-prices.service';
 import { UserDevicesRepository } from './user-device.repository';
 import { UserDevice } from './entity/user-device.entity';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { RelevantPricesRepository } from '../notification-relevant-prices/relevant-prices.repository';
 import { OneSignalClient } from '../one-signal-client/one-signal-client';
 
 @Injectable()
@@ -13,14 +13,19 @@ export class PriceNotifService {
   constructor(
     private tokenPriceService: TokenPriceService,
     private userDeviceRepo: UserDevicesRepository,
-    private relevantPricesRepo: RelevantPricesRepository,
+    private relevantPricesService: RelevantPricesService,
     private oneSignalClient: OneSignalClient,
   ) {}
 
-  async addInitFavorites(deviceId: string, tokens: string[]): Promise<void> {
+  public async addInitFavorites(
+    deviceId: string,
+    tokens: string[],
+  ): Promise<void> {
     const user = await this.userDeviceRepo.findUserByDevice(deviceId);
 
-    if (user) return;
+    if (user) {
+      return;
+    }
 
     const newUser = new UserDevice();
     const allTokens = await this.tokenPriceService.findAll();
@@ -33,7 +38,10 @@ export class PriceNotifService {
     this.userDeviceRepo.saveUser(newUser);
   }
 
-  async addNewFavoriteToken(deviceId: string, token: string): Promise<void> {
+  public async addNewFavoriteToken(
+    deviceId: string,
+    token: string,
+  ): Promise<void> {
     const user = await this.userDeviceRepo.findUserByDevice(deviceId);
     const favToken = await this.tokenPriceService.findByAssetId(token);
     if (!user) {
@@ -47,14 +55,16 @@ export class PriceNotifService {
     }
   }
 
-  async deleteFavoriteToken(
+  public async deleteFavoriteToken(
     deviceId: string,
     tokenToDelete: string,
   ): Promise<void> {
     const user = await this.userDeviceRepo.findUserByDevice(deviceId);
     const favToken = await this.tokenPriceService.findByAssetId(tokenToDelete);
 
-    if (!user || !user.tokens) return;
+    if (!user || !user.tokens) {
+      return;
+    }
 
     const userTokens = user.tokens.filter((token) => {
       return token.assetId !== favToken.assetId;
@@ -62,15 +72,18 @@ export class PriceNotifService {
 
     user.tokens = userTokens;
 
-    if (user.tokens.length > 0) this.userDeviceRepo.saveUser(user);
+    if (user.tokens.length > 0) {
+      this.userDeviceRepo.saveUser(user);
+    }
 
     this.userDeviceRepo.deleteUser(user);
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
-  async checkPriceDifferences() {
+  public async checkPriceDifferences() {
     this.logger.log('Start prices comparison');
-    const allRelevantPrices = await this.relevantPricesRepo.findAll();
+    const allRelevantPrices =
+      await this.relevantPricesService.findAllRelevantTokens();
     const allCurrentPrices = await this.tokenPriceService.findAll();
     const allUsers = await this.userDeviceRepo.findAll();
 
@@ -98,13 +111,13 @@ export class PriceNotifService {
           currentPrice,
         );
         relevantPrice.tokenPrice = Number(currentPrice.price);
-        await this.relevantPricesRepo.saveToken(relevantPrice);
+        await this.relevantPricesService.saveRelevantToken(relevantPrice);
       }
     }
     this.logger.log('Prices comparison successfull');
   }
 
-  calculate_change(
+  private calculate_change(
     relevantPrice: number,
     currentPrice: number,
     percentegeThreshold: number,

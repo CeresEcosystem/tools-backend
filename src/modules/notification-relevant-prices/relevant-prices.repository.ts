@@ -10,7 +10,7 @@ export class RelevantPricesRepository {
     private relevantPricesRepo: Repository<RelevantPrices>,
   ) {}
 
-  findToken(tokenName: string): Promise<RelevantPrices> {
+  public findToken(tokenName: string): Promise<RelevantPrices> {
     return this.relevantPricesRepo.findOne({
       where: {
         token: tokenName,
@@ -18,11 +18,11 @@ export class RelevantPricesRepository {
     });
   }
 
-  findAll(): Promise<RelevantPrices[]> {
+  public findAll(): Promise<RelevantPrices[]> {
     return this.relevantPricesRepo.find();
   }
 
-  saveToken(token: RelevantPrices): Promise<RelevantPrices> {
+  public saveToken(token: RelevantPrices): Promise<RelevantPrices> {
     return this.relevantPricesRepo.save(token);
   }
 }

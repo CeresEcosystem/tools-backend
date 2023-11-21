@@ -11,13 +11,13 @@ export class RelevantPricesInit implements OnModuleInit {
     private relevantPricesRepo: RelevantPricesRepository,
   ) {}
 
-  async onModuleInit() {
+  public async onModuleInit(): Promise<void> {
     const relevantTokens = await this.relevantPricesRepo.findAll();
     if (relevantTokens.length > 0) return;
     this.setRelevantPrices();
   }
 
-  async setRelevantPrices() {
+  private async setRelevantPrices(): Promise<void> {
     const allTokens = await this.tokenPriceService.findAll();
     allTokens.forEach((token) => {
       const relevantPrices = new RelevantPrices();
@@ -29,7 +29,7 @@ export class RelevantPricesInit implements OnModuleInit {
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_NOON)
-  async addNewTokenIfExists() {
+  public async addNewTokenIfExists(): Promise<void> {
     const allTokens = await this.tokenPriceService.findAll();
     const allRelevantTokens = await this.relevantPricesRepo.findAll();
 

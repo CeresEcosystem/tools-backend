@@ -34,6 +34,6 @@ import { SoraClientModule } from '../sora-client/sora-client-module';
     TokenPriceToDtoMapper,
     TokenLockerSync,
   ],
-  exports: [TokenPriceService, TokenPriceRepository],
+  exports: [TokenPriceService],
 })
 export class TokenPriceModule {}
