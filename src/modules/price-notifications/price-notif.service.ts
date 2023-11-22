@@ -78,9 +78,9 @@ export class PriceNotifService {
 
     if (user.tokens.length > 0) {
       this.userDeviceRepo.saveUser(user);
+    } else {
+      this.userDeviceRepo.deleteUser(user);
     }
-
-    this.userDeviceRepo.deleteUser(user);
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
