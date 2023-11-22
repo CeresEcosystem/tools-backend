@@ -18,13 +18,13 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,
-    "allowUnreachableCode": false,
+    "allowUnreachableCode": true, //Forbidden in eslint
     "allowUnusedLabels": false,
     "exactOptionalPropertyTypes": false, //Goal is to be true, depends on 'strictNullChecks'
     "noImplicitOverride": true,
     "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false, //Forbidden in eslint
+    "noUnusedParameters": false, //Forbidden in eslint
     "strictPropertyInitialization": false //Goal is to be true, depends on 'strictNullChecks'
   }
 }
