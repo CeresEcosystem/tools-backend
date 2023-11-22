@@ -22,6 +22,7 @@ import { TokenOrderModule } from './modules/token-order/token-order.module';
 import { SwapsModule } from './modules/swaps/swaps.module';
 import { PairsLiquidityModule } from './modules/pairs-liquidity/pairs-liquidity.module';
 import { PriceNotifModule } from './modules/price-notifications/price-notif.module';
+import { TransactionsModule } from './modules/transactions/transactions.module';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { PriceNotifModule } from './modules/price-notifications/price-notif.modu
     SwapsModule,
     PairsLiquidityModule,
     PriceNotifModule,
+    TransactionsModule,
   ],
   controllers: [],
   providers: [],
