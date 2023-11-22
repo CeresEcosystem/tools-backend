@@ -3,8 +3,10 @@ import { SwapService } from './swaps.service';
 import { PageDto } from 'src/utils/pagination/page.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { SwapDto } from './dto/swap.dto';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('swaps')
+@ApiTags('Swaps controller')
 export class SwapsController {
   constructor(private swapService: SwapService) {}
 

@@ -2,8 +2,10 @@ import { Controller, Post, Body, Delete, Param } from '@nestjs/common';
 import { PriceNotifService } from './price-notif.service';
 import { FavTokenDto } from './dto/fav-token.dto';
 import { InitFavTokensDto } from './dto/init-fav-tokens.dto';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('device')
+@ApiTags('Price-notification controller')
 export class PriceNotifController {
   constructor(private priceNotifService: PriceNotifService) {}
 
