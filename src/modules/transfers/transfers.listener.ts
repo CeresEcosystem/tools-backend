@@ -36,6 +36,13 @@ export class TransfersListener {
         const [senderAccountId, receiverAccountId, { code: AssetId }, amount] =
           eventData;
 
+        if (
+          senderAccountId.startsWith('cnTQ') ||
+          receiverAccountId.startsWith('cnTQ')
+        ) {
+          continue;
+        }
+
         transfer.senderAccountId = senderAccountId;
         transfer.asset = AssetId;
         transfer.amount = FPNumber.fromCodecValue(amount).toNumber();
