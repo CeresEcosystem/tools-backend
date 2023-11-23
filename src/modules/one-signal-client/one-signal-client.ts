@@ -64,7 +64,7 @@ export class OneSignalClient {
         .pipe(
           retry({ count: 10, delay: 1000 }),
           catchError((error: AxiosError) => {
-            this.logError(error);
+            this.logError<T>(error, data);
 
             return of();
           }),
@@ -72,8 +72,13 @@ export class OneSignalClient {
     );
   }
 
-  private logError(error: AxiosError): void {
-    this.logger.error(`An error occurred while contacting One signal API!
-                     Msg: ${error.message}, code: ${error.code}, cause: ${error.cause}`);
+  private logError<T>(error: AxiosError, data: T): void {
+    this.logger.error(
+      `An error occurred while contacting One signal API! 
+      Msg: ${error.message}
+      Code: ${error.code}
+      Cause: ${error.cause}, 
+      Data: ${JSON.stringify(data)}`,
+    );
   }
 }
