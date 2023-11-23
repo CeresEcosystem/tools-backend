@@ -3,6 +3,6 @@ export interface TransferDto {
   amount: number;
   asset: string;
   receiver: string;
-  transferedAt: Date;
+  transferredAt: Date;
   block: number;
 }

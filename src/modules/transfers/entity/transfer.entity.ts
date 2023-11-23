@@ -17,8 +17,8 @@ export class Transfer {
   @Column({ name: 'receiver_account_id' })
   receiverAccountId: string;
 
-  @Column('timestamp', { name: 'transfered_at' })
-  transferedAt: Date;
+  @Column('timestamp', { name: 'transferred_at' })
+  transferredAt: Date;
 
   @Column({ name: 'block' })
   block: number;

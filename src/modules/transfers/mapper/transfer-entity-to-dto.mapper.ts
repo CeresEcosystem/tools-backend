@@ -9,7 +9,7 @@ export class TransferEntityToDto extends BaseDtoMapper<Transfer, TransferDto> {
       asset,
       amount,
       receiverAccountId: receiver,
-      transferedAt,
+      transferredAt,
       block,
     } = entity;
 
@@ -18,7 +18,7 @@ export class TransferEntityToDto extends BaseDtoMapper<Transfer, TransferDto> {
       amount,
       asset,
       receiver,
-      transferedAt,
+      transferredAt,
       block,
     };
   }

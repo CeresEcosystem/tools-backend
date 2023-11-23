@@ -40,7 +40,7 @@ export class TransfersListener {
         transfer.asset = AssetId;
         transfer.amount = FPNumber.fromCodecValue(amount).toNumber();
         transfer.receiverAccountId = receiverAccountId;
-        transfer.transferedAt = new Date();
+        transfer.transferredAt = new Date();
         transfer.block = parseInt(blockNumStr);
         await this.transferRepo.saveTransfer(transfer);
         this.logger.log('Fetching transfers was successful.');

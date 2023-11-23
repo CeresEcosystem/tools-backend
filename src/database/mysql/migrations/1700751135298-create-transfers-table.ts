@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class createTransfersTable1700737075417 implements MigrationInterface {
-  name = 'createTransfersTable1700737075417';
+export class createTransfersTable1700751135298 implements MigrationInterface {
+  name = 'createTransfersTable1700751135298';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`CREATE TABLE \`transfer\` (
@@ -10,8 +10,9 @@ export class createTransfersTable1700737075417 implements MigrationInterface {
             \`asset_id\` varchar(255) NOT NULL, 
             \`amount\` float NOT NULL, 
             \`receiver_account_id\` varchar(255) NOT NULL, 
-            \`transfered_at\` timestamp NOT NULL, 
-            \`block\` int NOT NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
+            \`transferred_at\` timestamp NOT NULL, 
+            \`block\` int NOT NULL, 
+            PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
