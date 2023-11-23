@@ -3,7 +3,8 @@ import { TokenPriceService } from '../token-price/token-price.service';
 import { RelevantPricesService } from '../notification-relevant-prices/relevant-prices.service';
 import { UserDevicesRepository } from './user-device.repository';
 import { UserDevice } from './entity/user-device.entity';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
+import { CronExpression } from 'src/utils/cron-expression.enum';
 import { OneSignalClient } from '../one-signal-client/one-signal-client';
 
 const PERCENTAGE_THRESHOLD = 5;
@@ -83,7 +84,7 @@ export class PriceNotifService {
     }
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_2_MINUTES)
   public async checkPriceDifferences(): Promise<void> {
     this.logger.log('Start prices comparison');
     const allRelevantPrices =
