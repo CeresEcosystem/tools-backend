@@ -18,6 +18,7 @@ export default new DataSource({
     'src/modules/price-notifications/entity/user-device.entity.ts',
     'src/modules/notification-relevant-prices/entity/relevant-prices.entity.ts',
     'src/modules/token-price/entity/token-price.entity.ts',
+    'src/modules/transfers/entity/transfer.entity.ts',
   ],
   migrations: ['src/database/mysql/migrations/*'],
   migrationsTableName: 'migrations_tools',
