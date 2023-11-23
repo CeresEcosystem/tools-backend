@@ -15,6 +15,6 @@ export class TransactionsController {
     @Query() pageOptions: PageOptionsDto,
     @Query('accountId') accountId: string,
   ): Promise<PageDto<TransactionDto>> {
-    return this.txService.transaction(pageOptions, accountId);
+    return this.txService.findTransactionsByAccountId(pageOptions, accountId);
   }
 }

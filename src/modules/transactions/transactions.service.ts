@@ -8,7 +8,7 @@ import { TransactionsRepository } from './transactions.repository';
 export class TransactionsService {
   constructor(private readonly txRepo: TransactionsRepository) {}
 
-  public async transaction(
+  public async findTransactionsByAccountId(
     pageOptions: PageOptionsDto,
     accountId: string,
   ): Promise<PageDto<TransactionDto>> {
