@@ -24,6 +24,8 @@ export class OneSignalClient {
     users: UserDevice[],
     token: TokenPrice,
   ): void {
+    this.logger.debug(`Sending price change notification for token ${token}`);
+
     const userIds = users.map((user) => user.deviceId);
 
     if (userIds.length === 0) {
