@@ -8,13 +8,10 @@ import { TransfersRepository } from './transfers.repository';
 export class TransfersService {
   constructor(private readonly transfersRepo: TransfersRepository) {}
 
-  public async findTransfersByAccountId(
+  public findTransfersByAccountId(
     pageOptions: PageOptionsDto,
     accountId: string,
   ): Promise<PageDto<TransferDto>> {
-    return await this.transfersRepo.findTransfersByAccountId(
-      pageOptions,
-      accountId,
-    );
+    return this.transfersRepo.findTransfersByAccountId(pageOptions, accountId);
   }
 }

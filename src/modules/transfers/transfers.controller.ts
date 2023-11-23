@@ -11,7 +11,7 @@ export class TransfersController {
   constructor(private readonly transfersService: TransfersService) {}
 
   @Get()
-  public async getTransfers(
+  public getTransfers(
     @Query() pageOptions: PageOptionsDto,
     @Query('accountId') accountId: string,
   ): Promise<PageDto<TransferDto>> {

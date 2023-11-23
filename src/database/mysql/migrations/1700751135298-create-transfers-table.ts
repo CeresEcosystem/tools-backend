@@ -16,6 +16,6 @@ export class createTransfersTable1700751135298 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE \`transfer\``);
+    await queryRunner.query('DROP TABLE `transfer`');
   }
 }

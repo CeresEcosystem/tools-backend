@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
 import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger, BadGatewayException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AxiosError, AxiosResponse } from 'axios';
-import { Observable, catchError, retry } from 'rxjs';
+import { AxiosError } from 'axios';
+import { catchError, firstValueFrom, of, retry } from 'rxjs';
 import { UserDevice } from '../price-notifications/entity/user-device.entity';
 import { TokenPrice } from '../token-price/entity/token-price.entity';
 
@@ -50,28 +50,30 @@ export class OneSignalClient {
       target_channel: 'push',
     };
 
-    const response = this.sendPostRequest(oneSignalApi, headers, data);
-    response.subscribe((value) => value);
+    this.sendPostRequest(oneSignalApi, headers, data);
   }
 
   private sendPostRequest<T>(
     oneSignalApi: string,
     headers: { Authorization: string; accept: string; 'Content-Type': string },
     data: T,
-  ): Observable<AxiosResponse<T, unknown>> {
-    return this.httpService
-      .post<T>(oneSignalApi, data, { headers, timeout: 1000 })
-      .pipe(
-        retry({ count: 10, delay: 1000 }),
-        catchError((error: AxiosError) => {
-          this.logWarning(error);
-          throw new BadGatewayException('OneSignal API unreachable');
-        }),
-      );
+  ): void {
+    firstValueFrom(
+      this.httpService
+        .post(oneSignalApi, data, { headers, timeout: 1000 })
+        .pipe(
+          retry({ count: 10, delay: 1000 }),
+          catchError((error: AxiosError) => {
+            this.logError(error);
+
+            return of();
+          }),
+        ),
+    );
   }
 
-  private logWarning(error: AxiosError): void {
-    this.logger.warn(`An error occurred while contacting One signal API!
+  private logError(error: AxiosError): void {
+    this.logger.error(`An error occurred while contacting One signal API!
                      Msg: ${error.message}, code: ${error.code}, cause: ${error.cause}`);
   }
 }
