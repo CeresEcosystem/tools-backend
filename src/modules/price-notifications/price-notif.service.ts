@@ -7,7 +7,7 @@ import { Cron } from '@nestjs/schedule';
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import { OneSignalClient } from '../one-signal-client/one-signal-client';
 
-const PERCENTAGE_THRESHOLD = 5;
+const DEVIATION_THRESHOLD = 4.5;
 
 @Injectable()
 export class PriceNotifService {
@@ -97,13 +97,12 @@ export class PriceNotifService {
         (currentPrice) => currentPrice.assetId === relevantPrice.assetId,
       );
 
-      const significantChange = this.isSignificantChange(
+      const priceDeviation = this.calculatePriceDeviation(
         relevantPrice.tokenPrice,
         currentPrice.price,
-        PERCENTAGE_THRESHOLD,
       );
 
-      if (significantChange) {
+      if (Math.abs(priceDeviation) > DEVIATION_THRESHOLD) {
         const usersWithToken = allUsers.filter((user) => {
           const hasToken = user.tokens.some(
             (token) => token.assetId === relevantPrice.assetId,
@@ -117,6 +116,7 @@ export class PriceNotifService {
         await this.oneSignalClient.sendPriceChangeNotification(
           usersWithToken,
           currentPrice,
+          priceDeviation,
         );
         await this.relevantPricesService.saveRelevantToken(relevantPrice);
       }
@@ -124,14 +124,13 @@ export class PriceNotifService {
     this.logger.log('Prices comparison successful');
   }
 
-  private isSignificantChange(
+  private calculatePriceDeviation(
     relevantPrice: number,
     currentPrice: number,
-    percentageThreshold: number,
-  ): boolean {
-    const percentageChange =
+  ): number {
+    const priceDeviation =
       ((currentPrice - relevantPrice) / relevantPrice) * 100;
 
-    return Math.abs(percentageChange) >= percentageThreshold;
+    return priceDeviation;
   }
 }

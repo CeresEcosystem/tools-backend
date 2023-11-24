@@ -23,6 +23,7 @@ export class OneSignalClient {
   public sendPriceChangeNotification(
     users: UserDevice[],
     token: TokenPrice,
+    priceDeviation: number,
   ): void {
     this.logger.debug(`Sending price change notification for token ${token}`);
 
@@ -37,7 +38,15 @@ export class OneSignalClient {
     const oneSignalApiKey = this.configs.get(ONE_SIGNAL_API_KEY);
 
     const title = 'Price Alert';
-    const message = `${token.fullName} price changed more than 5%! New price: ${token.price}$`;
+    const message =
+      priceDeviation > 0
+        ? `🚀 ${token.fullName} price changed by ${priceDeviation.toFixed(
+            2,
+          )}%! Current price: ${token.price}$`
+        : `🔻 ${token.fullName} price changed by ${priceDeviation.toFixed(
+            2,
+          )}%! Current price: ${token.price}$`;
+
     const headers = {
       Authorization: `Basic ${oneSignalApiKey}`,
       accept: 'application/json',

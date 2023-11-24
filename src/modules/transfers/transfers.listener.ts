@@ -30,7 +30,6 @@ export class TransfersListener {
           continue;
         }
 
-        this.logger.log('Start fetching transfers.');
         const transfer = new Transfer();
         const eventData = event.data.toHuman();
         const [senderAccountId, receiverAccountId, { code: AssetId }, amount] =
@@ -43,6 +42,8 @@ export class TransfersListener {
           continue;
         }
 
+        this.logger.debug('Start storing transfers.');
+
         transfer.senderAccountId = senderAccountId;
         transfer.asset = AssetId;
         transfer.amount = FPNumber.fromCodecValue(amount).toNumber();
@@ -50,7 +51,8 @@ export class TransfersListener {
         transfer.transferredAt = new Date();
         transfer.block = parseInt(blockNumStr);
         await this.transferRepo.saveTransfer(transfer);
-        this.logger.log('Fetching transfers was successful.');
+
+        this.logger.debug('Storing transfers was successful.');
       }
     });
   }
