@@ -25,7 +25,8 @@ export class OneSignalClient {
     token: TokenPrice,
     priceDeviation: number,
   ): void {
-    this.logger.debug(`Sending price change notification for token ${token}`);
+    const { assetId, token: symbol, price, fullName } = token;
+    this.logger.debug(`Sending price change notification for token ${symbol}`);
 
     const userIds = users.map((user) => user.deviceId);
 
@@ -40,12 +41,12 @@ export class OneSignalClient {
     const title = 'Price Alert';
     const message =
       priceDeviation > 0
-        ? `🚀 ${token.fullName} price changed by ${priceDeviation.toFixed(
+        ? `🚀 ${fullName} price changed by ${priceDeviation.toFixed(
             2,
-          )}%! Current price: ${token.price}$`
-        : `🔻 ${token.fullName} price changed by ${priceDeviation.toFixed(
+          )}%! Current price: ${price}$`
+        : `🔻 ${fullName} price changed by ${priceDeviation.toFixed(
             2,
-          )}%! Current price: ${token.price}$`;
+          )}%! Current price: ${price}$`;
 
     const headers = {
       Authorization: `Basic ${oneSignalApiKey}`,
@@ -56,7 +57,7 @@ export class OneSignalClient {
       app_id: oneSignalAppId,
       include_aliases: { external_id: userIds },
       contents: { en: message },
-      data: { assetId: token.assetId, symbol: token.token },
+      data: { assetId, symbol },
       headings: { en: title },
       target_channel: 'push',
     };
