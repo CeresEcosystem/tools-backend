@@ -7,6 +7,7 @@ import { PairsModule } from '../pairs/pairs.module';
 import { DeoClientModule } from '../deo-client/deo-client.module';
 import { SwapsModule } from '../swaps/swaps.module';
 import { SoraClientModule } from '../sora-client/sora-client-module';
+import { TransfersModule } from '../transfers/transfers.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { SoraClientModule } from '../sora-client/sora-client-module';
     DeoClientModule,
     SwapsModule,
     SoraClientModule,
+    TransfersModule
   ],
   controllers: [PortfolioController],
   providers: [PortfolioService],

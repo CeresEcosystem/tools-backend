@@ -8,12 +8,14 @@ import { SwapDto } from '../swaps/dto/swap.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { ThrottlerBehindProxyGuard } from 'src/guards/throttler-behind-proxy.guard';
+import { TransferDto } from '../transfers/dto/transfer.dto';
+import { TransfersService } from '../transfers/transfers.service';
 
 @Controller('portfolio')
 @ApiTags('Portfolio Controller')
 @UseGuards(ThrottlerBehindProxyGuard)
 export class PortfolioController {
-  constructor(private portfolioService: PortfolioService) {}
+  constructor(private portfolioService: PortfolioService, private transfersService: TransfersService) {}
 
   @Get(':accountId')
   getPortfolio(@Param('accountId') accountId: string): Promise<PortfolioDto[]> {
@@ -41,5 +43,16 @@ export class PortfolioController {
     @Param('accountId') accountId: string,
   ): Promise<PageDto<SwapDto>> {
     return this.portfolioService.getSwapsPortfolio(pageOptions, accountId);
+  }
+
+  @Get('transfers/:accountId')
+  getTransfers(
+    @Query() pageOptions: PageOptionsDto,
+    @Param('accountId') accountId: string,
+  ): Promise<PageDto<TransferDto>> {
+    return this.transfersService.findTransfersByAccountId(
+      pageOptions,
+      accountId,
+    );
   }
 }
