@@ -16,7 +16,7 @@ export class TransfersRepository {
     private readonly transferMapper: TransferEntityToDto,
   ) {}
 
-  public async saveTransfer(tx: Transfer): Promise<Transfer> {
+  public saveTransfer(tx: Transfer): Promise<Transfer> {
     return this.transferRepository.save(tx);
   }
 
@@ -31,6 +31,7 @@ export class TransfersRepository {
       where: [{ senderAccountId: accountId }, { receiverAccountId: accountId }],
     });
     const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
+
     return new PageDto(this.transferMapper.toDtos(data), meta);
   }
 }
