@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { TransfersController } from './transfers.controller';
 import { TransfersService } from './transfers.service';
 import { TransfersRepository } from './transfers.repository';
 import { TransfersListener } from './transfers.listener';
@@ -10,13 +9,13 @@ import { SoraClientModule } from '../sora-client/sora-client-module';
 
 @Module({
   imports: [SoraClientModule, TypeOrmModule.forFeature([Transfer])],
-  controllers: [TransfersController],
+  controllers: [],
   providers: [
     TransfersService,
     TransfersRepository,
     TransfersListener,
     TransferEntityToDto,
   ],
-  exports: [],
+  exports: [TransfersService],
 })
 export class TransfersModule {}
