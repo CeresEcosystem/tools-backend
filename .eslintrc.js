@@ -54,7 +54,7 @@ module.exports = {
     'dot-notation': 'error',
     eqeqeq: 'error',
     'init-declarations': 'warn',
-    'max-depth': ['error', { max: 3 }], //Ideally it should be error
+    'max-depth': ['error', { max: 3 }],
     'max-lines': ['warn', { max: 400 }],
     'max-lines-per-function': ['warn', 50], //Ideally it should be error
     'max-nested-callbacks': ['error', 3],

@@ -6,6 +6,7 @@ import { AxiosError } from 'axios';
 import { catchError, firstValueFrom, of, retry } from 'rxjs';
 import { UserDevice } from '../price-notifications/entity/user-device.entity';
 import { TokenPrice } from '../token-price/entity/token-price.entity';
+import Big from 'big.js';
 
 const ONE_SIGNAL_API = 'ONE_SIGNAL_API';
 const ONE_SIGNAL_APP_ID = 'ONE_SIGNAL_APP_ID';
@@ -39,14 +40,15 @@ export class OneSignalClient {
     const oneSignalApiKey = this.configs.get(ONE_SIGNAL_API_KEY);
 
     const title = 'Price Alert';
+    const priceFormatted = new Big(price).toFixed();
     const message =
       priceDeviation > 0
         ? `🚀 ${fullName} price changed by ${priceDeviation.toFixed(
             2,
-          )}%! Current price: ${price}$`
+          )}%! Current price: ${priceFormatted}$`
         : `🔻 ${fullName} price changed by ${priceDeviation.toFixed(
             2,
-          )}%! Current price: ${price}$`;
+          )}%! Current price: ${priceFormatted}$`;
 
     const headers = {
       Authorization: `Basic ${oneSignalApiKey}`,
