@@ -59,6 +59,7 @@
     "cache-manager": "^5.2.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
+    "ethers": "5.7.1",
     "husky": "^8.0.3",
     "mysql2": "^3.1.0",
     "nestjs-console": "^8.0.0",
