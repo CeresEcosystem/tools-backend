@@ -17,6 +17,18 @@ export class SwapRepository {
     private readonly swapMapper: SwapEntityToDto,
   ) {}
 
+  async findAllSwaps(pageOptions: PageOptionsDto): Promise<PageDto<SwapDto>> {
+    const [data, count] = await this.swapRepository.findAndCount({
+      skip: pageOptions.skip,
+      take: pageOptions.size,
+      order: { id: 'DESC' },
+    });
+
+    const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
+
+    return new PageDto(this.swapMapper.toDtos(data), meta);
+  }
+
   async findSwapsByAssetIds(
     pageOptions: PageOptionsDto,
     assetIds: string[],

@@ -19,4 +19,11 @@ export class SwapsController {
 
     return this.swapService.findSwapsByTokens(pageOptions, tokensArr);
   }
+
+  @Get('all')
+  public getAllSwaps(
+    @Query() pageOptions: PageOptionsDto,
+  ): Promise<PageDto<SwapDto>> {
+    return this.swapService.findAllSwaps(pageOptions);
+  }
 }
