@@ -21,7 +21,7 @@ export class ReservesService {
     return await this.reserveRepo.findTokenReserves(tokenSymbol);
   }
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron(CronExpression.EVERY_6_HOURS)
   private async updateReserves(): Promise<void> {
     this.logger.log('Start updating token reserves');
     const portfolio = await this.portfolioService.getPortfolio(RESERVE_ADDRESS);
@@ -32,11 +32,11 @@ export class ReservesService {
 
     tokenReserves.forEach((tokenReserve) => {
       const reserve = new Reserve();
-      reserve.address = RESERVE_ADDRESS;
       reserve.tokenName = tokenReserve.fullName;
       reserve.tokenSymbol = tokenReserve.token;
       reserve.balance = tokenReserve.balance;
       reserve.value = tokenReserve.value;
+      reserve.updatedAt = new Date();
       this.reserveRepo.saveReserve(reserve);
     });
 

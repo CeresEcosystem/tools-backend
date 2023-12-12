@@ -1,12 +1,9 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity(`reserve`)
+@Entity(`reserves`)
 export class Reserve {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column({ name: 'address' })
-  address: string;
 
   @Column({ name: 'token_name' })
   tokenName: string;
@@ -19,4 +16,7 @@ export class Reserve {
 
   @Column('float', { name: 'value' })
   value: number;
+
+  @Column('timestamp', { name: 'updated_at' })
+  updatedAt: Date;
 }
