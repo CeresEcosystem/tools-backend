@@ -4,6 +4,7 @@ import { SwapDto } from './dto/swap.dto';
 import { PageDto } from 'src/utils/pagination/page.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { SwapOptionsDto } from './dto/swap-options.dto';
 
 const SWAPS_TTL_DAYS = 30;
 
@@ -13,15 +14,19 @@ export class SwapService {
 
   constructor(private readonly swapRepo: SwapRepository) {}
 
-  public findAllSwaps(pageOptions: PageOptionsDto): Promise<PageDto<SwapDto>> {
-    return this.swapRepo.findAllSwaps(pageOptions);
+  public findAllSwaps(
+    pageOptions: PageOptionsDto,
+    swapOptions: SwapOptionsDto,
+  ): Promise<PageDto<SwapDto>> {
+    return this.swapRepo.findAllSwaps(pageOptions, swapOptions);
   }
 
   public findSwapsByTokens(
     pageOptions: PageOptionsDto,
+    swapOptions: SwapOptionsDto,
     tokens: string[],
   ): Promise<PageDto<SwapDto>> {
-    return this.swapRepo.findSwapsByAssetIds(pageOptions, tokens);
+    return this.swapRepo.findSwapsByAssetIds(pageOptions, swapOptions, tokens);
   }
 
   public findSwapsByAccount(
