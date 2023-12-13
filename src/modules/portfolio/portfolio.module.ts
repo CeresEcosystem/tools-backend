@@ -17,9 +17,10 @@ import { TransfersModule } from '../transfers/transfers.module';
     DeoClientModule,
     SwapsModule,
     SoraClientModule,
-    TransfersModule
+    TransfersModule,
   ],
   controllers: [PortfolioController],
   providers: [PortfolioService],
+  exports: [PortfolioService],
 })
 export class PortfolioModule {}
