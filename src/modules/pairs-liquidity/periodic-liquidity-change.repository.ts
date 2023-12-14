@@ -22,8 +22,8 @@ export class PairsPeriodicLiquidityChangeRepository {
   ): Promise<PairPeriodicLiquidityChangeEntity[]> {
     return this.periodicLiqChangeRepo.find({
       where: {
-        baseAssetSymbol: baseAssetSymbol,
-        tokenAssetSymbol: tokenAssetSymbol,
+        baseAssetSymbol,
+        tokenAssetSymbol,
       },
     });
   }

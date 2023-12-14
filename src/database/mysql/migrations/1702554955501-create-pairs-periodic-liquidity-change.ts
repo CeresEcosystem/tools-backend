@@ -16,6 +16,6 @@ export class createPairsPeriodicLiquidityChange1702554955501
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE \`pairs_periodic_liquidity_change\``);
+    await queryRunner.query('DROP TABLE `pairs_periodic_liquidity_change`');
   }
 }
