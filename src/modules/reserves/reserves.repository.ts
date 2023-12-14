@@ -15,6 +15,6 @@ export class ReservesRepository {
   }
 
   public async findTokenReserves(tokenSymbol: string): Promise<Reserve[]> {
-    return this.reserveRepo.findBy({ tokenSymbol: tokenSymbol });
+    return this.reserveRepo.findBy({ tokenSymbol });
   }
 }
