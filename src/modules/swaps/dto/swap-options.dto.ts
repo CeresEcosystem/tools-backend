@@ -10,13 +10,12 @@ import {
   Min,
   MinDate,
 } from 'class-validator';
-import { ObjectLiteral } from 'typeorm';
 import { getDateOneMonthBefore } from 'src/utils/date-utils';
 
-type WhereClause = {
-  where: string;
-  parameters: ObjectLiteral;
-};
+const DEFAULT_DATE_FROM = getDateOneMonthBefore();
+const DEFAULT_DATE_TO = new Date();
+const DEFAULT_MIN_AMOUNT = 0;
+const DEFAULT_MAX_AMOUNT = 1000000000;
 
 export class SwapOptionsDto {
   @Type(() => Date)
@@ -24,14 +23,23 @@ export class SwapOptionsDto {
   @MinDate(getDateOneMonthBefore())
   @MaxDate(new Date())
   @IsOptional()
-  dateFrom?: Date;
+  dateFrom?: Date = DEFAULT_DATE_FROM;
 
   @Type(() => Date)
   @IsDate()
   @MinDate(getDateOneMonthBefore())
   @MaxDate(new Date())
   @IsOptional()
-  dateTo?: Date;
+  dateTo?: Date = DEFAULT_DATE_TO;
+
+  @ApiPropertyOptional({
+    minimum: 0,
+  })
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  minAmount?: number = DEFAULT_MIN_AMOUNT;
 
   @ApiPropertyOptional({
     minimum: 1,
@@ -40,16 +48,7 @@ export class SwapOptionsDto {
   @IsInt()
   @Min(1)
   @IsOptional()
-  minAmount?: number;
-
-  @ApiPropertyOptional({
-    minimum: 1,
-  })
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @IsOptional()
-  maxAmount?: number;
+  maxAmount?: number = DEFAULT_MAX_AMOUNT;
 
   @IsOptional()
   @IsIn(['ASC', 'DESC'], {
@@ -57,58 +56,7 @@ export class SwapOptionsDto {
   })
   orderBy?: 'ASC' | 'DESC' = 'DESC';
 
-  @Type(() => String)
   @IsString()
   @IsOptional()
   assetId?: string;
-
-  get whereClauses(): WhereClause[] {
-    const whereClause: WhereClause[] = [];
-
-    if (this.dateFrom || this.dateTo) {
-      const dateFromCondition = this.dateFrom
-        ? 'swap.swappedAt >= :dateFrom'
-        : '';
-      const dateToCondition = this.dateTo ? 'swap.swappedAt <= :dateTo' : '';
-
-      whereClause.push({
-        where: [dateFromCondition, dateToCondition]
-          .filter(Boolean)
-          .join(' AND '),
-        parameters: { dateFrom: this.dateFrom, dateTo: this.dateTo },
-      });
-    }
-
-    if (this.minAmount && this.maxAmount) {
-      whereClause.push({
-        where: `((swap.assetInputAmount >= :minAmount AND swap.assetInputAmount <= :maxAmount) 
-          OR (swap.assetOutputAmount >= :minAmount AND swap.assetOutputAmount <= :maxAmount))`,
-        parameters: { minAmount: this.minAmount, maxAmount: this.maxAmount },
-      });
-    } else if (this.minAmount || this.maxAmount) {
-      const minAmountCondition = this.minAmount
-        ? '(swap.assetInputAmount >= :minAmount OR swap.assetOutputAmount >= :minAmount)'
-        : '';
-      const maxAmountCondition = this.maxAmount
-        ? '(swap.assetInputAmount <= :maxAmount OR swap.assetOutputAmount <= :maxAmount)'
-        : '';
-
-      whereClause.push({
-        where: [minAmountCondition, maxAmountCondition]
-          .filter(Boolean)
-          .join(' AND '),
-        parameters: { minAmount: this.minAmount, maxAmount: this.maxAmount },
-      });
-    }
-
-    if (this.assetId) {
-      whereClause.push({
-        where:
-          '(swap.inputAssetId = :assetId OR swap.outputAssetId = :assetId)',
-        parameters: { assetId: this.assetId },
-      });
-    }
-
-    return whereClause;
-  }
 }

@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { LessThan, Repository, SelectQueryBuilder } from 'typeorm';
+import {
+  LessThan,
+  ObjectLiteral,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Swap } from './entity/swaps.entity';
 import { SwapDto } from './dto/swap.dto';
@@ -10,6 +15,11 @@ import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
 import { subtractDays } from 'src/utils/date-utils';
 import { SwapOptionsDto } from './dto/swap-options.dto';
 
+type WhereClause = {
+  where: string;
+  parameters: ObjectLiteral;
+};
+
 @Injectable()
 export class SwapRepository {
   constructor(
@@ -18,6 +28,37 @@ export class SwapRepository {
     private readonly swapMapper: SwapEntityToDto,
   ) {}
 
+  private getWhereClauses(swapOptions: SwapOptionsDto): WhereClause[] {
+    const whereClause: WhereClause[] = [];
+
+    whereClause.push({
+      where: '(swap.swappedAt >= :dateFrom AND swap.swappedAt <= :dateTo)',
+      parameters: {
+        dateFrom: swapOptions.dateFrom,
+        dateTo: swapOptions.dateTo,
+      },
+    });
+
+    whereClause.push({
+      where: `((swap.assetInputAmount >= :minAmount AND swap.assetInputAmount <= :maxAmount) 
+        OR (swap.assetOutputAmount >= :minAmount AND swap.assetOutputAmount <= :maxAmount))`,
+      parameters: {
+        minAmount: swapOptions.minAmount,
+        maxAmount: swapOptions.maxAmount,
+      },
+    });
+
+    if (swapOptions.assetId) {
+      whereClause.push({
+        where:
+          '(swap.inputAssetId = :assetId OR swap.outputAssetId = :assetId)',
+        parameters: { assetId: swapOptions.assetId },
+      });
+    }
+
+    return whereClause;
+  }
+
   async findAllSwaps(
     pageOptions: PageOptionsDto,
     swapOptions: SwapOptionsDto,
@@ -25,8 +66,10 @@ export class SwapRepository {
     const queryBuilder: SelectQueryBuilder<Swap> =
       this.swapRepository.createQueryBuilder('swap');
 
-    if (swapOptions.whereClauses.length > 0) {
-      swapOptions.whereClauses.forEach((whereClause) => {
+    const whereClauses = this.getWhereClauses(swapOptions);
+
+    if (whereClauses.length > 0) {
+      whereClauses.forEach((whereClause) => {
         queryBuilder.andWhere(whereClause.where, whereClause.parameters);
       });
     }
@@ -54,8 +97,10 @@ export class SwapRepository {
       { assetIds },
     );
 
-    if (swapOptions.whereClauses.length > 0) {
-      swapOptions.whereClauses.forEach((whereClause) => {
+    const whereClauses = this.getWhereClauses(swapOptions);
+
+    if (whereClauses.length > 0) {
+      whereClauses.forEach((whereClause) => {
         queryBuilder.andWhere(whereClause.where, whereClause.parameters);
       });
     }

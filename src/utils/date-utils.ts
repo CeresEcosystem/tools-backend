@@ -23,9 +23,7 @@ export function subtractHours(date: Date, hours: number): Date {
 
 export function getDateOneMonthBefore(): Date {
   const currentDate = new Date();
-  const oneMonthBefore = new Date(currentDate);
+  currentDate.setMonth(currentDate.getMonth() - 1);
 
-  oneMonthBefore.setMonth(currentDate.getMonth() - 1);
-
-  return oneMonthBefore;
+  return currentDate;
 }
