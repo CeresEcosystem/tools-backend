@@ -17,8 +17,8 @@ export class ReservesService {
     private readonly portfolioService: PortfolioService,
   ) {}
 
-  public async getTokensReserves(tokenSymbol: string): Promise<Reserve[]> {
-    return await this.reserveRepo.findTokenReserves(tokenSymbol);
+  public getTokensReserves(tokenSymbol: string): Promise<Reserve[]> {
+    return this.reserveRepo.findTokenReserves(tokenSymbol);
   }
 
   @Cron(CronExpression.EVERY_6_HOURS)

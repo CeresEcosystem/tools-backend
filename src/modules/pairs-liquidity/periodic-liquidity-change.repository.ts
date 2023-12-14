@@ -10,17 +10,17 @@ export class PairsPeriodicLiquidityChangeRepository {
     private periodicLiqChangeRepo: Repository<PairPeriodicLiquidityChangeEntity>,
   ) {}
 
-  public async savePeriodcLiqChange(
+  public savePeriodcLiqChange(
     pairLiqChange: PairPeriodicLiquidityChangeEntity,
   ): Promise<PairPeriodicLiquidityChangeEntity> {
-    return await this.periodicLiqChangeRepo.save(pairLiqChange);
+    return this.periodicLiqChangeRepo.save(pairLiqChange);
   }
 
-  public async findPairPeriodicLiqChange(
+  public findPairPeriodicLiqChange(
     baseAssetSy: string,
     tokenAssetSy: string,
   ): Promise<PairPeriodicLiquidityChangeEntity[]> {
-    return await this.periodicLiqChangeRepo.find({
+    return this.periodicLiqChangeRepo.find({
       where: {
         baseAssetSymbol: baseAssetSy,
         tokenAssetSymbol: tokenAssetSy,
