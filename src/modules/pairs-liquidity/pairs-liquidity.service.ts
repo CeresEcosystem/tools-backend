@@ -47,19 +47,19 @@ export class PairsLiquidityService {
   }
 
   public async getPeriodicChanges(
-    baseAssetSy: string,
-    tokenAssetSy: string,
+    baseAssetSymbol: string,
+    tokenAssetSymbol: string,
   ): Promise<PairPeriodicLiquidityChangeDto[]> {
     const pairPeriodicChange =
       await this.periodicLiqChangeRepo.findPairPeriodicLiqChange(
-        baseAssetSy,
-        tokenAssetSy,
+        baseAssetSymbol,
+        tokenAssetSymbol,
       );
 
     return this.periodicMapper.toDtos(pairPeriodicChange);
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_2_MINUTES)
   private async updatePairsLiquidity(): Promise<void> {
     this.logger.log('Start updating pairs liquidity');
 
@@ -70,11 +70,7 @@ export class PairsLiquidityService {
     relevantPairs.forEach((pair) => {
       const pairLiqChange = new PairPeriodicLiquidityChangeEntity();
       pairLiqChange.baseAssetSymbol = pair.baseAsset;
-      pairLiqChange.baseAssetName = pair.baseAssetFullName;
-      pairLiqChange.baseAssetId = pair.baseAssetId;
       pairLiqChange.tokenAssetSymbol = pair.token;
-      pairLiqChange.tokenAssetName = pair.tokenFullName;
-      pairLiqChange.tokenAssetId = pair.tokenAssetId;
       pairLiqChange.liquidity = pair.liquidity;
       pairLiqChange.updatedAt = new Date();
       this.periodicLiqChangeRepo.savePeriodcLiqChange(pairLiqChange);

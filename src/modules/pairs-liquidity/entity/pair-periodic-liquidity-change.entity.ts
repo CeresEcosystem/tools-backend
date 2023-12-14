@@ -8,22 +8,10 @@ export class PairPeriodicLiquidityChangeEntity {
   @Column({ name: 'base_asset_symbol' })
   baseAssetSymbol: string;
 
-  @Column({ name: 'base_asset_name' })
-  baseAssetName: string;
-
-  @Column({ name: 'base_asset_id' })
-  baseAssetId: string;
-
-  @Column({ name: 'token_asset_name' })
-  tokenAssetName: string;
-
   @Column({ name: 'token_asset_symbol' })
   tokenAssetSymbol: string;
 
-  @Column({ name: 'token_asset_id' })
-  tokenAssetId: string;
-
-  @Column({ name: 'liquidity' })
+  @Column('float', { name: 'liquidity' })
   liquidity: number;
 
   @Column('timestamp', { name: 'updated_at' })

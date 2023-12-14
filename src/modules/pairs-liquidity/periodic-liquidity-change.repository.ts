@@ -17,13 +17,13 @@ export class PairsPeriodicLiquidityChangeRepository {
   }
 
   public findPairPeriodicLiqChange(
-    baseAssetSy: string,
-    tokenAssetSy: string,
+    baseAssetSymbol: string,
+    tokenAssetSymbol: string,
   ): Promise<PairPeriodicLiquidityChangeEntity[]> {
     return this.periodicLiqChangeRepo.find({
       where: {
-        baseAssetSymbol: baseAssetSy,
-        tokenAssetSymbol: tokenAssetSy,
+        baseAssetSymbol: baseAssetSymbol,
+        tokenAssetSymbol: tokenAssetSymbol,
       },
     });
   }

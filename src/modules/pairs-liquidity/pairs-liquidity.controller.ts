@@ -22,7 +22,7 @@ export class PairsLiquidityController {
     return this.pairsLiquidityChangesService.find(assetA, assetB, pageOptions);
   }
 
-  @Get('/periodic-difference/:baseSymbol/:tokenSymbol')
+  @Get('/history/:baseSymbol/:tokenSymbol')
   public getPeriodicLiquidityChanges(
     @Param('baseSymbol') baseSymbol: string,
     @Param('tokenSymbol') tokenSymbol: string,
