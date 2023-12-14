@@ -59,7 +59,7 @@ export class PairsLiquidityService {
     return this.periodicMapper.toDtos(pairPeriodicChange);
   }
 
-  @Cron(CronExpression.EVERY_2_MINUTES)
+  @Cron(CronExpression.EVERY_HOUR)
   private async updatePairsLiquidity(): Promise<void> {
     this.logger.log('Start updating pairs liquidity');
 
