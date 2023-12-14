@@ -15,7 +15,7 @@ import { getDateOneMonthBefore } from 'src/utils/date-utils';
 const DEFAULT_DATE_FROM = getDateOneMonthBefore();
 const DEFAULT_DATE_TO = new Date();
 const DEFAULT_MIN_AMOUNT = 0;
-const DEFAULT_MAX_AMOUNT = 1000000000;
+const DEFAULT_MAX_AMOUNT = Number.MAX_SAFE_INTEGER;
 
 export class SwapOptionsDto {
   @Type(() => Date)

@@ -28,37 +28,6 @@ export class SwapRepository {
     private readonly swapMapper: SwapEntityToDto,
   ) {}
 
-  private getWhereClauses(swapOptions: SwapOptionsDto): WhereClause[] {
-    const whereClause: WhereClause[] = [];
-
-    whereClause.push({
-      where: '(swap.swappedAt >= :dateFrom AND swap.swappedAt <= :dateTo)',
-      parameters: {
-        dateFrom: swapOptions.dateFrom,
-        dateTo: swapOptions.dateTo,
-      },
-    });
-
-    whereClause.push({
-      where: `((swap.assetInputAmount >= :minAmount AND swap.assetInputAmount <= :maxAmount) 
-        OR (swap.assetOutputAmount >= :minAmount AND swap.assetOutputAmount <= :maxAmount))`,
-      parameters: {
-        minAmount: swapOptions.minAmount,
-        maxAmount: swapOptions.maxAmount,
-      },
-    });
-
-    if (swapOptions.assetId) {
-      whereClause.push({
-        where:
-          '(swap.inputAssetId = :assetId OR swap.outputAssetId = :assetId)',
-        parameters: { assetId: swapOptions.assetId },
-      });
-    }
-
-    return whereClause;
-  }
-
   async findAllSwaps(
     pageOptions: PageOptionsDto,
     swapOptions: SwapOptionsDto,
@@ -68,11 +37,9 @@ export class SwapRepository {
 
     const whereClauses = this.getWhereClauses(swapOptions);
 
-    if (whereClauses.length > 0) {
-      whereClauses.forEach((whereClause) => {
-        queryBuilder.andWhere(whereClause.where, whereClause.parameters);
-      });
-    }
+    whereClauses.forEach((whereClause) => {
+      queryBuilder.andWhere(whereClause.where, whereClause.parameters);
+    });
 
     queryBuilder.orderBy({ 'swap.id': swapOptions.orderBy });
     queryBuilder.skip(pageOptions.skip).take(pageOptions.size);
@@ -99,11 +66,9 @@ export class SwapRepository {
 
     const whereClauses = this.getWhereClauses(swapOptions);
 
-    if (whereClauses.length > 0) {
-      whereClauses.forEach((whereClause) => {
-        queryBuilder.andWhere(whereClause.where, whereClause.parameters);
-      });
-    }
+    whereClauses.forEach((whereClause) => {
+      queryBuilder.andWhere(whereClause.where, whereClause.parameters);
+    });
 
     queryBuilder.orderBy({ 'swap.id': swapOptions.orderBy });
     queryBuilder.skip(pageOptions.skip).take(pageOptions.size);
@@ -135,5 +100,36 @@ export class SwapRepository {
     await this.swapRepository.delete({
       swappedAt: LessThan(subtractDays(new Date(), days)),
     });
+  }
+
+  private getWhereClauses(swapOptions: SwapOptionsDto): WhereClause[] {
+    const whereClause: WhereClause[] = [];
+
+    whereClause.push({
+      where: '(swap.swappedAt >= :dateFrom AND swap.swappedAt <= :dateTo)',
+      parameters: {
+        dateFrom: swapOptions.dateFrom,
+        dateTo: swapOptions.dateTo,
+      },
+    });
+
+    whereClause.push({
+      where: `((swap.assetInputAmount >= :minAmount AND swap.assetInputAmount <= :maxAmount) 
+        OR (swap.assetOutputAmount >= :minAmount AND swap.assetOutputAmount <= :maxAmount))`,
+      parameters: {
+        minAmount: swapOptions.minAmount,
+        maxAmount: swapOptions.maxAmount,
+      },
+    });
+
+    if (swapOptions.assetId) {
+      whereClause.push({
+        where:
+          '(swap.inputAssetId = :assetId OR swap.outputAssetId = :assetId)',
+        parameters: { assetId: swapOptions.assetId },
+      });
+    }
+
+    return whereClause;
   }
 }
