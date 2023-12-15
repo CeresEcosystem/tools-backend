@@ -21,15 +21,17 @@ export function subtractHours(date: Date, hours: number): Date {
   return date;
 }
 
-export function addSeconds(date: Date, seconds: number): Date {
-  date.setSeconds(date.getSeconds() + seconds);
-
-  return date;
-}
-
 export function getDateOneMonthBefore(): Date {
   const currentDate = new Date();
   currentDate.setMonth(currentDate.getMonth() - 1);
 
   return currentDate;
+}
+
+export function isBefore(date1: Date, date2: Date): boolean {
+  return date1 <= date2;
+}
+
+export function isAfter(date1: Date, date2: Date): boolean {
+  return date1 >= date2;
 }

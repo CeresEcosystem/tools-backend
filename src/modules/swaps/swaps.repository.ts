@@ -12,7 +12,12 @@ import { SwapEntityToDto } from './mapper/swap-entity-to-dto.mapper';
 import { PageDto } from 'src/utils/pagination/page.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
-import { subtractDays } from 'src/utils/date-utils';
+import {
+  getDateOneMonthBefore,
+  isAfter,
+  isBefore,
+  subtractDays,
+} from 'src/utils/date-utils';
 import { SwapOptionsDto } from './dto/swap-options.dto';
 
 type WhereClause = {
@@ -105,13 +110,11 @@ export class SwapRepository {
   private getWhereClauses(swapOptions: SwapOptionsDto): WhereClause[] {
     const whereClause: WhereClause[] = [];
 
-    whereClause.push({
-      where: '(swap.swappedAt >= :dateFrom AND swap.swappedAt <= :dateTo)',
-      parameters: {
-        dateFrom: swapOptions.dateFrom,
-        dateTo: swapOptions.dateTo,
-      },
-    });
+    if (swapOptions.dateFrom || swapOptions.dateTo) {
+      whereClause.push(
+        this.validateDates(swapOptions.dateFrom, swapOptions.dateTo),
+      );
+    }
 
     whereClause.push({
       where: `((swap.assetInputAmount >= :minAmount AND swap.assetInputAmount <= :maxAmount) 
@@ -131,5 +134,22 @@ export class SwapRepository {
     }
 
     return whereClause;
+  }
+
+  private validateDates(dateFrom?: Date, dateTo?: Date): WhereClause {
+    const dateFromCondition =
+      dateFrom && isAfter(dateFrom, getDateOneMonthBefore())
+        ? 'swap.swappedAt >= :dateFrom'
+        : '';
+    const dateToCondition =
+      dateTo && isBefore(dateTo, new Date()) ? 'swap.swappedAt <= :dateTo' : '';
+
+    return {
+      where: [dateFromCondition, dateToCondition].filter(Boolean).join(' AND '),
+      parameters: {
+        dateFrom,
+        dateTo,
+      },
+    };
   }
 }
