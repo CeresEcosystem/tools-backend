@@ -6,9 +6,14 @@ import { TransferEntityToDto } from './mapper/transfer-entity-to-dto.mapper';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Transfer } from './entity/transfer.entity';
 import { SoraClientModule } from '../sora-client/sora-client-module';
+import { TokenPriceModule } from '../token-price/token-price.module';
 
 @Module({
-  imports: [SoraClientModule, TypeOrmModule.forFeature([Transfer])],
+  imports: [
+    SoraClientModule,
+    TokenPriceModule,
+    TypeOrmModule.forFeature([Transfer]),
+  ],
   controllers: [],
   providers: [
     TransfersService,

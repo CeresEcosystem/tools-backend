@@ -23,6 +23,7 @@ import { SwapsModule } from './modules/swaps/swaps.module';
 import { PairsLiquidityModule } from './modules/pairs-liquidity/pairs-liquidity.module';
 import { PriceNotifModule } from './modules/price-notifications/price-notif.module';
 import { TransfersModule } from './modules/transfers/transfers.module';
+import { ReservesModule } from './modules/reserves/reserves.module';
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ import { TransfersModule } from './modules/transfers/transfers.module';
     PairsLiquidityModule,
     PriceNotifModule,
     TransfersModule,
+    ReservesModule,
   ],
   controllers: [],
   providers: [],
