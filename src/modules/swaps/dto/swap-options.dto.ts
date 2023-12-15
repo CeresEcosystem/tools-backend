@@ -3,17 +3,15 @@ import { Type } from 'class-transformer';
 import {
   IsDate,
   IsIn,
-  IsInt,
+  IsNumber,
   IsOptional,
   IsString,
   MaxDate,
   Min,
   MinDate,
 } from 'class-validator';
-import { getDateOneMonthBefore } from 'src/utils/date-utils';
+import { addSeconds, getDateOneMonthBefore } from 'src/utils/date-utils';
 
-const DEFAULT_DATE_FROM = getDateOneMonthBefore();
-const DEFAULT_DATE_TO = new Date();
 const DEFAULT_MIN_AMOUNT = 0;
 const DEFAULT_MAX_AMOUNT = Number.MAX_SAFE_INTEGER;
 
@@ -21,32 +19,32 @@ export class SwapOptionsDto {
   @Type(() => Date)
   @IsDate()
   @MinDate(getDateOneMonthBefore())
-  @MaxDate(new Date())
+  @MaxDate(addSeconds(new Date(), 30))
   @IsOptional()
-  dateFrom?: Date = DEFAULT_DATE_FROM;
+  dateFrom?: Date = getDateOneMonthBefore();
 
   @Type(() => Date)
   @IsDate()
   @MinDate(getDateOneMonthBefore())
-  @MaxDate(new Date())
+  @MaxDate(addSeconds(new Date(), 30))
   @IsOptional()
-  dateTo?: Date = DEFAULT_DATE_TO;
+  dateTo?: Date = new Date();
 
   @ApiPropertyOptional({
     minimum: 0,
   })
   @Type(() => Number)
-  @IsInt()
+  @IsNumber()
   @Min(0)
   @IsOptional()
   minAmount?: number = DEFAULT_MIN_AMOUNT;
 
   @ApiPropertyOptional({
-    minimum: 1,
+    minimum: 0,
   })
   @Type(() => Number)
-  @IsInt()
-  @Min(1)
+  @IsNumber()
+  @Min(0)
   @IsOptional()
   maxAmount?: number = DEFAULT_MAX_AMOUNT;
 
