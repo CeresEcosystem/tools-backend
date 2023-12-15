@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { LessThan, Repository, In } from 'typeorm';
+import {
+  LessThan,
+  ObjectLiteral,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Swap } from './entity/swaps.entity';
 import { SwapDto } from './dto/swap.dto';
@@ -8,6 +13,12 @@ import { PageDto } from 'src/utils/pagination/page.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
 import { subtractDays } from 'src/utils/date-utils';
+import { SwapOptionsDto } from './dto/swap-options.dto';
+
+type WhereClause = {
+  where: string;
+  parameters: ObjectLiteral;
+};
 
 @Injectable()
 export class SwapRepository {
@@ -17,16 +28,52 @@ export class SwapRepository {
     private readonly swapMapper: SwapEntityToDto,
   ) {}
 
+  async findAllSwaps(
+    pageOptions: PageOptionsDto,
+    swapOptions: SwapOptionsDto,
+  ): Promise<PageDto<SwapDto>> {
+    const queryBuilder: SelectQueryBuilder<Swap> =
+      this.swapRepository.createQueryBuilder('swap');
+
+    const whereClauses = this.getWhereClauses(swapOptions);
+
+    whereClauses.forEach((whereClause) => {
+      queryBuilder.andWhere(whereClause.where, whereClause.parameters);
+    });
+
+    queryBuilder.orderBy({ 'swap.id': swapOptions.orderBy });
+    queryBuilder.skip(pageOptions.skip).take(pageOptions.size);
+
+    const [data, count] = await queryBuilder.getManyAndCount();
+
+    const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
+
+    return new PageDto(this.swapMapper.toDtos(data), meta);
+  }
+
   async findSwapsByAssetIds(
     pageOptions: PageOptionsDto,
+    swapOptions: SwapOptionsDto,
     assetIds: string[],
   ): Promise<PageDto<SwapDto>> {
-    const [data, count] = await this.swapRepository.findAndCount({
-      skip: pageOptions.skip,
-      take: pageOptions.size,
-      order: { id: 'DESC' },
-      where: [{ inputAssetId: In(assetIds) }, { outputAssetId: In(assetIds) }],
+    const queryBuilder: SelectQueryBuilder<Swap> =
+      this.swapRepository.createQueryBuilder('swap');
+
+    queryBuilder.where(
+      '(swap.inputAssetId IN (:...assetIds) OR swap.outputAssetId IN (:...assetIds))',
+      { assetIds },
+    );
+
+    const whereClauses = this.getWhereClauses(swapOptions);
+
+    whereClauses.forEach((whereClause) => {
+      queryBuilder.andWhere(whereClause.where, whereClause.parameters);
     });
+
+    queryBuilder.orderBy({ 'swap.id': swapOptions.orderBy });
+    queryBuilder.skip(pageOptions.skip).take(pageOptions.size);
+
+    const [data, count] = await queryBuilder.getManyAndCount();
 
     const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
 
@@ -53,5 +100,36 @@ export class SwapRepository {
     await this.swapRepository.delete({
       swappedAt: LessThan(subtractDays(new Date(), days)),
     });
+  }
+
+  private getWhereClauses(swapOptions: SwapOptionsDto): WhereClause[] {
+    const whereClause: WhereClause[] = [];
+
+    whereClause.push({
+      where: '(swap.swappedAt >= :dateFrom AND swap.swappedAt <= :dateTo)',
+      parameters: {
+        dateFrom: swapOptions.dateFrom,
+        dateTo: swapOptions.dateTo,
+      },
+    });
+
+    whereClause.push({
+      where: `((swap.assetInputAmount >= :minAmount AND swap.assetInputAmount <= :maxAmount) 
+        OR (swap.assetOutputAmount >= :minAmount AND swap.assetOutputAmount <= :maxAmount))`,
+      parameters: {
+        minAmount: swapOptions.minAmount,
+        maxAmount: swapOptions.maxAmount,
+      },
+    });
+
+    if (swapOptions.assetId) {
+      whereClause.push({
+        where:
+          '(swap.inputAssetId = :assetId OR swap.outputAssetId = :assetId)',
+        parameters: { assetId: swapOptions.assetId },
+      });
+    }
+
+    return whereClause;
   }
 }
