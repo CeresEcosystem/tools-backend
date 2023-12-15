@@ -6,11 +6,8 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  MaxDate,
   Min,
-  MinDate,
 } from 'class-validator';
-import { addSeconds, getDateOneMonthBefore } from 'src/utils/date-utils';
 
 const DEFAULT_MIN_AMOUNT = 0;
 const DEFAULT_MAX_AMOUNT = Number.MAX_SAFE_INTEGER;
@@ -18,17 +15,13 @@ const DEFAULT_MAX_AMOUNT = Number.MAX_SAFE_INTEGER;
 export class SwapOptionsDto {
   @Type(() => Date)
   @IsDate()
-  @MinDate(getDateOneMonthBefore())
-  @MaxDate(addSeconds(new Date(), 30))
   @IsOptional()
-  dateFrom?: Date = getDateOneMonthBefore();
+  dateFrom?: Date;
 
   @Type(() => Date)
   @IsDate()
-  @MinDate(getDateOneMonthBefore())
-  @MaxDate(addSeconds(new Date(), 30))
   @IsOptional()
-  dateTo?: Date = new Date();
+  dateTo?: Date;
 
   @ApiPropertyOptional({
     minimum: 0,
