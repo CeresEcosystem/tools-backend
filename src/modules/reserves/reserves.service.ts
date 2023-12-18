@@ -30,7 +30,7 @@ export class ReservesService {
     );
     const dataHistoryDtos = this.reserveMapper.toDtos(dataHistoryEntities);
     const reserveDto: ReservesDto = {
-      currentBalace: tokenReserve.balance,
+      currentBalance: tokenReserve.balance,
       currentValue: tokenReserve.value,
       data: dataHistoryDtos,
     };
