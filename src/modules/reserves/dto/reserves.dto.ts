@@ -1,7 +1,7 @@
+import { ReservesHistoryDto } from './reserves-history.dto';
+
 export interface ReservesDto {
-  tokenName: string;
-  tokenSymbol: string;
-  balance: number;
-  value: number;
-  updatedAt: Date;
+  currentBalace: number;
+  currentValue: number;
+  data: ReservesHistoryDto[];
 }

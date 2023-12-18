@@ -11,7 +11,7 @@ export class ReservesController {
   @Get(':tokenSymbol')
   public getReserves(
     @Param('tokenSymbol') tokenSymbol: string,
-  ): Promise<ReservesDto[]> {
+  ): Promise<ReservesDto> {
     return this.reservesService.getTokensReserves(tokenSymbol);
   }
 }

@@ -5,6 +5,8 @@ import { ReservesRepository } from './reserves.repository';
 import { Reserve } from './entity/reserves.entity';
 import { RESERVE_ADDRESS } from 'src/constants/constants';
 import { PortfolioService } from '../portfolio/portfolio.service';
+import { ReservesDto } from './dto/reserves.dto';
+import { ReserveEntityToDto } from './mapper/reserves-entity-to-dto.mapper';
 
 const reserves = ['TBCD', 'ETH', 'DAI', 'VAL', 'PSWAP'];
 
@@ -15,10 +17,25 @@ export class ReservesService {
   constructor(
     private reserveRepo: ReservesRepository,
     private readonly portfolioService: PortfolioService,
+    private readonly reserveMapper: ReserveEntityToDto,
   ) {}
 
-  public getTokensReserves(tokenSymbol: string): Promise<Reserve[]> {
-    return this.reserveRepo.findTokenReserves(tokenSymbol);
+  public async getTokensReserves(tokenSymbol: string): Promise<ReservesDto> {
+    const portfolio = await this.portfolioService.getPortfolio(RESERVE_ADDRESS);
+    const [tokenReserve] = portfolio.filter(
+      (token) => token.token === tokenSymbol,
+    );
+    const dataHistoryEntities = await this.reserveRepo.findTokenReserves(
+      tokenSymbol,
+    );
+    const dataHistoryDtos = this.reserveMapper.toDtos(dataHistoryEntities);
+    const reserveDto: ReservesDto = {
+      currentBalace: tokenReserve.balance,
+      currentValue: tokenReserve.value,
+      data: dataHistoryDtos,
+    };
+
+    return reserveDto;
   }
 
   @Cron(CronExpression.EVERY_6_HOURS)
