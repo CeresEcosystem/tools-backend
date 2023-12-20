@@ -17,8 +17,8 @@ export class ReservesService {
     private readonly portfolioService: PortfolioService,
   ) {}
 
-  public async getTokensReserves(tokenSymbol: string): Promise<Reserve[]> {
-    return await this.reserveRepo.findTokenReserves(tokenSymbol);
+  public getTokensReserves(tokenSymbol: string): Promise<Reserve[]> {
+    return this.reserveRepo.findTokenReserves(tokenSymbol);
   }
 
   @Cron(CronExpression.EVERY_6_HOURS)
@@ -26,9 +26,9 @@ export class ReservesService {
     this.logger.log('Start updating token reserves');
     const portfolio = await this.portfolioService.getPortfolio(RESERVE_ADDRESS);
 
-    const tokenReserves = portfolio.filter((token) => {
-      return reserves.includes(token.token);
-    });
+    const tokenReserves = portfolio.filter((token) =>
+      reserves.includes(token.token),
+    );
 
     tokenReserves.forEach((tokenReserve) => {
       const reserve = new Reserve();

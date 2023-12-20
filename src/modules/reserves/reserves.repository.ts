@@ -10,11 +10,11 @@ export class ReservesRepository {
     private readonly reserveRepo: Repository<Reserve>,
   ) {}
 
-  public async saveReserve(reserve: Reserve): Promise<Reserve> {
+  public saveReserve(reserve: Reserve): Promise<Reserve> {
     return this.reserveRepo.save(reserve);
   }
 
-  public async findTokenReserves(tokenSymbol: string): Promise<Reserve[]> {
-    return this.reserveRepo.findBy({ tokenSymbol: tokenSymbol });
+  public findTokenReserves(tokenSymbol: string): Promise<Reserve[]> {
+    return this.reserveRepo.findBy({ tokenSymbol });
   }
 }

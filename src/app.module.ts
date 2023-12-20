@@ -24,6 +24,7 @@ import { PairsLiquidityModule } from './modules/pairs-liquidity/pairs-liquidity.
 import { PriceNotifModule } from './modules/price-notifications/price-notif.module';
 import { TransfersModule } from './modules/transfers/transfers.module';
 import { ReservesModule } from './modules/reserves/reserves.module';
+import { TokenHoldersModule } from './modules/token-holders/token-holders.module';
 
 @Module({
   imports: [
@@ -80,6 +81,7 @@ import { ReservesModule } from './modules/reserves/reserves.module';
     PriceNotifModule,
     TransfersModule,
     ReservesModule,
+    TokenHoldersModule,
   ],
   controllers: [],
   providers: [],
