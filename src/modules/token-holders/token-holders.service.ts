@@ -21,6 +21,26 @@ export class TokenHoldersService {
     private holderRepo: HoldersRepository,
   ) {}
 
+  public async getHoldersAndBalances(
+    pageOptions: PageOptionsDto,
+    token: string,
+  ): Promise<PageDto<HolderDto>> {
+    const holders = await this.holderRepo.findHoldersAndBalances(
+      pageOptions,
+      token,
+    );
+
+    return holders;
+  }
+
+  @Cron(CronExpression.EVERY_30_MINUTES)
+  private async updateHolders(): Promise<void> {
+    this.logger.log('Start updating holders balances');
+    await this.upsertHolderTokensAndBalances();
+    await this.holderRepo.deleteHoldersWithZeroBalance();
+    this.logger.log('Updating holders balances successful.');
+  }
+
   private async getTokenHolders(): Promise<string[]> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
@@ -55,7 +75,6 @@ export class TokenHoldersService {
   }
 
   private async upsertHolderTokensAndBalances(): Promise<void> {
-    this.logger.log('Start updating holders balances.');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
     const holders = await this.getTokenHolders();
@@ -91,36 +110,5 @@ export class TokenHoldersService {
         });
       }),
     );
-
-    this.logger.log('Updating holders balances successful.');
-  }
-
-  private async removeZeroBalances(): Promise<void> {
-    this.logger.log('Start deleting holders with 0 balance');
-    const allHolders = await this.holderRepo.findAllHolders();
-    allHolders.forEach((holder) => {
-      if (holder.balance === 0) {
-        this.holderRepo.deleteHolder(holder);
-      }
-    });
-    this.logger.log('Holders with 0 balance deleteds');
-  }
-
-  public async getHoldersAndBalances(
-    pageOptions: PageOptionsDto,
-    token: string,
-  ): Promise<PageDto<HolderDto>> {
-    const holders = await this.holderRepo.findHoldersAndBalances(
-      pageOptions,
-      token,
-    );
-
-    return holders;
-  }
-
-  @Cron(CronExpression.EVERY_30_MINUTES)
-  private async updateHolders(): Promise<void> {
-    await this.upsertHolderTokensAndBalances();
-    await this.removeZeroBalances();
   }
 }

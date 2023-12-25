@@ -19,12 +19,12 @@ export class HoldersRepository {
     this.holderRepo.upsert(holder, ['holder', 'token']);
   }
 
-  public findAllHolders(): Promise<Holder[]> {
-    return this.holderRepo.find();
+  public async deleteHoldersWithZeroBalance(): Promise<void> {
+    await this.holderRepo.delete({ balance: 0 });
   }
 
-  public async deleteHolder(holder: Holder): Promise<void> {
-    await this.holderRepo.delete(holder);
+  public findAllHolders(): Promise<Holder[]> {
+    return this.holderRepo.find();
   }
 
   public async findHoldersAndBalances(
