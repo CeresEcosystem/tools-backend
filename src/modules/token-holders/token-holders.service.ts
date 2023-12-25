@@ -54,8 +54,7 @@ export class TokenHoldersService {
     return Array.from(holdersSet);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
-  private async updateHolderTokensAndBalances(): Promise<void> {
+  private async upsertHolderTokensAndBalances(): Promise<void> {
     this.logger.log('Start updating holders balances.');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
@@ -69,20 +68,18 @@ export class TokenHoldersService {
           token: string;
           balance: number;
         }[] = [
-          ...portfolio
-            .map((portfolioAsset) => {
-              const [assetsId, assetAmount] = portfolioAsset;
-              const [, { code: assetId }] = assetsId.toHuman();
-              const { free: assetBalance } = assetAmount.toHuman();
+          ...portfolio.map((portfolioAsset) => {
+            const [assetsId, assetAmount] = portfolioAsset;
+            const [, { code: assetId }] = assetsId.toHuman();
+            const { free: assetBalance } = assetAmount.toHuman();
 
-              return {
-                token: assetId,
-                balance: new FPNumber(assetBalance)
-                  .div(FPNumber.fromNatural(10 ** 18))
-                  .toNumber(),
-              };
-            })
-            .filter(({ balance }) => balance > 0),
+            return {
+              token: assetId,
+              balance: new FPNumber(assetBalance)
+                .div(FPNumber.fromNatural(10 ** 18))
+                .toNumber(),
+            };
+          }),
         ];
 
         relevantPortfolioAssets.forEach((asset) => {
@@ -94,7 +91,19 @@ export class TokenHoldersService {
         });
       }),
     );
+
     this.logger.log('Updating holders balances successful.');
+  }
+
+  private async removeZeroBalances(): Promise<void> {
+    this.logger.log('Start deleting holders with 0 balance');
+    const allHolders = await this.holderRepo.findAllHolders();
+    allHolders.forEach((holder) => {
+      if (holder.balance === 0) {
+        this.holderRepo.deleteHolder(holder);
+      }
+    });
+    this.logger.log('Holders with 0 balance deleteds');
   }
 
   public async getHoldersAndBalances(
@@ -107,5 +116,11 @@ export class TokenHoldersService {
     );
 
     return holders;
+  }
+
+  @Cron(CronExpression.EVERY_30_MINUTES)
+  private async updateHolders(): Promise<void> {
+    await this.upsertHolderTokensAndBalances();
+    await this.removeZeroBalances();
   }
 }

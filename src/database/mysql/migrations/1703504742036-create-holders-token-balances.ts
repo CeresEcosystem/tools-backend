@@ -1,9 +1,9 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class createHoldersTokenBalances1703263078724
+export class createHoldersTokenBalances1703504742036
   implements MigrationInterface
 {
-  name = 'createHoldersTokenBalances1703263078724';
+  name = 'createHoldersTokenBalances1703504742036';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`CREATE TABLE \`holders\` (
@@ -11,7 +11,7 @@ export class createHoldersTokenBalances1703263078724
             \`holder\` varchar(255) NOT NULL, 
             \`token\` varchar(255) NOT NULL, 
             \`balance\` float NOT NULL, 
-            UNIQUE INDEX \`IDX_3eabafcedac5fc2da14f2428c1\` (\`holder\`, \`token\`),
+            UNIQUE INDEX \`IDX_3eabafcedac5fc2da14f2428c1\` (\`holder\`, \`token\`), 
             PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
   }
 
