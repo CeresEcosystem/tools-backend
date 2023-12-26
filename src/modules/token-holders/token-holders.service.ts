@@ -10,6 +10,8 @@ import { HolderDto } from './dto/holder.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { CronExpression, Cron } from '@nestjs/schedule';
 
+const DENOMINATOR = FPNumber.fromNatural(10 ** 18);
+
 @Injectable()
 export class TokenHoldersService {
   private keyring = new Keyring();
@@ -23,11 +25,11 @@ export class TokenHoldersService {
 
   public async getHoldersAndBalances(
     pageOptions: PageOptionsDto,
-    token: string,
+    assetId: string,
   ): Promise<PageDto<HolderDto>> {
     const holders = await this.holderRepo.findHoldersAndBalances(
       pageOptions,
-      token,
+      assetId,
     );
 
     return holders;
@@ -84,7 +86,7 @@ export class TokenHoldersService {
         const portfolio = await soraApi.query.tokens.accounts.entries(holder);
 
         const relevantPortfolioAssets: {
-          token: string;
+          assetId: string;
           balance: number;
         }[] = [
           ...portfolio.map((portfolioAsset) => {
@@ -93,10 +95,8 @@ export class TokenHoldersService {
             const { free: assetBalance } = assetAmount.toHuman();
 
             return {
-              token: assetId,
-              balance: new FPNumber(assetBalance)
-                .div(FPNumber.fromNatural(10 ** 18))
-                .toNumber(),
+              assetId,
+              balance: new FPNumber(assetBalance).div(DENOMINATOR).toNumber(),
             };
           }),
         ];
@@ -104,7 +104,7 @@ export class TokenHoldersService {
         relevantPortfolioAssets.forEach((asset) => {
           const holderEntity = new Holder();
           holderEntity.holder = holder;
-          holderEntity.token = asset.token;
+          holderEntity.assetId = asset.assetId;
           holderEntity.balance = asset.balance;
           this.holderRepo.upsertHolder(holderEntity);
         });

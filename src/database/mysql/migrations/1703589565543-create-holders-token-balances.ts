@@ -1,24 +1,24 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class createHoldersTokenBalances1703504742036
+export class createHoldersTokenBalances1703589565543
   implements MigrationInterface
 {
-  name = 'createHoldersTokenBalances1703504742036';
+  name = 'createHoldersTokenBalances1703589565543';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`CREATE TABLE \`holders\` (
             \`id\` int NOT NULL AUTO_INCREMENT, 
-            \`holder\` varchar(255) NOT NULL, 
-            \`token\` varchar(255) NOT NULL, 
+            \`holder\` varchar(50) NOT NULL, 
+            \`asset_id\` varchar(70) NOT NULL, 
             \`balance\` float NOT NULL, 
-            UNIQUE INDEX \`IDX_3eabafcedac5fc2da14f2428c1\` (\`holder\`, \`token\`), 
+            UNIQUE INDEX \`IDX_3a60adff08762eeae0328ad868\` (\`holder\`, \`asset_id\`), 
             PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      'DROP INDEX `IDX_3eabafcedac5fc2da14f2428c1` ON `holders`',
+      `DROP INDEX \`IDX_3a60adff08762eeae0328ad868\` ON \`holders\``,
     );
-    await queryRunner.query('DROP TABLE `holders`');
+    await queryRunner.query(`DROP TABLE \`holders\``);
   }
 }

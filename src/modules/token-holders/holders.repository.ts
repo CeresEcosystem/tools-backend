@@ -16,7 +16,7 @@ export class HoldersRepository {
   ) {}
 
   public upsertHolder(holder: Holder): void {
-    this.holderRepo.upsert(holder, ['holder', 'token']);
+    this.holderRepo.upsert(holder, ['holder', 'assetId']);
   }
 
   public async deleteHoldersWithZeroBalance(): Promise<void> {
@@ -29,7 +29,7 @@ export class HoldersRepository {
 
   public async findHoldersAndBalances(
     pageOptions: PageOptionsDto,
-    token: string,
+    assetId: string,
   ): Promise<PageDto<HolderDto>> {
     const [allHolders, count] = await this.holderRepo.findAndCount({
       skip: pageOptions.skip,
@@ -38,7 +38,7 @@ export class HoldersRepository {
         balance: 'DESC',
       },
       where: {
-        token,
+        assetId,
       },
     });
 
