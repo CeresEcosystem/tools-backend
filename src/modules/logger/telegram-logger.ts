@@ -29,14 +29,12 @@ export class TelegramLogger extends ConsoleLogger {
           `<b>Environment:</b> ${process.env.APP_ENV}\n` +
           `<b>Log Level:</b> ERROR\n${
             context ? `<b>Context:</b> ${context}\n` : ''
-          }<b>Message:</b> <pre>${message}</pre>\n${
-            stack ? `<b>Stack:</b> <pre>${stack}</pre>` : ''
-          }`,
+          }<b>Message:</b> <pre>${message}</pre>`,
         parse_mode: 'html',
       })
       .toPromise()
       .catch((reason) => {
-        super.error(`Error sending error msg to telegram: ${reason}`);
+        this.error(`Error sending error msg to telegram: ${reason}`);
       });
 
     super.error(message, stack, context);
