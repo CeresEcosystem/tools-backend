@@ -26,7 +26,7 @@ export class DeoClient {
 
   private async sendGetRequest<T>(url: string): Promise<T> {
     const { data } = await firstValueFrom(
-      this.httpService.get<T>(url, { timeout: 5000 }).pipe(
+      this.httpService.get<T>(url, { timeout: 10000 }).pipe(
         retry({ count: 5, delay: 1000 }),
         catchError((error: AxiosError) => {
           this.logWarning(error);
