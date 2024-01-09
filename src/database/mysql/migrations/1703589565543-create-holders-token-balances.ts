@@ -17,8 +17,8 @@ export class createHoldersTokenBalances1703589565543
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `DROP INDEX \`IDX_3a60adff08762eeae0328ad868\` ON \`holders\``,
+      'DROP INDEX `IDX_3a60adff08762eeae0328ad868` ON `holders`',
     );
-    await queryRunner.query(`DROP TABLE \`holders\``);
+    await queryRunner.query('DROP TABLE `holders`');
   }
 }

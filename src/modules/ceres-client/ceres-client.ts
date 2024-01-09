@@ -44,7 +44,7 @@ export class CeresClient {
   }
 
   private logWarning(error: AxiosError): void {
-    this.logger.warn(
+    this.logger.error(
       `An error happened while contacting ceres-backend!
       msg: ${error.message}, code: ${error.code}, cause: ${error.cause}`,
     );

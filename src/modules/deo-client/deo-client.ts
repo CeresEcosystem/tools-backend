@@ -26,8 +26,8 @@ export class DeoClient {
 
   private async sendGetRequest<T>(url: string): Promise<T> {
     const { data } = await firstValueFrom(
-      this.httpService.get<T>(url, { timeout: 1000 }).pipe(
-        retry({ count: 10, delay: 1000 }),
+      this.httpService.get<T>(url, { timeout: 5000 }).pipe(
+        retry({ count: 5, delay: 1000 }),
         catchError((error: AxiosError) => {
           this.logWarning(error);
           throw new BadGatewayException('Deo backend unreachable.');
@@ -39,7 +39,7 @@ export class DeoClient {
   }
 
   private logWarning(error: AxiosError): void {
-    this.logger.warn(
+    this.logger.error(
       `An error happened while contacting deo-backend!
       msg: ${error.message}, code: ${error.code}, cause: ${error.cause}`,
     );
