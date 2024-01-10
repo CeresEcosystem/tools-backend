@@ -104,6 +104,7 @@ export class TokenHoldersService {
       holderEntity.holder = value.holder;
       holderEntity.assetId = value.assetId;
       holderEntity.balance = value.balance;
+
       return holderEntity;
     });
 
