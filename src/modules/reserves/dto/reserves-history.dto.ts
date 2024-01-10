@@ -1,7 +1,7 @@
 export interface ReservesHistoryDto {
   tokenName: string;
   tokenSymbol: string;
-  balance: number;
+  balance: string;
   value: number;
   updatedAt: Date;
 }

@@ -15,8 +15,8 @@ export class HoldersRepository {
     private holderMapper: HolderEntityToDto,
   ) {}
 
-  public upsertHolder(holder: Holder): void {
-    this.holderRepo.upsert(holder, ['holder', 'assetId']);
+  public async upsertHolder(holder: Holder[]): Promise<void> {
+    await this.holderRepo.upsert(holder, ['holder', 'assetId']);
   }
 
   public async deleteHoldersWithZeroBalance(): Promise<void> {

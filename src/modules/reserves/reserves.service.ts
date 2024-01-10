@@ -51,7 +51,7 @@ export class ReservesService {
       const reserve = new Reserve();
       reserve.tokenName = tokenReserve.fullName;
       reserve.tokenSymbol = tokenReserve.token;
-      reserve.balance = tokenReserve.balance;
+      reserve.balance = tokenReserve.balance.toString();
       reserve.value = tokenReserve.value;
       reserve.updatedAt = new Date();
       this.reserveRepo.saveReserve(reserve);

@@ -11,8 +11,8 @@ export class Reserve {
   @Column({ name: 'token_symbol' })
   tokenSymbol: string;
 
-  @Column({ name: 'balance' })
-  balance: number;
+  @Column({ name: 'balance', type: 'bigint' })
+  balance: string;
 
   @Column('float', { name: 'value' })
   value: number;
