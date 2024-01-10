@@ -108,6 +108,6 @@ export class TokenHoldersService {
       return holderEntity;
     });
 
-    await this.holderRepo.upsertHolder(holderEntities);
+    await this.holderRepo.upsertHolders(holderEntities);
   }
 }
