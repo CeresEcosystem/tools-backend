@@ -81,34 +81,33 @@ export class TokenHoldersService {
     const soraApi: any = await this.soraClient.getSoraApi();
     const holders = await this.getTokenHolders();
 
-    await Promise.all(
+    const holdersAndAssets = await Promise.all(
       holders.map(async (holder) => {
         const portfolio = await soraApi.query.tokens.accounts.entries(holder);
 
-        const relevantPortfolioAssets: {
-          assetId: string;
-          balance: number;
-        }[] = [
-          ...portfolio.map((portfolioAsset) => {
-            const [assetsId, assetAmount] = portfolioAsset;
-            const [, { code: assetId }] = assetsId.toHuman();
-            const { free: assetBalance } = assetAmount.toHuman();
+        return portfolio.map((portfolioAsset) => {
+          const [assetsId, assetAmount] = portfolioAsset;
+          const [, { code: assetId }] = assetsId.toHuman();
+          const { free: assetBalance } = assetAmount.toHuman();
 
-            return {
-              assetId,
-              balance: new FPNumber(assetBalance).div(DENOMINATOR).toNumber(),
-            };
-          }),
-        ];
-
-        relevantPortfolioAssets.forEach((asset) => {
-          const holderEntity = new Holder();
-          holderEntity.holder = holder;
-          holderEntity.assetId = asset.assetId;
-          holderEntity.balance = asset.balance;
-          this.holderRepo.upsertHolder(holderEntity);
+          return {
+            holder,
+            assetId,
+            balance: new FPNumber(assetBalance).div(DENOMINATOR).toNumber(),
+          };
         });
       }),
     );
+
+    const holderEntities = holdersAndAssets.flat().map((value) => {
+      const holderEntity = new Holder();
+      holderEntity.holder = value.holder;
+      holderEntity.assetId = value.assetId;
+      holderEntity.balance = value.balance;
+
+      return holderEntity;
+    });
+
+    await this.holderRepo.upsertHolders(holderEntities);
   }
 }
