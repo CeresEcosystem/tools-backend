@@ -34,7 +34,7 @@ export class CeresClient {
       this.httpService.get<T>(url, { timeout: 1000 }).pipe(
         retry({ count: 10, delay: 1000 }),
         catchError((error: AxiosError) => {
-          this.logWarning(error);
+          this.logError(error, url);
           throw new BadGatewayException('Ceres backend unreachable.');
         }),
       ),
@@ -43,10 +43,10 @@ export class CeresClient {
     return data;
   }
 
-  private logWarning(error: AxiosError): void {
+  private logError(error: AxiosError, url: string): void {
     this.logger.error(
       `An error happened while contacting ceres-backend!
-      msg: ${error.message}, code: ${error.code}, cause: ${error.cause}`,
+      msg: ${error.message}, code: ${error.code}, cause: ${error.cause}, url: ${url}`,
     );
   }
 }
