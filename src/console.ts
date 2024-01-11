@@ -7,6 +7,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TelegramLoggerModule } from './modules/logger/telegram-logger.module';
 import { TrackerModule } from './modules/tracker/tracker.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ReservesModule } from './modules/reserves/reserves.module';
+import { ReserveSeeder } from './modules/reserves/reserves.seeder';
+import { ChronoPriceModule } from './modules/chrono-price/chrono-price.module';
+import { ReservesService } from './modules/reserves/reserves.service';
+import { PortfolioModule } from './modules/portfolio/portfolio.module';
+import { ReserveEntityToDto } from './modules/reserves/mapper/reserves-entity-to-dto.mapper';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -15,6 +22,12 @@ import { CacheModule } from '@nestjs/cache-manager';
     CacheModule.register({
       isGlobal: true,
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60,
+        limit: 10,
+      },
+    ]),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.MYSQL_HOST,
@@ -36,10 +49,14 @@ import { CacheModule } from '@nestjs/cache-manager';
     }),
     TelegramLoggerModule,
     TrackerModule,
+    ReservesModule,
+    ChronoPriceModule,
+    PortfolioModule,
+    ThrottlerModule,
     ConsoleModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [ReserveSeeder, ReservesService, ReserveEntityToDto],
 })
 class AppConsoleModule {}
 

@@ -15,7 +15,7 @@ export class ReservesService {
   private readonly logger = new Logger(ReservesService.name);
 
   constructor(
-    private reserveRepo: ReservesRepository,
+    private readonly reserveRepo: ReservesRepository,
     private readonly portfolioService: PortfolioService,
     private readonly reserveMapper: ReserveEntityToDto,
   ) {}
@@ -58,5 +58,9 @@ export class ReservesService {
     });
 
     this.logger.log('Token reserves updated');
+  }
+
+  public async insert(reserve: Reserve): Promise<void> {
+    await this.reserveRepo.saveReserve(reserve);
   }
 }

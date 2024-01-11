@@ -35,6 +35,20 @@ export class ChronoPriceService {
     return result.flat();
   }
 
+  public async getNearestPrice(token: string, date: Date): Promise<number> {
+    const price = await this.repository
+      .createQueryBuilder()
+      .distinctOn(['token'])
+      .select(['price'])
+      .where({
+        token,
+        createdAt: Between(this.sub2Mins(date), this.add2Mins(date)),
+      })
+      .getRawMany<{ price: string }>();
+
+    return Number(price);
+  }
+
   // TODO: Define return type
   public async getPriceForChart(
     symbol: string,

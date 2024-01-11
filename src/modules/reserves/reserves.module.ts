@@ -16,5 +16,6 @@ import { ReserveEntityToDto } from './mapper/reserves-entity-to-dto.mapper';
   ],
   controllers: [ReservesController],
   providers: [ReservesService, ReservesRepository, ReserveEntityToDto],
+  exports: [ReservesRepository],
 })
 export class ReservesModule {}
