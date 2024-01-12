@@ -15,6 +15,9 @@ export class ReservesRepository {
   }
 
   public findTokenReserves(tokenSymbol: string): Promise<Reserve[]> {
-    return this.reserveRepo.findBy({ tokenSymbol });
+    return this.reserveRepo.find({
+      where: { tokenSymbol },
+      order: { updatedAt: 'ASC' },
+    });
   }
 }
