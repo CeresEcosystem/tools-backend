@@ -30,6 +30,8 @@ export class ReserveSeeder {
       'utf8',
     );
 
+    spin.info('Loaded CSV');
+
     const reservesData = Papa.parse<{
       balance: string;
       updatedAt: string;
@@ -39,8 +41,13 @@ export class ReserveSeeder {
     for (let i = 0; i < reservesData.data.length; i += 1) {
       const row = reservesData.data[i];
       const price = await this.getPriceAtMoment(new Date(row.updatedAt));
+      spin.info(
+        `Date: ${row.updatedAt} - Price: ${price} * Balance: ${row.balance}`,
+      );
       row.value = new Big(row.balance).mul(price).toString();
     }
+
+    spin.info('Writing to file');
 
     fs.writeFileSync(
       `${CSV_STORAGE_PATH}/reserves-missing-data-complete.csv`,
