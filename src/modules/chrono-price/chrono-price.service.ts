@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Between, DataSource, In, Repository } from 'typeorm';
 import { ChronoPriceDto } from './dto/chrono-price.dto';
@@ -11,6 +11,8 @@ import { TokenPrice } from '../token-price/entity/token-price.entity';
 
 @Injectable()
 export class ChronoPriceService {
+  private readonly logger = new Logger(ChronoPriceService.name);
+
   constructor(
     @InjectDataSource('pg')
     private readonly dataSource: DataSource,
@@ -36,17 +38,19 @@ export class ChronoPriceService {
   }
 
   public async getNearestPrice(token: string, date: Date): Promise<number> {
-    const price = await this.repository
+    const result = await this.repository
       .createQueryBuilder()
-      .distinctOn(['token'])
       .select(['price'])
       .where({
         token,
-        createdAt: Between(this.sub2Mins(date), this.add2Mins(date)),
+        createdAt: Between(
+          this.sub2Mins(new Date(date)),
+          this.add2Mins(new Date(date)),
+        ),
       })
-      .getRawMany<{ price: string }>();
+      .getRawOne<{ price: string }>();
 
-    return Number(price);
+    return Number(result.price);
   }
 
   // TODO: Define return type
