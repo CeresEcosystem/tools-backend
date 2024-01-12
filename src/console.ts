@@ -2,7 +2,6 @@
 import { BootstrapConsole, ConsoleModule } from 'nestjs-console';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TelegramLoggerModule } from './modules/logger/telegram-logger.module';
 import { TrackerModule } from './modules/tracker/tracker.module';
@@ -17,7 +16,6 @@ import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
-    ScheduleModule.forRoot(),
     ConfigModule.forRoot(),
     CacheModule.register({
       isGlobal: true,
