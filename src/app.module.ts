@@ -25,6 +25,7 @@ import { PriceNotifModule } from './modules/price-notifications/price-notif.modu
 import { TransfersModule } from './modules/transfers/transfers.module';
 import { ReservesModule } from './modules/reserves/reserves.module';
 import { TokenHoldersModule } from './modules/token-holders/token-holders.module';
+import { CurrencyRateModule } from './modules/currency-rate/currency-rate.module';
 
 @Module({
   imports: [
@@ -82,6 +83,7 @@ import { TokenHoldersModule } from './modules/token-holders/token-holders.module
     TransfersModule,
     ReservesModule,
     TokenHoldersModule,
+    CurrencyRateModule,
   ],
   controllers: [],
   providers: [],
