@@ -1,4 +1,11 @@
-import { Controller, Get, Param, UseGuards, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  UseGuards,
+  Query,
+  Inject,
+} from '@nestjs/common';
 import { PortfolioService } from './portfolio.service';
 import { PortfolioDto } from './dto/portfolio.dto';
 import { StakingDto } from './dto/staking.dto';
@@ -10,31 +17,55 @@ import { ApiTags } from '@nestjs/swagger';
 import { ThrottlerBehindProxyGuard } from 'src/guards/throttler-behind-proxy.guard';
 import { TransferDto } from '../transfers/dto/transfer.dto';
 import { TransfersService } from '../transfers/transfers.service';
+import { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { CACHE_KEYS, CACHE_TTL } from './portfolio.const';
 
 @Controller('portfolio')
 @ApiTags('Portfolio Controller')
 @UseGuards(ThrottlerBehindProxyGuard)
 export class PortfolioController {
-  constructor(private portfolioService: PortfolioService, private transfersService: TransfersService) {}
+  constructor(
+    private portfolioService: PortfolioService,
+    private transfersService: TransfersService,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
+  ) {}
 
   @Get(':accountId')
   getPortfolio(@Param('accountId') accountId: string): Promise<PortfolioDto[]> {
-    return this.portfolioService.getPortfolio(accountId);
+    return this.cacheManager.wrap(
+      `${CACHE_KEYS.PORTFOLIO}-${accountId}`,
+      () => this.portfolioService.getPortfolio(accountId),
+      CACHE_TTL.FIVE_MINUTES,
+    );
   }
 
   @Get('staking/:accountId')
   getStaked(@Param('accountId') accountId: string): Promise<StakingDto[]> {
-    return this.portfolioService.getStakingPortfolio(accountId);
+    return this.cacheManager.wrap(
+      `${CACHE_KEYS.STAKING_PORTFOLIO}-${accountId}`,
+      () => this.portfolioService.getStakingPortfolio(accountId),
+      CACHE_TTL.FIVE_MINUTES,
+    );
   }
 
   @Get('rewards/:accountId')
   getRewards(@Param('accountId') accountId: string): Promise<StakingDto[]> {
-    return this.portfolioService.getRewardsPortfolio(accountId);
+    return this.cacheManager.wrap(
+      `${CACHE_KEYS.REWARDS_PORTFOLIO}-${accountId}`,
+      () => this.portfolioService.getRewardsPortfolio(accountId),
+      CACHE_TTL.FIVE_MINUTES,
+    );
   }
 
   @Get('liquidity/:accountId')
   getLiquidity(@Param('accountId') accountId: string): Promise<LiquidityDto[]> {
-    return this.portfolioService.getLiquidityPortfolio(accountId);
+    return this.cacheManager.wrap(
+      `${CACHE_KEYS.LIQUIDITY_PORTFOLIO}-${accountId}`,
+      () => this.portfolioService.getLiquidityPortfolio(accountId),
+      CACHE_TTL.FIVE_MINUTES,
+    );
   }
 
   @Get('swaps/:accountId')

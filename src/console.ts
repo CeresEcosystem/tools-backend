@@ -11,7 +11,7 @@ import { ReserveSeeder } from './modules/reserves/reserves.seeder';
 import { ChronoPriceModule } from './modules/chrono-price/chrono-price.module';
 import { ReservesService } from './modules/reserves/reserves.service';
 import { PortfolioModule } from './modules/portfolio/portfolio.module';
-import { ReserveEntityToDto } from './modules/reserves/mapper/reserves-entity-to-dto.mapper';
+import { ReserveEntityToDtoMapper } from './modules/reserves/mapper/reserves-entity-to-dto.mapper';
 import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
@@ -54,7 +54,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     ConsoleModule,
   ],
   controllers: [],
-  providers: [ReserveSeeder, ReservesService, ReserveEntityToDto],
+  providers: [ReserveSeeder, ReservesService, ReserveEntityToDtoMapper],
 })
 class AppConsoleModule {}
 

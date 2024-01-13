@@ -6,7 +6,7 @@ import { ReservesRepository } from './reserves.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Reserve } from './entity/reserves.entity';
 import { TokenPriceModule } from '../token-price/token-price.module';
-import { ReserveEntityToDto } from './mapper/reserves-entity-to-dto.mapper';
+import { ReserveEntityToDtoMapper } from './mapper/reserves-entity-to-dto.mapper';
 
 @Module({
   imports: [
@@ -15,7 +15,7 @@ import { ReserveEntityToDto } from './mapper/reserves-entity-to-dto.mapper';
     TypeOrmModule.forFeature([Reserve]),
   ],
   controllers: [ReservesController],
-  providers: [ReservesService, ReservesRepository, ReserveEntityToDto],
+  providers: [ReservesService, ReservesRepository, ReserveEntityToDtoMapper],
   exports: [ReservesRepository],
 })
 export class ReservesModule {}

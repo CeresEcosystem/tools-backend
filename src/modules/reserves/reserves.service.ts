@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import { ReservesRepository } from './reserves.repository';
@@ -6,9 +6,12 @@ import { Reserve } from './entity/reserves.entity';
 import { RESERVE_ADDRESS } from 'src/constants/constants';
 import { PortfolioService } from '../portfolio/portfolio.service';
 import { ReservesDto } from './dto/reserves.dto';
-import { ReserveEntityToDto } from './mapper/reserves-entity-to-dto.mapper';
+import { ReserveEntityToDtoMapper } from './mapper/reserves-entity-to-dto.mapper';
+import { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { CACHE_KEYS } from './reserves.const';
 
-const reserves = ['TBCD', 'ETH', 'DAI', 'VAL', 'PSWAP'];
+const RESERVES = ['TBCD', 'ETH', 'DAI', 'VAL', 'PSWAP'];
 
 @Injectable()
 export class ReservesService {
@@ -17,7 +20,9 @@ export class ReservesService {
   constructor(
     private readonly reserveRepo: ReservesRepository,
     private readonly portfolioService: PortfolioService,
-    private readonly reserveMapper: ReserveEntityToDto,
+    private readonly reserveMapper: ReserveEntityToDtoMapper,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
   ) {}
 
   public async getTokensReserves(tokenSymbol: string): Promise<ReservesDto> {
@@ -44,7 +49,7 @@ export class ReservesService {
     const portfolio = await this.portfolioService.getPortfolio(RESERVE_ADDRESS);
 
     const tokenReserves = portfolio.filter((token) =>
-      reserves.includes(token.token),
+      RESERVES.includes(token.token),
     );
 
     tokenReserves.forEach((tokenReserve) => {
@@ -56,6 +61,8 @@ export class ReservesService {
       reserve.updatedAt = new Date();
       this.reserveRepo.saveReserve(reserve);
     });
+
+    this.cacheManager.del(CACHE_KEYS.RESERVES);
 
     this.logger.log('Token reserves updated');
   }

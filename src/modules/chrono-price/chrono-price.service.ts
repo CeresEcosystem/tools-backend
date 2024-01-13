@@ -131,7 +131,9 @@ export class ChronoPriceService {
         currentPrice,
         oldPrice,
         valueDiff: currentPrice.minus(oldPrice),
-        percentageDiff: currentPrice.div(oldPrice).minus(1).mul(100),
+        percentageDiff: oldPrice.eq(0)
+          ? new Big(0)
+          : currentPrice.div(oldPrice).minus(1).mul(100),
       };
     });
   }
