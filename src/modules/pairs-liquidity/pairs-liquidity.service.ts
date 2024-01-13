@@ -73,7 +73,7 @@ export class PairsLiquidityService {
       pairLiqChange.tokenAssetSymbol = pair.token;
       pairLiqChange.liquidity = pair.liquidity;
       pairLiqChange.updatedAt = new Date();
-      this.periodicLiqChangeRepo.savePeriodcLiqChange(pairLiqChange);
+      this.periodicLiqChangeRepo.savePeriodicLiqChange(pairLiqChange);
     });
 
     this.logger.log('Updating pairs liquidity successful');

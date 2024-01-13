@@ -10,7 +10,7 @@ export class PairsPeriodicLiquidityChangeRepository {
     private periodicLiqChangeRepo: Repository<PairPeriodicLiquidityChangeEntity>,
   ) {}
 
-  public savePeriodcLiqChange(
+  public savePeriodicLiqChange(
     pairLiqChange: PairPeriodicLiquidityChangeEntity,
   ): Promise<PairPeriodicLiquidityChangeEntity> {
     return this.periodicLiqChangeRepo.save(pairLiqChange);

@@ -1,3 +1,4 @@
+// Lib specific fields chat_id and parse_mode
 /* eslint-disable camelcase */
 import { ConsoleLogger, Injectable, LogLevel } from '@nestjs/common';
 import { TelegramService } from 'nestjs-telegram';
@@ -27,14 +28,17 @@ export class TelegramLogger extends ConsoleLogger {
         text:
           `🚨 <b>Application:</b> ${process.env.APP_NAME} 🚨\n` +
           `<b>Environment:</b> ${process.env.APP_ENV}\n` +
-          `<b>Log Level:</b> ERROR\n${
-            context ? `<b>Context:</b> ${context}\n` : ''
-          }<b>Message:</b> <pre>${message}</pre>`,
+          '<b>Log Level:</b> ERROR\n' +
+          `${context ? `<b>Context:</b> ${context}\n` : ''}` +
+          `<b>Message:</b> ${message}\n` +
+          `${stack ? `<b>Stack:</b> ${stack}` : ''}`,
         parse_mode: 'html',
       })
       .toPromise()
-      .catch((reason) => {
-        this.error(`Error sending error msg to telegram: ${reason}`);
+      .catch(() => {
+        this.error(
+          'Failed to send error report to Telegram, check server logs for more details.',
+        );
       });
 
     super.error(message, stack, context);
