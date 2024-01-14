@@ -1,6 +1,4 @@
 export const PROVIDERS = [
   'wss://mof3.sora.org',
-  'wss://mof2.sora.org',
   'wss://ws.mof.sora.org',
-  'wss://sora.api.onfinality.io/public-ws',
 ];
