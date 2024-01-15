@@ -1,9 +1,4 @@
-import {
-  BadGatewayException,
-  BadRequestException,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
 import { CurrencyRateRepository } from './currency-rate.repository';
 import { HttpService } from '@nestjs/axios';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -13,7 +8,6 @@ import { CURRENCY_RATES_API_URL } from './currency-rate.const';
 import { CurrencyRateDto } from './dto/currency-rate.dto';
 import { CurrencyRateToEntityMapper } from './mapper/currency-rate-to-entity.mapper';
 import { CurrencyRate } from './entity/currency-rate.entity';
-import { CurrencyDto } from './dto/currency.dto';
 
 @Injectable()
 export class CurrencyRateService {
@@ -25,18 +19,8 @@ export class CurrencyRateService {
     private readonly currencyRateMapper: CurrencyRateToEntityMapper,
   ) {}
 
-  public async getCurrencyRate(
-    currencyDto: CurrencyDto,
-  ): Promise<CurrencyRate> {
-    const currencyRate = await this.currencyRateRepo.findCurrencyRate(
-      currencyDto.currency,
-    );
-
-    if (!currencyRate) {
-      throw new BadRequestException('Currency rate does not exist.');
-    }
-
-    return currencyRate;
+  public getCurrencyRate(currency: string): Promise<CurrencyRate> {
+    return this.currencyRateRepo.findCurrencyRate(currency);
   }
 
   @Cron(CronExpression.EVERY_4_HOURS)
@@ -67,7 +51,7 @@ export class CurrencyRateService {
   }
 
   private logWarning(error: AxiosError): void {
-    this.logger.warn(
+    this.logger.error(
       `An error happened while contacting currency rates API!
       msg: ${error.message}, code: ${error.code}, cause: ${error.cause}`,
     );

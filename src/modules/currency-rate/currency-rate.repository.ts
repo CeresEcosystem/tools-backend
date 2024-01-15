@@ -11,7 +11,7 @@ export class CurrencyRateRepository {
   ) {}
 
   public findCurrencyRate(currency: string): Promise<CurrencyRate> {
-    return this.repository.findOneBy({ currency });
+    return this.repository.findOneByOrFail({ currency });
   }
 
   public upsertAll(currencyRates: CurrencyRate[]): void {
@@ -28,12 +28,12 @@ export class CurrencyRateRepository {
     });
 
     if (!existingPair) {
-      this.repository.insert(currencyRate);
+      await this.repository.insert(currencyRate);
 
       return;
     }
 
-    this.repository.update(
+    await this.repository.update(
       {
         currency: currencyRate.currency,
         rate: currencyRate.rate,

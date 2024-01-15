@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class createCurrencyRate1705061810368 implements MigrationInterface {
-  name = 'createCurrencyRate1705061810368';
+export class createCurrencyRate1705323354384 implements MigrationInterface {
+  name = 'createCurrencyRate1705323354384';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -9,7 +9,7 @@ export class createCurrencyRate1705061810368 implements MigrationInterface {
       (\`id\` int NOT NULL AUTO_INCREMENT, 
       \`currency\` varchar(255) NOT NULL, 
       \`rate\` float NOT NULL, 
-      \`updated_at\` datetime NOT NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
+      \`updated_at\` timestamp NOT NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
     );
   }
 

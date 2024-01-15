@@ -11,6 +11,6 @@ export class CurrencyRate {
   @Column('float', { name: 'rate' })
   rate: number;
 
-  @Column({ name: 'updated_at' })
+  @Column('timestamp', { name: 'updated_at' })
   updatedAt: Date;
 }
