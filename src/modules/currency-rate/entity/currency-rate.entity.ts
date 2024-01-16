@@ -5,7 +5,7 @@ export class CurrencyRate {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'currency' })
+  @Column({ name: 'currency', length: 3, unique: true })
   currency: string;
 
   @Column('float', { name: 'rate' })

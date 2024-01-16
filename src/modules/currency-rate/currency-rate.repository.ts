@@ -35,8 +35,7 @@ export class CurrencyRateRepository {
 
     await this.repository.update(
       {
-        currency: currencyRate.currency,
-        rate: currencyRate.rate,
+        id: currencyRate.id,
       },
       currencyRate,
     );
