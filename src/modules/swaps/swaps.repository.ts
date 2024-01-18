@@ -69,7 +69,7 @@ export class SwapRepository {
       { assetIds },
     );
 
-    const whereClauses = this.getWhereClauses(swapOptions);
+    const whereClauses = this.getWhereClauses(swapOptions, assetIds);
 
     whereClauses.forEach((whereClause) => {
       queryBuilder.andWhere(whereClause.where, whereClause.parameters);
@@ -107,7 +107,10 @@ export class SwapRepository {
     });
   }
 
-  private getWhereClauses(swapOptions: SwapOptionsDto): WhereClause[] {
+  private getWhereClauses(
+    swapOptions: SwapOptionsDto,
+    assetIds?: string[],
+  ): WhereClause[] {
     const whereClause: WhereClause[] = [];
 
     if (swapOptions.dateFrom || swapOptions.dateTo) {
@@ -116,24 +119,46 @@ export class SwapRepository {
       );
     }
 
-    whereClause.push({
-      where: `((swap.assetInputAmount >= :minAmount AND swap.assetInputAmount <= :maxAmount) 
-        OR (swap.assetOutputAmount >= :minAmount AND swap.assetOutputAmount <= :maxAmount))`,
-      parameters: {
-        minAmount: swapOptions.minAmount,
-        maxAmount: swapOptions.maxAmount,
-      },
-    });
-
     if (swapOptions.assetId) {
       whereClause.push({
-        where:
-          '(swap.inputAssetId = :assetId OR swap.outputAssetId = :assetId)',
-        parameters: { assetId: swapOptions.assetId },
+        where: '(swap.inputAssetId = :token OR swap.outputAssetId = :token)',
+        parameters: { token: swapOptions.assetId },
       });
     }
 
+    whereClause.push(this.getAmountWhereClause(swapOptions, assetIds));
+
     return whereClause;
+  }
+
+  private getAmountWhereClause(
+    swapOptions: SwapOptionsDto,
+    assetIds?: string[],
+  ): WhereClause {
+    const queryForMultipleTokens = !assetIds || assetIds?.length > 1;
+
+    if (queryForMultipleTokens) {
+      return {
+        where: `((swap.assetInputAmount >= :minAmount AND swap.assetInputAmount <= :maxAmount) 
+        OR (swap.assetOutputAmount >= :minAmount AND swap.assetOutputAmount <= :maxAmount))`,
+        parameters: {
+          minAmount: swapOptions.minAmount,
+          maxAmount: swapOptions.maxAmount,
+        },
+      };
+    }
+
+    return {
+      where: `((swap.inputAssetId = :assetId 
+        AND swap.assetInputAmount >= :minAmount AND swap.assetInputAmount <= :maxAmount)
+      OR (swap.outputAssetId = :assetId 
+        AND swap.assetOutputAmount >= :minAmount AND swap.assetOutputAmount <= :maxAmount))`,
+      parameters: {
+        assetId: assetIds[0],
+        minAmount: swapOptions.minAmount,
+        maxAmount: swapOptions.maxAmount,
+      },
+    };
   }
 
   private validateDates(dateFrom?: Date, dateTo?: Date): WhereClause {

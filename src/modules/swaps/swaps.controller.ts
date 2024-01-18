@@ -12,21 +12,6 @@ import { SwapTokensDto } from './dto/swap-tokens.dto';
 export class SwapsController {
   constructor(private swapService: SwapService) {}
 
-  @Get()
-  public getSwapsByTokens(
-    @Query() pageOptions: PageOptionsDto,
-    @Query() swapOptions: SwapOptionsDto,
-    @Query('token') tokens: string[],
-  ): Promise<PageDto<SwapDto>> {
-    const tokensArr = Array.isArray(tokens) ? tokens : [tokens];
-
-    return this.swapService.findSwapsByTokens(
-      pageOptions,
-      swapOptions,
-      tokensArr,
-    );
-  }
-
   @Post()
   public getSwapsForTokens(
     @Body() swapTokens: SwapTokensDto,
