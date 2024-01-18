@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CHART_CONFIG } from './trading.const';
 import { SymbolChartSearchDto } from './dto/symbol-chart-search.dto';
@@ -10,6 +10,7 @@ import { TokenPriceToSymbolSearchMapper } from './mapper/token-price-to-symbol-s
 import { SymbolChartMapper } from './mapper/symbol-to-chart-dto.mapper';
 import { SymbolChartDto } from './dto/symbol-chart-dto';
 import { ChartConfigDto } from './dto/chart-config-dto';
+import { ThrottlerBehindProxyGuard } from 'src/guards/throttler-behind-proxy.guard';
 
 @Controller('trading')
 @ApiTags('Trading Controller')
@@ -46,6 +47,7 @@ export class TradingController {
 
   // TODO: Define return type
   @Get('history')
+  @UseGuards(ThrottlerBehindProxyGuard)
   public getTokenHistoricPrices(
     @Query() queryParams: TokenPricesQuery,
   ): unknown {
