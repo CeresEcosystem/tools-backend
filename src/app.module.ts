@@ -39,7 +39,7 @@ import { CurrencyRateModule } from './modules/currency-rate/currency-rate.module
     }),
     ThrottlerModule.forRoot([
       {
-        ttl: 60,
+        ttl: 60000,
         limit: 10,
       },
     ]),
