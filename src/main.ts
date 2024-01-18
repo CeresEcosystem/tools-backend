@@ -5,8 +5,22 @@ import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { SwaggerModule, DocumentBuilder, OpenAPIObject } from '@nestjs/swagger';
 import { NotFoundExceptionFilter } from './filters/not-found-exception.filter';
 import { TelegramLogger } from './modules/logger/telegram-logger';
+import * as Sentry from '@sentry/node';
+import { ProfilingIntegration } from '@sentry/profiling-node';
 
 const DEV_ENV = 'dev';
+
+Sentry.init({
+  enableTracing: true,
+  dsn: process.env.SENTRY_DSN,
+  integrations: [
+    new Sentry.Integrations.Http({ tracing: true }),
+    new ProfilingIntegration(),
+  ],
+  tracesSampleRate: 1.0, //  Capture 100% of the transactions
+  // Set sampling rate for profiling - this is relative to tracesSampleRate
+  profilesSampleRate: 1.0,
+});
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, {
@@ -39,6 +53,9 @@ async function bootstrap(): Promise<void> {
     const swaggerDoc = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup('api/swagger', app, swaggerDoc);
   }
+
+  app.use(Sentry.Handlers.requestHandler());
+  app.use(Sentry.Handlers.tracingHandler());
 
   await app.listen(process.env.PORT);
 }

@@ -7,6 +7,7 @@ import { TrackerService } from './tracker.service';
 import { FPNumber } from '@sora-substrate/math';
 import { DENOMINATOR } from './tracker.constants';
 import { SoraClient } from '../sora-client/sora-client';
+import * as Sentry from '@sentry/node';
 
 const DAY = 14400;
 
@@ -22,6 +23,11 @@ export class TrackerPswapSync {
 
   @Cron(CronExpression.EVERY_10_MINUTES)
   async fetchTrackerData(): Promise<void> {
+    const transaction = Sentry.startTransaction({
+      op: 'fetchTrackerDataPswap',
+      name: 'Fetch Tracker Data PSWAP',
+    });
+
     this.logger.log('Start fetching PSWAP burning data.');
     const soraApi: any = await this.soraClient.getSoraApi();
 
@@ -42,7 +48,7 @@ export class TrackerPswapSync {
       for (const elem of distributions) {
         retStr = blockNum.toString();
         for (const x of elem) {
-          retStr = `${retStr },${ new FPNumber(x).div(DENOMINATOR).toString()}`;
+          retStr = `${retStr},${new FPNumber(x).div(DENOMINATOR).toString()}`;
         }
         retStr = retStr.slice(0, -1);
         if (retStr !== '') {
@@ -62,6 +68,8 @@ export class TrackerPswapSync {
     await this.trackerService.upsert(this.mapper.toEntities(burningData));
 
     this.logger.log('Fetching of PSWAP burning data was successful!');
+
+    transaction.finish();
   }
 
   private async getAllBlocksWithDistribution(

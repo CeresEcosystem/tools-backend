@@ -3,6 +3,7 @@ import { Cron } from '@nestjs/schedule';
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import { CeresClient } from '../ceres-client/ceres-client';
 import { PairsService } from './pairs.service';
+import * as Sentry from '@sentry/node';
 
 @Injectable()
 export class PairsLockerSync {
@@ -15,6 +16,11 @@ export class PairsLockerSync {
 
   @Cron(CronExpression.EVERY_2_MINUTES)
   async fetchLiquidityLocks(): Promise<void> {
+    const transaction = Sentry.startTransaction({
+      op: 'fetchLiquidityLocks',
+      name: 'Fetch Liquidity Locks',
+    });
+
     this.logger.log('Start fetching liquidity locks.');
 
     const liquidityLocks = await this.ceresClient.getLiquidityLocks();
@@ -30,5 +36,7 @@ export class PairsLockerSync {
     });
 
     this.logger.log('Fetching of liquidity locks was successful!');
+
+    transaction.finish();
   }
 }

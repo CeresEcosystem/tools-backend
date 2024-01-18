@@ -1,13 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { FPNumber } from '@sora-substrate/math';
-
 import { TokenPriceBcDto } from './dto/token-price-bc.dto';
 import { TokenPriceService } from './token-price.service';
-
 import * as whitelist from 'src/utils/files/whitelist.json';
 import * as synthetics from 'src/utils/files/synthetics.json';
 import { SoraClient } from '../sora-client/sora-client';
+import * as Sentry from '@sentry/node';
 
 const DENOMINATOR = FPNumber.fromNatural(10 ** 18);
 const DAI_ADDRESS =
@@ -30,6 +29,11 @@ export class TokenPriceSync {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async fetchTokenPrices(): Promise<void> {
+    const transaction = Sentry.startTransaction({
+      op: 'fetchTokenPrices',
+      name: 'Fetch Token Prices',
+    });
+
     this.logger.log('Start fetching tokens prices.');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
@@ -98,6 +102,8 @@ export class TokenPriceSync {
     }
 
     this.logger.log('Fetching of tokens prices was successful!');
+
+    transaction.finish();
   }
 
   private async loadTokens(): Promise<void> {

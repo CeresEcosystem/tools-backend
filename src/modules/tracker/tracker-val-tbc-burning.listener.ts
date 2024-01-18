@@ -8,6 +8,7 @@ import { FPNumber } from '@sora-substrate/math';
 import { TrackerService } from './tracker.service';
 import { ValTbcTrackerToEntityMapper } from './mapper/val-tbc-tracker-to-entity.mapper';
 import { SoraClient } from '../sora-client/sora-client';
+import * as Sentry from '@sentry/node';
 
 @Injectable()
 export class TrackerValTbcBurningsListener {
@@ -27,6 +28,11 @@ export class TrackerValTbcBurningsListener {
     const soraApi: any = await this.soraClient.getSoraApi();
 
     soraApi.rpc.chain.subscribeNewHeads(async (header) => {
+      const transaction = Sentry.startTransaction({
+        op: 'valTbcBurningListener',
+        name: 'VAL TBC burning listener',
+      });
+
       const blockHash = await soraApi.rpc.chain.getBlockHash(header.number);
       const block = await soraApi.at(blockHash);
       const events = await block.query.system.events();
@@ -63,6 +69,8 @@ export class TrackerValTbcBurningsListener {
 
         await this.trackerService.upsert([this.mapper.toEntity(burningData)]);
       }
+
+      transaction.finish();
     });
   }
 }

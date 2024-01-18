@@ -6,6 +6,7 @@ import { Swap } from './entity/swaps.entity';
 import { SwapGateway } from './swaps.gateway';
 import { SwapEntityToDto } from './mapper/swap-entity-to-dto.mapper';
 import { SoraClient } from '../sora-client/sora-client';
+import * as Sentry from '@sentry/node';
 
 @Injectable()
 export class SwapListener {
@@ -25,6 +26,15 @@ export class SwapListener {
     const soraApi = await this.soraClient.getSoraApi();
 
     soraApi.query.system.events(async (events) => {
+      const transaction = Sentry.startTransaction({
+        op: 'swapListenerEvents',
+        name: 'Swap Listener Events',
+      });
+
+      this.logger.log(
+        `Swap listener events received, count: ${events.length}.`,
+      );
+
       for (const record of events) {
         const { event } = record;
 
@@ -35,7 +45,6 @@ export class SwapListener {
           continue;
         }
 
-        this.logger.log('Start fetching token swaps.');
         const swap = new Swap();
         const eventData = event.data.toHuman();
         const [
@@ -59,7 +68,9 @@ export class SwapListener {
           await this.swapRepository.save(swap);
           const swapDto = this.swapMapper.toDto(swap);
           this.swapGateway.onSwap(swapDto);
-          this.logger.log('Fetching token swaps was successful.');
+          this.logger.log(
+            `Persisted swap - input asset: ${swapDto.inputAssetId}, output asset: ${swapDto.outputAssetId}.`,
+          );
         } catch (error) {
           if (error instanceof QueryFailedError) {
             const { driverError } = error;
@@ -69,6 +80,10 @@ export class SwapListener {
           }
         }
       }
+
+      this.logger.log('Swap listener events processed.');
+
+      transaction.finish();
     });
   }
 }
