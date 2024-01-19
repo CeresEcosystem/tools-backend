@@ -145,47 +145,39 @@ export class ChronoPriceService {
     to: number,
     countback: number,
   ): { query: string; params: string[] } {
-    const params = [this.resolveResolution(resolution), symbol];
+    const params = [
+      this.resolveResolution(resolution),
+      symbol,
+      from.toString(),
+      to.toString(),
+      countback.toString(),
+    ];
 
-    let query = `
-        select array_agg(t) as t, array_agg(o) as o, array_agg(c) as c, 
-               array_agg(h) as h, array_agg(l) as l from (
-            select ts as t, open as o, close as c, high as h, low as l, 0 as v from (
-                select * from (
-                    select extract(epoch from day) as ts, open, close, high, low from (
-                        SELECT time_bucket(cast($1 as interval), created_at) AS day,
-                        first(price, extract(epoch from created_at)) AS open,
-                        last(price, extract(epoch from created_at)) AS close,
-                        max(price) AS high,
-                        min(price) AS low
-                        FROM prices
-                        WHERE token = $2
-                        and created_at >= '2021-10-22'
-                        GROUP BY day
-                        ORDER BY day asc
-                    ) as t1
-                    where day >= '2021-10-22'
-                ) as t2
-                where `;
-
-    if (countback) {
-      query += `ts <= $3
-                order by ts desc
-                limit $4`;
-
-      params.push(to.toString());
-      params.push(countback.toString());
-    } else {
-      query += `ts between $3 and $4
-                order by ts desc`;
-
-      params.push(from.toString());
-      params.push(to.toString());
-    }
-
-    query += `) as t3
-            order by ts asc
-        ) as t4;`;
+    const query = `
+      SELECT 
+          array_agg(ts) AS t, 
+          array_agg(open) AS o, array_agg(close) AS c, 
+          array_agg(high) AS h, array_agg(low) AS l
+      FROM (
+          SELECT 
+              extract(epoch from period) AS ts, 
+              open, close, high, low
+          FROM (
+              SELECT 
+                  time_bucket(cast($1 as interval), created_at) AS period,
+                  first(price, created_at) AS open,
+                  last(price, created_at) AS close,
+                  max(price) AS high,
+                  min(price) AS low
+              FROM prices
+              WHERE 
+                  token = $2
+                  AND created_at >= TO_TIMESTAMP($3)
+                  AND created_at < TO_TIMESTAMP($4)
+              GROUP BY period
+          ) AS t1
+          ORDER BY ts ASC LIMIT $5
+      ) AS t2;`;
 
     return {
       query,
