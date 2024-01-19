@@ -60,7 +60,7 @@ export class PairsLiquidityService {
   }
 
   @Cron(CronExpression.EVERY_HOUR)
-  private async updatePairsLiquidity(): Promise<void> {
+  async updatePairsLiquidity(): Promise<void> {
     this.logger.log('Start updating pairs liquidity');
 
     const pairs = await this.pairsService.findAll();
@@ -71,6 +71,8 @@ export class PairsLiquidityService {
       const pairLiqChange = new PairPeriodicLiquidityChangeEntity();
       pairLiqChange.baseAssetSymbol = pair.baseAsset;
       pairLiqChange.tokenAssetSymbol = pair.token;
+      pairLiqChange.baseAssetLiq = pair.baseAssetLiq;
+      pairLiqChange.tokenAssetLiq = pair.targetAssetLiq;
       pairLiqChange.liquidity = pair.liquidity;
       pairLiqChange.updatedAt = new Date();
       this.periodicLiqChangeRepo.savePeriodicLiqChange(pairLiqChange);
