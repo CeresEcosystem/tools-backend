@@ -9,12 +9,21 @@ export class PairPeriodicLiquidityChangeEntityToDtoMapper extends BaseDtoMapper<
   toDto(
     entity: PairPeriodicLiquidityChangeEntity,
   ): PairPeriodicLiquidityChangeDto {
-    const { baseAssetSymbol, tokenAssetSymbol, liquidity, updatedAt } = entity;
+    const {
+      baseAssetSymbol,
+      tokenAssetSymbol,
+      liquidity,
+      baseAssetLiq,
+      tokenAssetLiq,
+      updatedAt,
+    } = entity;
 
     return {
       baseAssetSymbol,
       tokenAssetSymbol,
       liquidity,
+      baseAssetLiq,
+      tokenAssetLiq,
       updatedAt,
     };
   }
