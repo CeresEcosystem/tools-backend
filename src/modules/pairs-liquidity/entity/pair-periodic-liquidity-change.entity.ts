@@ -14,6 +14,12 @@ export class PairPeriodicLiquidityChangeEntity {
   @Column('float', { name: 'liquidity' })
   liquidity: number;
 
+  @Column('float', { name: 'base_asset_liquidity' })
+  baseAssetLiq: number;
+
+  @Column('float', { name: 'token_asset_liquidity' })
+  tokenAssetLiq: number;
+
   @Column('timestamp', { name: 'updated_at' })
   updatedAt: Date;
 }
