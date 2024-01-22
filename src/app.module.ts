@@ -13,7 +13,7 @@ import { PairsModule } from './modules/pairs/pairs.module';
 import { TrackerModule } from './modules/tracker/tracker.module';
 import { TokenPriceModule } from './modules/token-price/token-price.module';
 import { RewardsModule } from './modules/rewards/rewards.module';
-import { MailerModule } from './modules/mailer/mailer.module';
+// import { MailerModule } from './modules/mailer/mailer.module';
 import { PortfolioModule } from './modules/portfolio/portfolio.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { BannerModule } from './modules/banner/banner.module';
@@ -73,7 +73,7 @@ import { CurrencyRateModule } from './modules/currency-rate/currency-rate.module
     TrackerModule,
     TokenPriceModule,
     RewardsModule,
-    MailerModule,
+    // MailerModule,
     PortfolioModule,
     BannerModule,
     TokenOrderModule,
