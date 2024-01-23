@@ -50,7 +50,7 @@ export class TokenHoldersService {
     transaction.finish();
   }
 
-  private async getTokenHolders(): Promise<string[]> {
+  private async getTokenHolders(): Promise<Set<string>> {
     this.logger.log('Start getTokenHolders function - get all unique holders');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
@@ -61,9 +61,11 @@ export class TokenHoldersService {
 
     const allStorageKeys = allStorageKeysSerialized.toHuman() as string[];
 
-    const uniqueHolders: string[] = [];
+    const uniqueHolders = new Set<string>();
 
-    this.logger.log('Start iterating through all holders');
+    this.logger.log(
+      `Start iterating all storage keys for each token, tokens: ${allTokens.length}, keys: ${allStorageKeys.length}`,
+    );
     allTokens.forEach((token) => {
       allStorageKeys
         .filter((key) => key.includes(token.assetId.slice(2)))
@@ -73,12 +75,12 @@ export class TokenHoldersService {
             69,
           );
 
-          if (!uniqueHolders.includes(address)) {
-            uniqueHolders.push(address);
+          if (!uniqueHolders.has(address)) {
+            uniqueHolders.add(address);
           }
         });
     });
-    this.logger.log('Iteration complete - got all unique holders');
+    this.logger.log('Iterating storage keys complete - got all unique holders');
 
     return uniqueHolders;
   }
@@ -90,10 +92,11 @@ export class TokenHoldersService {
     const holders = await this.getTokenHolders();
 
     this.logger.log(
-      'Iterate all unique holders and get their assets and balances',
+      `Iterate all unique holders and get their portfolios, number of unique holders: ${holders.size}`,
     );
+
     const holdersAndAssets = await Promise.all(
-      holders.map(async (holder) => {
+      Array.from(holders).map(async (holder) => {
         const portfolio = await soraApi.query.tokens.accounts.entries(holder);
 
         return portfolio.map((portfolioAsset) => {
@@ -109,11 +112,16 @@ export class TokenHoldersService {
         });
       }),
     );
+
     this.logger.log(
       'Iteration complete - got all unique holders assets and balances',
     );
 
-    this.logger.log('Map an array that holds all holderEntities');
+    this.logger.log(
+      `Map an array that holds all holderEntities. Holders and assets array size: ${
+        holdersAndAssets.flat().length
+      }`,
+    );
     const holderEntities = holdersAndAssets.flat().map((value) => {
       const holderEntity = new Holder();
       holderEntity.holder = value.holder;
