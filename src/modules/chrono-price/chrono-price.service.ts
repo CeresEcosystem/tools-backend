@@ -175,8 +175,10 @@ export class ChronoPriceService {
                   AND created_at >= TO_TIMESTAMP($3)
                   AND created_at < TO_TIMESTAMP($4)
               GROUP BY period
+              ORDER BY period DESC
+              LIMIT $5 
           ) AS t1
-          ORDER BY ts ASC LIMIT $5
+          ORDER BY ts ASC
       ) AS t2;`;
 
     return {
