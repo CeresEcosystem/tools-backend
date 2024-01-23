@@ -31,7 +31,7 @@ export class SwapListener {
         name: 'Swap Listener Events',
       });
 
-      this.logger.log(
+      this.logger.debug(
         `Swap listener events received, count: ${events.length}.`,
       );
 
@@ -65,12 +65,10 @@ export class SwapListener {
         swap.swappedAt = new Date();
 
         try {
-          await this.swapRepository.save(swap);
-          const swapDto = this.swapMapper.toDto(swap);
+          const savedSwap = await this.swapRepository.save(swap);
+          const swapDto = this.swapMapper.toDto(savedSwap);
           this.swapGateway.onSwap(swapDto);
-          this.logger.log(
-            `Persisted swap - input asset: ${swapDto.inputAssetId}, output asset: ${swapDto.outputAssetId}.`,
-          );
+          this.logger.debug(`Persisted swap ${savedSwap.id}`);
         } catch (error) {
           if (error instanceof QueryFailedError) {
             const { driverError } = error;
@@ -81,7 +79,7 @@ export class SwapListener {
         }
       }
 
-      this.logger.log('Swap listener events processed.');
+      this.logger.debug('Swap listener events processed.');
 
       transaction.finish();
     });
