@@ -8,6 +8,9 @@ export class TokenPricesQuery {
   resolution: string;
 
   @IsNumberString()
+  from: number;
+
+  @IsNumberString()
   to: number;
 
   @IsNumberString()

@@ -52,6 +52,7 @@ export class TradingController {
     return this.chronoPriceService.getPriceForChart(
       queryParams.symbol,
       queryParams.resolution,
+      queryParams.from,
       queryParams.to,
       queryParams.countback,
     );

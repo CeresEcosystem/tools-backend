@@ -58,10 +58,17 @@ export class ChronoPriceService {
   public async getPriceForChart(
     symbol: string,
     resolution: string,
+    from: number,
     to: number,
     countback: number,
   ): Promise<unknown> {
-    const params = this.buildQueryParams(symbol, resolution, to, countback);
+    const params = this.buildQueryParams(
+      symbol,
+      resolution,
+      from,
+      to,
+      countback,
+    );
 
     const [tokenPrices] = await this.dataSource.query(
       PRICE_HISTORY_QUERY,
@@ -138,51 +145,17 @@ export class ChronoPriceService {
   private buildQueryParams(
     symbol: string,
     resolution: string,
+    from: number,
     to: number,
     countback: number,
   ): string[] {
-    const fromRecalculated = this.calculateFromTimestamp(
-      to,
-      countback,
-      resolution,
-    );
-
     return [
       this.resolveResolution(resolution),
       symbol,
-      fromRecalculated.toString(),
+      from.toString(),
       to.toString(),
       countback.toString(),
     ];
-  }
-
-  private calculateFromTimestamp(
-    to: number,
-    countback: number,
-    resolution: string,
-  ): number {
-    const normalizedResMinutes = this.normalizeResolution(
-      resolution,
-      countback,
-    );
-
-    if (countback > 2) {
-      return to - 192 * normalizedResMinutes * 60;
-    }
-
-    return to - 3 * normalizedResMinutes * 60;
-  }
-
-  private normalizeResolution(resolution: string, countback: number): number {
-    if (resolution === '1D') {
-      return 24 * 60;
-    }
-
-    if (resolution === '60' && countback > 1200) {
-      return 4 * 60;
-    }
-
-    return Number(resolution);
   }
 
   private resolveResolution(resolution: string): string {
