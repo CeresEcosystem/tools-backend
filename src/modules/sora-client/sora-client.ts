@@ -8,37 +8,43 @@ export class SoraClient {
   private readonly logger = new Logger(SoraClient.name);
 
   private readonly provider = new WsProvider(PROVIDERS);
-  private soraApi: ApiPromise;
-  private initInProgress = false;
+  // private soraApi: ApiPromise;
+  // private initInProgress = false;
 
-  constructor() {
-    this.initSoraApi();
-  }
+  // constructor() {
+  //   this.initSoraApi();
+  // }
 
-  public async getSoraApi(): Promise<ApiPromise> {
-    await this.waitIfInitInProgress();
-
-    this.logger.debug(this.soraApi.stats);
-
-    return this.soraApi;
-  }
-
-  private async initSoraApi(): Promise<void> {
-    this.initInProgress = true;
-    this.logger.log('Initializing Sora API.');
-
-    this.soraApi = await ApiPromise.create(
+  public getSoraApi(): Promise<ApiPromise> {
+    return ApiPromise.create(
       options({ provider: this.provider, noInitWarn: true }),
     );
-
-    this.logger.log('Initialized Sora API.');
-    this.initInProgress = false;
   }
 
-  private async waitIfInitInProgress(): Promise<void> {
-    while (this.initInProgress) {
-      // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-  }
+  // public async getSoraApi(): Promise<ApiPromise> {
+  //   await this.waitIfInitInProgress();
+
+  //   this.logger.debug(this.soraApi.stats);
+
+  //   return this.soraApi;
+  // }
+
+  // private async initSoraApi(): Promise<void> {
+  //   this.initInProgress = true;
+  //   this.logger.log('Initializing Sora API.');
+
+  //   this.soraApi = await ApiPromise.create(
+  //     options({ provider: this.provider, noInitWarn: true }),
+  //   );
+
+  //   this.logger.log('Initialized Sora API.');
+  //   this.initInProgress = false;
+  // }
+
+  // private async waitIfInitInProgress(): Promise<void> {
+  //   while (this.initInProgress) {
+  //     // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+  //     await new Promise((resolve) => setTimeout(resolve, 100));
+  //   }
+  // }
 }
