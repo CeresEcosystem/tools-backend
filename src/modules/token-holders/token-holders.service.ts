@@ -47,11 +47,11 @@ export class TokenHoldersService {
     await this.upsertHolderTokensAndBalances();
     await this.holderRepo.deleteHoldersWithZeroBalance();
     this.logger.log('Updating holders balances successful.');
-
     transaction.finish();
   }
 
   private async getTokenHolders(): Promise<string[]> {
+    this.logger.log('Start getTokenHolders function - get all unique holders');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
     const allTokens = await this.relevantPricesService.findAllRelevantTokens();
@@ -61,34 +61,37 @@ export class TokenHoldersService {
 
     const allStorageKeys = allStorageKeysSerialized.toHuman() as string[];
 
-    const allHolders = allTokens.map((token) => {
-      const holders = allStorageKeys
+    const uniqueHolders: string[] = [];
+
+    this.logger.log('Start iterating through all holders');
+    allTokens.forEach((token) => {
+      allStorageKeys
         .filter((key) => key.includes(token.assetId.slice(2)))
-        .map((key) => {
-          const addresses = this.keyring.encodeAddress(
+        .forEach((key) => {
+          const address = this.keyring.encodeAddress(
             `0x${key.substring(98, 162)}`,
             69,
           );
 
-          return addresses;
+          if (!uniqueHolders.includes(address)) {
+            uniqueHolders.push(address);
+          }
         });
-
-      return holders;
     });
+    this.logger.log('Iteration complete - got all unique holders');
 
-    const holdersSet = new Set<string>();
-    allHolders.flat().forEach((holder) => {
-      holdersSet.add(holder);
-    });
-
-    return Array.from(holdersSet);
+    return uniqueHolders;
   }
 
   private async upsertHolderTokensAndBalances(): Promise<void> {
+    this.logger.log('Start upserting token holders and their balances');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
     const holders = await this.getTokenHolders();
 
+    this.logger.log(
+      'Iterate all unique holders and get their assets and balances',
+    );
     const holdersAndAssets = await Promise.all(
       holders.map(async (holder) => {
         const portfolio = await soraApi.query.tokens.accounts.entries(holder);
@@ -106,7 +109,11 @@ export class TokenHoldersService {
         });
       }),
     );
+    this.logger.log(
+      'Iteration complete - got all unique holders assets and balances',
+    );
 
+    this.logger.log('Map an array that holds all holderEntities');
     const holderEntities = holdersAndAssets.flat().map((value) => {
       const holderEntity = new Holder();
       holderEntity.holder = value.holder;
@@ -115,7 +122,10 @@ export class TokenHoldersService {
 
       return holderEntity;
     });
+    this.logger.log('Array that holds holderEntities created');
 
+    this.logger.log('upsert DB');
     await this.holderRepo.upsertHolders(holderEntities);
+    this.logger.log('DB upserted');
   }
 }
