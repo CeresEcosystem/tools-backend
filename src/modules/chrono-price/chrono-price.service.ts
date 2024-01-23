@@ -8,6 +8,7 @@ import Big from 'big.js';
 import { subtractHours } from 'src/utils/date-utils';
 import { PriceChangeDto } from './dto/price-change.dto';
 import { TokenPrice } from '../token-price/entity/token-price.entity';
+import { PRICE_HISTORY_QUERY } from './chrono-price.const';
 
 @Injectable()
 export class ChronoPriceService {
@@ -57,19 +58,15 @@ export class ChronoPriceService {
   public async getPriceForChart(
     symbol: string,
     resolution: string,
-    from: number,
     to: number,
     countback: number,
   ): Promise<unknown> {
-    const { query, params } = this.buildQuery(
-      symbol,
-      resolution,
-      from,
-      to,
-      countback,
-    );
+    const params = this.buildQueryParams(symbol, resolution, to, countback);
 
-    const [tokenPrices] = await this.dataSource.query(query, params);
+    const [tokenPrices] = await this.dataSource.query(
+      PRICE_HISTORY_QUERY,
+      params,
+    );
 
     if (!tokenPrices || !tokenPrices.t) {
       return {
@@ -138,53 +135,54 @@ export class ChronoPriceService {
     });
   }
 
-  private buildQuery(
+  private buildQueryParams(
     symbol: string,
     resolution: string,
-    from: number,
     to: number,
     countback: number,
-  ): { query: string; params: string[] } {
-    const params = [
+  ): string[] {
+    const fromRecalculated = this.calculateFromTimestamp(
+      to,
+      countback,
+      resolution,
+    );
+
+    return [
       this.resolveResolution(resolution),
       symbol,
-      from.toString(),
+      fromRecalculated.toString(),
       to.toString(),
       countback.toString(),
     ];
+  }
 
-    const query = `
-      SELECT 
-          array_agg(ts) AS t, 
-          array_agg(open) AS o, array_agg(close) AS c, 
-          array_agg(high) AS h, array_agg(low) AS l
-      FROM (
-          SELECT 
-              extract(epoch from period) AS ts, 
-              open, close, high, low
-          FROM (
-              SELECT 
-                  time_bucket(cast($1 as interval), created_at) AS period,
-                  first(price, created_at) AS open,
-                  last(price, created_at) AS close,
-                  max(price) AS high,
-                  min(price) AS low
-              FROM prices
-              WHERE 
-                  token = $2
-                  AND created_at >= TO_TIMESTAMP($3)
-                  AND created_at < TO_TIMESTAMP($4)
-              GROUP BY period
-              ORDER BY period DESC
-              LIMIT $5 
-          ) AS t1
-          ORDER BY ts ASC
-      ) AS t2;`;
+  private calculateFromTimestamp(
+    to: number,
+    countback: number,
+    resolution: string,
+  ): number {
+    const normalizedResMinutes = this.normalizeResolution(
+      resolution,
+      countback,
+    );
 
-    return {
-      query,
-      params,
-    };
+    if (countback > 2) {
+      return to - 192 * normalizedResMinutes * 60;
+    }
+
+    return to - 3 * normalizedResMinutes * 60;
+  }
+
+  private normalizeResolution(resolution: string, countback: number): number {
+    if (resolution === '1D') {
+      return 24 * 60;
+    }
+
+    if (resolution === '60' && countback > 1200) {
+      return 4 * 60;
+    }
+
+    return Number(resolution);
   }
 
   private resolveResolution(resolution: string): string {
