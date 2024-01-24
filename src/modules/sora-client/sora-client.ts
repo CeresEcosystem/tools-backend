@@ -18,8 +18,6 @@ export class SoraClient {
   public async getSoraApi(): Promise<ApiPromise> {
     await this.waitIfInitInProgress();
 
-    this.logger.debug(this.soraApi.stats);
-
     return this.soraApi;
   }
 

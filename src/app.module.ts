@@ -55,6 +55,7 @@ import { CurrencyRateModule } from './modules/currency-rate/currency-rate.module
       password: process.env.MYSQL_PASSWORD,
       database: process.env.MYSQL_DB_NAME,
       autoLoadEntities: true,
+      logging: Boolean(process.env.LOG_DEBUG),
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -65,6 +66,7 @@ import { CurrencyRateModule } from './modules/currency-rate/currency-rate.module
       password: process.env.PG_PASSWORD,
       database: process.env.PG_DB_NAME,
       autoLoadEntities: true,
+      logging: Boolean(process.env.LOG_DEBUG),
     }),
     TradingModule,
     TelegramLoggerModule,

@@ -38,6 +38,9 @@ export class TrackerValSync {
       'FEES',
     );
     const startBlock = lastSavedBlock + 1;
+
+    this.logger.debug(`StartBlock: ${startBlock}`);
+
     const headBlock = await soraApi.query.system.number();
 
     for (let blockNum = startBlock; blockNum <= headBlock; blockNum += 1) {
@@ -46,6 +49,8 @@ export class TrackerValSync {
       let events = await apiAt.query.system.events();
       let found = false;
       events = events.toHuman();
+
+      this.logger.debug(`Events array count: ${events.length}`);
 
       events.forEach((e) => {
         const module = e.event.section;

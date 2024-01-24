@@ -36,10 +36,17 @@ export class TrackerPswapSync {
       'PSWAP',
       'FEES',
     );
+
+    this.logger.debug(`StartBlock: ${startBlock}`);
+
     const headBlock = await soraApi.query.system.number();
     const blocksWithDistribution = await this.getAllBlocksWithDistribution(
       startBlock,
       headBlock,
+    );
+
+    this.logger.debug(
+      `BlocksWithDistribution array size: ${blocksWithDistribution.length}`,
     );
 
     for (const blockNum of blocksWithDistribution) {
@@ -103,6 +110,8 @@ export class TrackerPswapSync {
     let events = await apiAt.query.system.events();
     events = events.toHuman();
 
+    this.logger.debug(`Events array count: ${events.length}`);
+
     events.forEach((e, idx) => {
       const module = e.event.section;
       const event = e.event.method;
@@ -124,6 +133,8 @@ export class TrackerPswapSync {
             new FPNumber(grossBurn).toNumber() -
             new FPNumber(remintedParliament).toNumber() -
             new FPNumber(remintedLp).toNumber();
+
+          this.logger.debug(`Adding event - xorSpent: ${xorSpent}`);
 
           result.push([
             xorSpent,
