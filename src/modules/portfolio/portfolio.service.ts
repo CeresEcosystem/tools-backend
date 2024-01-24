@@ -291,9 +291,14 @@ export class PortfolioService {
         );
         const value = pairData.liquidity * percentageHolding;
 
+        const baseAssetLiqHolding = pairData.baseAssetLiq * percentageHolding;
+        const tokenLiqHolding = pairData.targetAssetLiq * percentageHolding;
+
         liquidityData.push({
           token: pairData.token,
+          tokenLiqHolding,
           baseAsset: pairData.baseAsset,
+          baseAssetLiqHolding,
           value,
         });
       } catch (error) {}
