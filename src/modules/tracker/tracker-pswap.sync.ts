@@ -8,6 +8,7 @@ import { FPNumber } from '@sora-substrate/math';
 import { DENOMINATOR } from './tracker.constants';
 import { SoraClient } from '../sora-client/sora-client';
 import * as Sentry from '@sentry/node';
+import { TrackerBurnService } from './tracker-burn.service';
 
 const DAY = 14400;
 
@@ -17,6 +18,7 @@ export class TrackerPswapSync {
 
   constructor(
     private readonly trackerService: TrackerService,
+    private readonly trackerBurnService: TrackerBurnService,
     private readonly mapper: PSWAPTrackerBlockBcToEntityMapper,
     private readonly soraClient: SoraClient,
   ) {}
@@ -73,6 +75,8 @@ export class TrackerPswapSync {
     this.logger.log(`Number of entries to load: ${burningData.length}`);
 
     await this.trackerService.upsert(this.mapper.toEntities(burningData));
+
+    await this.trackerBurnService.cacheBurningChartData('PSWAP');
 
     this.logger.log('Fetching of PSWAP burning data was successful!');
 

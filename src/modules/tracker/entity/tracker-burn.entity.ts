@@ -1,20 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
-export type BurnType = 'FEES' | 'TBC';
-
-@Entity('tracker')
-export class Tracker {
+@Entity('tracker_burn')
+@Unique(['token', 'dateRaw'])
+export class TrackerBurn {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
   token: string;
-
-  @Column({ name: 'block_num' })
-  blockNum: number;
-
-  @Column({ name: 'burn_type' })
-  burnType: BurnType;
 
   @Column('date', { name: 'date_raw' })
   dateRaw: string;
@@ -36,10 +29,4 @@ export class Tracker {
 
   @Column('float', { name: 'xor_dedicated_for_buy_back' })
   xorDedicatedForBuyBack: number;
-
-  @Column('timestamp', { name: 'created_at' })
-  createdAt: Date;
-
-  @Column('timestamp', { name: 'updated_at' })
-  updatedAt: Date;
 }

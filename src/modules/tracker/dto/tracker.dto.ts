@@ -11,12 +11,12 @@ export interface TrackerDto {
 export interface TrackerBlockDto {
   blockNum: number;
   burnType: BurnType;
-  grossBurn: string;
-  netBurn: string;
-  remintedLp: string;
-  remintedParliament: string;
-  xorSpent: string;
-  xorDedicatedForBuyBack: string;
+  grossBurn: number;
+  netBurn: number;
+  remintedLp: number;
+  remintedParliament: number;
+  xorSpent: number;
+  xorDedicatedForBuyBack: number;
 }
 
 export interface TrackerBurnDto {
@@ -25,13 +25,13 @@ export interface TrackerBurnDto {
 }
 
 export interface TrackerBurningGraphPointDto {
-  lp: string;
-  net: string;
-  parl: string;
-  spent: string;
-  back: string;
+  lp: number;
+  net: number;
+  parl: number;
+  spent: number;
+  back: number;
   x: string;
-  y: string;
+  y: number;
 }
 
 export interface TrackerSupplyGraphPointDto {

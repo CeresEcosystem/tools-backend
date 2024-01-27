@@ -4,7 +4,6 @@ import { getTodayFormatted } from 'src/utils/date-utils';
 import { Repository } from 'typeorm';
 import {
   TrackerBurnDto,
-  TrackerBurningGraphPointDto,
   TrackerDto,
   TrackerSupplyGraphPointDto,
 } from './dto/tracker.dto';
@@ -12,6 +11,7 @@ import { BurnType, Tracker } from './entity/tracker.entity';
 import { TrackerToBlockDtoMapper } from './mapper/tracker-to-block-dto.mapper';
 import { TrackerSupplyRepository } from './tracker-supply.repository';
 import { SoraClient } from '../sora-client/sora-client';
+import { TrackerBurnService } from './tracker-burn.service';
 
 const BURN_PERIODS = [
   { type: '-1' }, // Total
@@ -23,6 +23,7 @@ const BURN_PERIODS = [
 @Injectable()
 export class TrackerService {
   constructor(
+    private readonly trackerBurnService: TrackerBurnService,
     @InjectRepository(Tracker)
     private readonly trackerRepository: Repository<Tracker>,
     private readonly trackerSupplyRepository: TrackerSupplyRepository,
@@ -52,7 +53,7 @@ export class TrackerService {
       blocks: this.trackerToBlockMapper.toDtos(blocks),
       last: lastBlock,
       burn: this.calculateBurningData(blocks, currentBlock),
-      graphBurning: await this.getBurningGraphData(token),
+      graphBurning: await this.trackerBurnService.getBurningChartData(token),
       graphSupply: await this.trackerSupplyRepository.getSupplyGraphData(token),
     };
   }
@@ -118,43 +119,11 @@ export class TrackerService {
   ): number {
     return blocks
       .filter((block) =>
-        (lookBack ? block.blockNum >= currentBlock - lookBack : true),
+        lookBack ? block.blockNum >= currentBlock - lookBack : true,
       )
       .map((block) => Number(block[burnField]))
       .filter((burned) => burned > 0)
       .reduce((partialSum, burned) => partialSum + burned, 0);
-  }
-
-  private getBurningGraphData(
-    token: string,
-  ): Promise<TrackerBurningGraphPointDto[]> {
-    const initBlock = this.getBurningGraphInitBlock(token);
-
-    return this.trackerRepository.query(
-      `SELECT DATE_FORMAT(date_raw, '%Y-%m-%d') as x,
-            SUM(gross_burn) as y,
-            SUM(xor_spent) as spent,
-            SUM(reminted_lp) as lp,
-            SUM(reminted_parliament) as parl,
-            SUM(IF(net_burn <= 0, 0, net_burn)) as net,
-            SUM(xor_dedicated_for_buy_back) as back
-            FROM tracker
-            WHERE date_raw is not null
-            AND token = ?
-            AND block_num > ?
-            GROUP BY date_raw
-            ORDER BY date_raw`,
-      [token, initBlock],
-    );
-  }
-
-  private getBurningGraphInitBlock(token: string): string {
-    switch (token) {
-      case 'VAL':
-        return '1243341'; // Burning mechanism was upgraded starting with this block
-      default:
-        return '0';
-    }
   }
 
   private async getCurrentBlock(): Promise<number> {

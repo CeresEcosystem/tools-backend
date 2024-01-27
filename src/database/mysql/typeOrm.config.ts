@@ -23,6 +23,7 @@ export default new DataSource({
     'src/modules/pairs-liquidity/entity/pair-periodic-liquidity-change.entity.ts',
     'src/modules/token-holders/entity/holders.entity.ts',
     'src/modules/currency-rate/entity/currency-rate.entity.ts',
+    'src/modules/tracker/entity/tracker-burn.entity.ts',
   ],
   migrations: ['src/database/mysql/migrations/*'],
   migrationsTableName: 'migrations_tools',

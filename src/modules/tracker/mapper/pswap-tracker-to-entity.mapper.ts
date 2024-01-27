@@ -12,11 +12,11 @@ export class PSWAPTrackerBlockBcToEntityMapper extends BaseEntityMapper<
       token: 'PSWAP',
       burnType: 'FEES',
       blockNum: Number(parts[0]),
-      xorSpent: parts[1],
-      grossBurn: parts[2],
-      remintedLp: parts[3],
-      remintedParliament: parts[4],
-      netBurn: parts[5],
+      xorSpent: Number(parts[1]),
+      grossBurn: Number(parts[2]),
+      remintedLp: Number(parts[3]),
+      remintedParliament: Number(parts[4]),
+      netBurn: Number(parts[5]),
     } as Tracker;
   }
 }

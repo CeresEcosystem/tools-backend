@@ -8,6 +8,7 @@ import { ValFeesTrackerBlockBcToEntityMapper } from './mapper/val-fees-tracker-t
 import { ValFeesTrackerBlockDto } from './dto/val-fees-tracker-bc-block';
 import { SoraClient } from '../sora-client/sora-client';
 import * as Sentry from '@sentry/node';
+import { TrackerBurnService } from './tracker-burn.service';
 
 const techAccount = 'cnTQ1kbv7PBNNQrEb1tZpmK7hhnohXfYrx5GuD1H9ShjdGoBh';
 
@@ -17,6 +18,7 @@ export class TrackerValSync {
 
   constructor(
     private readonly trackerService: TrackerService,
+    private readonly trackerBurnService: TrackerBurnService,
     private readonly mapper: ValFeesTrackerBlockBcToEntityMapper,
     private readonly soraClient: SoraClient,
   ) {}
@@ -110,6 +112,8 @@ export class TrackerValSync {
     this.logger.log(`Number of entries to load: ${burningData.length}`);
 
     await this.trackerService.upsert(this.mapper.toEntities(burningData));
+
+    await this.trackerBurnService.cacheBurningChartData('VAL');
 
     this.logger.log('Fetching of VAL burning data was successful!');
 

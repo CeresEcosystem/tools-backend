@@ -22,11 +22,11 @@ export class ValFeesTrackerBlockBcToEntityMapper extends BaseEntityMapper<
       burnType: 'FEES',
       dateRaw,
       blockNum,
-      xorSpent: xorTotalFee,
-      grossBurn: valBurned,
-      remintedParliament: valRemintedParliament,
-      xorDedicatedForBuyBack,
-      netBurn: new Big(valBurned).sub(valRemintedParliament).toString(),
+      xorSpent: Number(xorTotalFee),
+      grossBurn: Number(valBurned),
+      remintedParliament: Number(valRemintedParliament),
+      xorDedicatedForBuyBack: Number(xorDedicatedForBuyBack),
+      netBurn: new Big(valBurned).sub(valRemintedParliament).toNumber(),
     } as Tracker;
   }
 }

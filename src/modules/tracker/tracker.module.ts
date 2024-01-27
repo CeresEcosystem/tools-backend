@@ -16,17 +16,21 @@ import { ValFeesTrackerBlockBcToEntityMapper } from './mapper/val-fees-tracker-t
 import { ValTbcTrackerToEntityMapper } from './mapper/val-tbc-tracker-to-entity.mapper';
 import { TrackerValTbcBurningsListener } from './tracker-val-tbc-burning.listener';
 import { SoraClientModule } from '../sora-client/sora-client-module';
+import { TrackerBurn } from './entity/tracker-burn.entity';
+import { TrackerBurnService } from './tracker-burn.service';
+import { TrackerBurnToDtoMapper } from './mapper/tracker-burn-to-dto.mapper';
 
 @Module({
   imports: [
     HttpModule,
     SoraClientModule,
-    TypeOrmModule.forFeature([Tracker, TrackerSupply]),
+    TypeOrmModule.forFeature([Tracker, TrackerSupply, TrackerBurn]),
     TokenPriceModule,
   ],
   controllers: [TrackerController],
   providers: [
     TrackerService,
+    TrackerBurnService,
     TrackerToBlockDtoMapper,
     TrackerSupplyRepository,
     TrackerSupplySync,
@@ -36,6 +40,7 @@ import { SoraClientModule } from '../sora-client/sora-client-module';
     ValFeesTrackerBlockBcToEntityMapper,
     TrackerValTbcBurningsListener,
     ValTbcTrackerToEntityMapper,
+    TrackerBurnToDtoMapper,
   ],
   exports: [
     TrackerService,
