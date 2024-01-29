@@ -1,4 +1,15 @@
+import { PageDto } from 'src/utils/pagination/page.dto';
 import { BurnType } from '../entity/tracker.entity';
+import { SummaryPeriod } from '../entity/tracker-summary.entity';
+
+export interface TrackerV2Dto {
+  blocksFees: PageDto<TrackerBlockDto>;
+  blocksTbc: PageDto<TrackerBlockDto>;
+  burn: Map<SummaryPeriod, TrackerBurnDto>;
+  graphBurning: TrackerBurningGraphPointDto[];
+  graphSupply: TrackerSupplyGraphPointDto[];
+  last: number;
+}
 
 export interface TrackerDto {
   blocks: TrackerBlockDto[];
@@ -20,8 +31,8 @@ export interface TrackerBlockDto {
 }
 
 export interface TrackerBurnDto {
-  gross: string;
-  net: string;
+  gross: number;
+  net: number;
 }
 
 export interface TrackerBurningGraphPointDto {

@@ -1,5 +1,5 @@
 import { BaseEntityMapper } from 'src/utils/mappers/base-entity-mapper';
-import { Tracker } from '../entity/tracker.entity';
+import { BurnType, Tracker } from '../entity/tracker.entity';
 import { ValTbcTrackerBlockDto } from '../dto/val-tbc-tracker-bc-block';
 
 export class ValTbcTrackerToEntityMapper extends BaseEntityMapper<
@@ -11,7 +11,7 @@ export class ValTbcTrackerToEntityMapper extends BaseEntityMapper<
 
     return {
       token: 'VAL',
-      burnType: 'TBC',
+      burnType: BurnType.TBC,
       dateRaw,
       blockNum,
       grossBurn: Number(valBurned),

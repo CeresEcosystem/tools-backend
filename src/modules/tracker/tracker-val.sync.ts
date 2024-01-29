@@ -9,8 +9,11 @@ import { ValFeesTrackerBlockDto } from './dto/val-fees-tracker-bc-block';
 import { SoraClient } from '../sora-client/sora-client';
 import * as Sentry from '@sentry/node';
 import { TrackerBurnService } from './tracker-burn.service';
+import { BurnType } from './entity/tracker.entity';
+import { TrackerSummaryService } from './tracker-summary.service';
 
 const techAccount = 'cnTQ1kbv7PBNNQrEb1tZpmK7hhnohXfYrx5GuD1H9ShjdGoBh';
+const VAL_TOKEN = 'VAL';
 
 @Injectable()
 export class TrackerValSync {
@@ -19,6 +22,7 @@ export class TrackerValSync {
   constructor(
     private readonly trackerService: TrackerService,
     private readonly trackerBurnService: TrackerBurnService,
+    private readonly trackerSummaryService: TrackerSummaryService,
     private readonly mapper: ValFeesTrackerBlockBcToEntityMapper,
     private readonly soraClient: SoraClient,
   ) {}
@@ -36,8 +40,8 @@ export class TrackerValSync {
 
     const burningData: ValFeesTrackerBlockDto[] = [];
     const lastSavedBlock = await this.trackerService.findLastBlockNumber(
-      'VAL',
-      'FEES',
+      VAL_TOKEN,
+      BurnType.FEES,
     );
     const startBlock = lastSavedBlock + 1;
 
@@ -113,7 +117,8 @@ export class TrackerValSync {
 
     await this.trackerService.upsert(this.mapper.toEntities(burningData));
 
-    await this.trackerBurnService.cacheBurningChartData('VAL');
+    await this.trackerBurnService.cacheBurningChartData(VAL_TOKEN);
+    await this.trackerSummaryService.cacheBurningSummaryData(VAL_TOKEN);
 
     this.logger.log('Fetching of VAL burning data was successful!');
 

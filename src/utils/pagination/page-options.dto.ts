@@ -6,6 +6,11 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_SIZE = 10;
 
 export class PageOptionsDto {
+  constructor(page: number, size: number) {
+    this.page = page;
+    this.size = size;
+  }
+
   @ApiPropertyOptional({
     minimum: 1,
     default: DEFAULT_PAGE,

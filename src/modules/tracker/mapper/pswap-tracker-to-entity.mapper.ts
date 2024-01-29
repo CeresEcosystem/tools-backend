@@ -1,5 +1,5 @@
 import { BaseEntityMapper } from 'src/utils/mappers/base-entity-mapper';
-import { Tracker } from '../entity/tracker.entity';
+import { BurnType, Tracker } from '../entity/tracker.entity';
 
 export class PSWAPTrackerBlockBcToEntityMapper extends BaseEntityMapper<
   Tracker,
@@ -10,7 +10,7 @@ export class PSWAPTrackerBlockBcToEntityMapper extends BaseEntityMapper<
 
     return {
       token: 'PSWAP',
-      burnType: 'FEES',
+      burnType: BurnType.FEES,
       blockNum: Number(parts[0]),
       xorSpent: Number(parts[1]),
       grossBurn: Number(parts[2]),

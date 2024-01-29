@@ -3,16 +3,23 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { getTodayFormatted } from 'src/utils/date-utils';
 import { Repository } from 'typeorm';
 import {
+  TrackerBlockDto,
   TrackerBurnDto,
   TrackerDto,
   TrackerSupplyGraphPointDto,
+  TrackerV2Dto,
 } from './dto/tracker.dto';
 import { BurnType, Tracker } from './entity/tracker.entity';
 import { TrackerToBlockDtoMapper } from './mapper/tracker-to-block-dto.mapper';
 import { TrackerSupplyRepository } from './tracker-supply.repository';
 import { SoraClient } from '../sora-client/sora-client';
 import { TrackerBurnService } from './tracker-burn.service';
+import { PageDto } from 'src/utils/pagination/page.dto';
+import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
+import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
+import { TrackerSummaryService } from './tracker-summary.service';
 
+  // Deprecated, to be removed after migration to V2 endpoint
 const BURN_PERIODS = [
   { type: '-1' }, // Total
   { type: '24', lookBack: 14400 }, // Last 24 hours
@@ -24,6 +31,7 @@ const BURN_PERIODS = [
 export class TrackerService {
   constructor(
     private readonly trackerBurnService: TrackerBurnService,
+    private readonly trackerSummaryService: TrackerSummaryService,
     @InjectRepository(Tracker)
     private readonly trackerRepository: Repository<Tracker>,
     private readonly trackerSupplyRepository: TrackerSupplyRepository,
@@ -33,20 +41,41 @@ export class TrackerService {
 
   public async findLastBlockNumber(
     token: string,
-    burnType: BurnType,
+    burnType?: BurnType,
   ): Promise<number> {
-    const { lastBlock } = await this.trackerRepository
+    const queryBuilder = this.trackerRepository
       .createQueryBuilder()
       .select('MAX(block_num)', 'lastBlock')
-      .where({ token, burnType })
+      .where({ token });
+
+    if (burnType) {
+      queryBuilder.andWhere({ burnType });
+    }
+
+    const { lastBlock } = await queryBuilder
+      .printSql()
       .getRawOne<{ lastBlock: string }>();
 
     return Number(lastBlock);
   }
 
+  public async getTrackerDataV2(token: string): Promise<TrackerV2Dto> {
+    const firstPage = new PageOptionsDto(1, 5);
+
+    return {
+      blocksFees: await this.findAll(token, BurnType.FEES, firstPage),
+      blocksTbc: await this.findAll(token, BurnType.TBC, firstPage),
+      last: await this.findLastBlockNumber(token),
+      burn: await this.trackerSummaryService.getBurningSummaryData(token),
+      graphBurning: await this.trackerBurnService.getBurningChartData(token),
+      graphSupply: await this.trackerSupplyRepository.getSupplyGraphData(token),
+    };
+  }
+
+  // Deprecated, to be removed after migration to V2 endpoint
   public async getTrackerData(token: string): Promise<TrackerDto> {
     const blocks = await this.getAll(token);
-    const currentBlock = await this.getCurrentBlock();
+    const currentBlock = await this.getCurrentSoraBlock();
     const lastBlock = blocks[0]?.blockNum || 0;
 
     return {
@@ -78,6 +107,28 @@ export class TrackerService {
     ]);
   }
 
+  public async findAll(
+    token: string,
+    burnType: BurnType,
+    pageOptions: PageOptionsDto,
+  ): Promise<PageDto<TrackerBlockDto>> {
+    const [data, totalCount] = await this.trackerRepository.findAndCount({
+      skip: pageOptions.skip,
+      take: pageOptions.size,
+      where: { token, burnType },
+      order: { blockNum: 'DESC' },
+    });
+
+    const pageMeta = new PageMetaDto(
+      pageOptions.page,
+      pageOptions.size,
+      totalCount,
+    );
+
+    return new PageDto(this.trackerToBlockMapper.toDtos(data), pageMeta);
+  }
+
+  // Deprecated, to be removed after migration to V2 endpoint
   private getAll(token: string): Promise<Tracker[]> {
     return this.trackerRepository.find({
       where: { token },
@@ -85,6 +136,7 @@ export class TrackerService {
     });
   }
 
+  // Deprecated, to be removed after migration to V2 endpoint
   private calculateBurningData(
     blocks: Tracker[],
     currentBlock: number,
@@ -111,6 +163,7 @@ export class TrackerService {
     return burn;
   }
 
+  // Deprecated, to be removed after migration to V2 endpoint
   private calculateBurn(
     blocks: Tracker[],
     burnField: 'grossBurn' | 'netBurn',
@@ -126,7 +179,8 @@ export class TrackerService {
       .reduce((partialSum, burned) => partialSum + burned, 0);
   }
 
-  private async getCurrentBlock(): Promise<number> {
+  // Deprecated, to be removed after migration to V2 endpoint
+  private async getCurrentSoraBlock(): Promise<number> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
     const blockNumber = await soraApi.query.system.number();

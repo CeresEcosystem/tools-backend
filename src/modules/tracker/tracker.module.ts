@@ -19,18 +19,26 @@ import { SoraClientModule } from '../sora-client/sora-client-module';
 import { TrackerBurn } from './entity/tracker-burn.entity';
 import { TrackerBurnService } from './tracker-burn.service';
 import { TrackerBurnToDtoMapper } from './mapper/tracker-burn-to-dto.mapper';
+import { TrackerSummaryService } from './tracker-summary.service';
+import { TrackerSummary } from './entity/tracker-summary.entity';
 
 @Module({
   imports: [
     HttpModule,
     SoraClientModule,
-    TypeOrmModule.forFeature([Tracker, TrackerSupply, TrackerBurn]),
+    TypeOrmModule.forFeature([
+      Tracker,
+      TrackerSupply,
+      TrackerBurn,
+      TrackerSummary,
+    ]),
     TokenPriceModule,
   ],
   controllers: [TrackerController],
   providers: [
     TrackerService,
     TrackerBurnService,
+    TrackerSummaryService,
     TrackerToBlockDtoMapper,
     TrackerSupplyRepository,
     TrackerSupplySync,

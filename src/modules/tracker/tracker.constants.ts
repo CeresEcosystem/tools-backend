@@ -2,6 +2,7 @@ import { FPNumber } from '@sora-substrate/math';
 
 export const CACHE_KEYS = {
   TRACKER: 'tracker',
+  TRACKER_V2: 'trackerV2',
   SUPPLY: 'supply',
 };
 
@@ -16,3 +17,5 @@ export const VAL_BURN_ADDRESS =
   'cnTQ1kbv7PBNNQrEb1tZpmK7ftiv4yCCpUQy1J2y7Y54Taiaw';
 export const VAL_TOKEN_ID =
   '0x0200040000000000000000000000000000000000000000000000000000000000';
+
+export const TRACKED_TOKENS = ['PSWAP', 'VAL'];

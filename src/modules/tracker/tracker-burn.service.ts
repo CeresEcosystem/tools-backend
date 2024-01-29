@@ -5,8 +5,7 @@ import { Tracker } from './entity/tracker.entity';
 import { TrackerBurn } from './entity/tracker-burn.entity';
 import { TrackerBurningGraphPointDto } from './dto/tracker.dto';
 import { TrackerBurnToDtoMapper } from './mapper/tracker-burn-to-dto.mapper';
-
-const TRACKED_TOKENS = ['PSWAP', 'VAL'];
+import { TRACKED_TOKENS } from './tracker.constants';
 
 @Injectable()
 export class TrackerBurnService {
@@ -37,7 +36,7 @@ export class TrackerBurnService {
     const start = Date.now();
     this.logger.log(`Caching burning chart data for ${token}`);
 
-    const burningDataAggregated = await this.getBurningGraphData(token);
+    const burningDataAggregated = await this.aggregateBurningGraphData(token);
 
     await this.trackerBurnRepository
       .upsert(burningDataAggregated, ['token', 'dateRaw'])
@@ -53,7 +52,7 @@ export class TrackerBurnService {
     );
   }
 
-  private getBurningGraphData(token: string): Promise<Tracker[]> {
+  private aggregateBurningGraphData(token: string): Promise<Tracker[]> {
     const initBlock = this.getBurningGraphInitBlock(token);
 
     return this.trackerRepository

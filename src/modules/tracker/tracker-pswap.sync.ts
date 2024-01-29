@@ -9,8 +9,11 @@ import { DENOMINATOR } from './tracker.constants';
 import { SoraClient } from '../sora-client/sora-client';
 import * as Sentry from '@sentry/node';
 import { TrackerBurnService } from './tracker-burn.service';
+import { BurnType } from './entity/tracker.entity';
+import { TrackerSummaryService } from './tracker-summary.service';
 
 const DAY = 14400;
+const PSWAP_TOKEN = 'PSWAP';
 
 @Injectable()
 export class TrackerPswapSync {
@@ -19,6 +22,7 @@ export class TrackerPswapSync {
   constructor(
     private readonly trackerService: TrackerService,
     private readonly trackerBurnService: TrackerBurnService,
+    private readonly trackerSummaryService: TrackerSummaryService,
     private readonly mapper: PSWAPTrackerBlockBcToEntityMapper,
     private readonly soraClient: SoraClient,
   ) {}
@@ -35,8 +39,8 @@ export class TrackerPswapSync {
 
     const burningData = [];
     const startBlock = await this.trackerService.findLastBlockNumber(
-      'PSWAP',
-      'FEES',
+      PSWAP_TOKEN,
+      BurnType.FEES,
     );
 
     this.logger.debug(`StartBlock: ${startBlock}`);
@@ -76,7 +80,8 @@ export class TrackerPswapSync {
 
     await this.trackerService.upsert(this.mapper.toEntities(burningData));
 
-    await this.trackerBurnService.cacheBurningChartData('PSWAP');
+    await this.trackerBurnService.cacheBurningChartData(PSWAP_TOKEN);
+    await this.trackerSummaryService.cacheBurningSummaryData(PSWAP_TOKEN);
 
     this.logger.log('Fetching of PSWAP burning data was successful!');
 
