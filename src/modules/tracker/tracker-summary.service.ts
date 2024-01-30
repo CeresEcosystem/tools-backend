@@ -99,7 +99,8 @@ export class TrackerSummaryService {
       .createQueryBuilder()
       .select('SUM(gross_burn)', 'gross')
       .addSelect('SUM(net_burn)', 'net')
-      .where({ token });
+      .where({ token })
+      .andWhere({ netBurn: MoreThan(0) });
 
     if (lookBack) {
       queryBuilder.andWhere({

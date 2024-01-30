@@ -19,7 +19,9 @@ import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
 import { TrackerSummaryService } from './tracker-summary.service';
 
-  // Deprecated, to be removed after migration to V2 endpoint
+  /**
+   * @deprecated To be removed after migration to V2 endpoint
+   */
 const BURN_PERIODS = [
   { type: '-1' }, // Total
   { type: '24', lookBack: 14400 }, // Last 24 hours
@@ -72,7 +74,9 @@ export class TrackerService {
     };
   }
 
-  // Deprecated, to be removed after migration to V2 endpoint
+  /**
+   * @deprecated To be removed after migration to V2 endpoint
+   */
   public async getTrackerData(token: string): Promise<TrackerDto> {
     const blocks = await this.getAll(token);
     const currentBlock = await this.getCurrentSoraBlock();
@@ -128,7 +132,9 @@ export class TrackerService {
     return new PageDto(this.trackerToBlockMapper.toDtos(data), pageMeta);
   }
 
-  // Deprecated, to be removed after migration to V2 endpoint
+  /**
+   * @deprecated To be removed after migration to V2 endpoint
+   */
   private getAll(token: string): Promise<Tracker[]> {
     return this.trackerRepository.find({
       where: { token },
@@ -136,7 +142,9 @@ export class TrackerService {
     });
   }
 
-  // Deprecated, to be removed after migration to V2 endpoint
+  /**
+   * @deprecated To be removed after migration to V2 endpoint
+   */
   private calculateBurningData(
     blocks: Tracker[],
     currentBlock: number,
@@ -163,7 +171,9 @@ export class TrackerService {
     return burn;
   }
 
-  // Deprecated, to be removed after migration to V2 endpoint
+  /**
+   * @deprecated To be removed after migration to V2 endpoint
+   */
   private calculateBurn(
     blocks: Tracker[],
     burnField: 'grossBurn' | 'netBurn',
@@ -179,7 +189,9 @@ export class TrackerService {
       .reduce((partialSum, burned) => partialSum + burned, 0);
   }
 
-  // Deprecated, to be removed after migration to V2 endpoint
+  /**
+   * @deprecated To be removed after migration to V2 endpoint
+   */
   private async getCurrentSoraBlock(): Promise<number> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
