@@ -16,24 +16,26 @@ export class SoraSupplyClient {
     private readonly configs: ConfigService,
   ) {}
 
-  public async getSoraTokensSupply(
-    tokens: string[],
-  ): Promise<SoraTokenSupplyDto[]> {
-    const tokenSuppliesPromises = tokens.map(async (token) => {
-      const url = `${this.configs.get(SORA_SUPPLY_API)}/${token}`;
-      let supply = await this.sendGetRequest<number | string>(url);
-      if (typeof supply === 'string') {
-        supply = parseFloat(supply);
-      }
+  public getSoraTokensSupply(tokens: string[]): Promise<SoraTokenSupplyDto[]> {
+    return Promise.all(
+      tokens.map(async (token) => {
+        const url = `${this.configs.get(SORA_SUPPLY_API)}/${token}`;
+        let supply = await this.sendGetRequest<number | string>(url);
 
-      return {
-        token,
-        supply,
-      };
-    });
-    const tokenSupplies = await Promise.all(tokenSuppliesPromises);
+        if (!supply) {
+          supply = 0;
+        }
 
-    return tokenSupplies;
+        if (typeof supply === 'string') {
+          supply = parseFloat(supply);
+        }
+
+        return {
+          token,
+          supply,
+        };
+      }),
+    );
   }
 
   private async sendGetRequest<T>(url: string): Promise<T> {

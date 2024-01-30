@@ -1,11 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CoinGeckoClient } from '../coin-gecko-client/coin-gecko-client';
 import { SoraSupplyClient } from '../sora-supply-client/sora-supply-client';
-import { SYMBOLS_AND_GECKO_IDS } from 'src/constants/constants';
-import { TokenMarketCap } from './dto/token-market-cap.dto';
 import { Cron } from '@nestjs/schedule';
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import { TokenPriceService } from '../token-price/token-price.service';
+import {
+  COIN_GECKO_TOKEN_IDS,
+  COIN_GECKO_TOKEN_SYMBOLS,
+} from 'src/constants/constants';
+import { TokenMarketCapDto } from './dto/token-market-cap.dto';
 
 @Injectable()
 export class MarketCapService {
@@ -31,68 +34,36 @@ export class MarketCapService {
     this.logger.log('Updating market caps successful!');
   }
 
-  private async getMarketCaps(): Promise<TokenMarketCap[]> {
+  private async getMarketCaps(): Promise<TokenMarketCapDto[]> {
+    const geckoMarketCaps = await this.getGeckoTokenMarketCaps();
+    const soraMarketCaps = await this.getSoraMarketCaps();
+
+    return [...geckoMarketCaps, ...soraMarketCaps];
+  }
+
+  private getGeckoTokenMarketCaps(): Promise<TokenMarketCapDto[]> {
+    return this.coinGeckoClient.getTokensMarketCaps(COIN_GECKO_TOKEN_IDS);
+  }
+
+  private async getSoraMarketCaps(): Promise<TokenMarketCapDto[]> {
     const allTokens = await this.tokenPriceService.findAll();
 
-    const tokenSymbols: string[] = Array.from(
-      Object.keys(SYMBOLS_AND_GECKO_IDS),
-    );
-
-    const coinGeckoIds: string[] = Array.from(
-      Object.values(SYMBOLS_AND_GECKO_IDS),
-    );
-
-    const geckoTokens = (
-      await this.coinGeckoClient.getTokensMarketCaps(coinGeckoIds.join(','))
-    ).map((token) => {
-      const tokenId = token.id;
-      const tokenMarketCap = token.market_cap;
-
-      return {
-        tokenId,
-        tokenMarketCap,
-      };
-    });
-
-    const geckoTokensAndMarketCaps = geckoTokens.map((token) => {
-      const tokenSymbol = getSymbolsByTokenIds(
-        SYMBOLS_AND_GECKO_IDS,
-        token.tokenId,
-      );
-
-      return {
-        tokenSymbol,
-        marketCap: token.tokenMarketCap,
-      };
-    });
-
     const soraTokens = allTokens
-      .filter((token) => !tokenSymbols.includes(token.token))
+      .filter((token) => !COIN_GECKO_TOKEN_SYMBOLS.includes(token.token))
       .map((token) => token.token);
 
-    const soraTokensAndMarketCaps = (
-      await this.soraSupplyClient.getSoraTokensSupply(soraTokens)
-    ).map((token) => {
-      const tokenPrice = allTokens.find((coin) => token.token === coin.token);
+    const soraTokensSupply = await this.soraSupplyClient.getSoraTokensSupply(
+      soraTokens,
+    );
 
-      const tokenSymbol = token.token;
-      const marketCap = token.supply * tokenPrice.price;
+    return soraTokensSupply.map((tokenSupply) => {
+      const { token, supply } = tokenSupply;
+      const tokenPrice = allTokens.find((coin) => token === coin.token);
 
       return {
-        tokenSymbol,
-        marketCap,
+        tokenSymbol: token,
+        marketCap: supply * tokenPrice.price,
       };
     });
-
-    const marketCaps = [
-      ...geckoTokensAndMarketCaps,
-      ...soraTokensAndMarketCaps,
-    ].filter((value) => value.marketCap);
-
-    return marketCaps;
   }
-}
-
-function getSymbolsByTokenIds(object, value: string): string {
-  return Object.keys(object).find((key) => object[key] === value);
 }

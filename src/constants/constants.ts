@@ -59,3 +59,7 @@ export const SYMBOLS_AND_GECKO_IDS = {
   REEF: 'reef',
   DOT: 'polkadot',
 };
+
+export const COIN_GECKO_TOKEN_SYMBOLS = Object.keys(SYMBOLS_AND_GECKO_IDS);
+
+export const COIN_GECKO_TOKEN_IDS = Object.values(SYMBOLS_AND_GECKO_IDS);
