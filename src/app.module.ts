@@ -26,6 +26,7 @@ import { TransfersModule } from './modules/transfers/transfers.module';
 import { ReservesModule } from './modules/reserves/reserves.module';
 import { TokenHoldersModule } from './modules/token-holders/token-holders.module';
 import { CurrencyRateModule } from './modules/currency-rate/currency-rate.module';
+import { MarketCapModule } from './modules/market-cap/market-cap.module';
 
 @Module({
   imports: [
@@ -86,6 +87,7 @@ import { CurrencyRateModule } from './modules/currency-rate/currency-rate.module
     ReservesModule,
     TokenHoldersModule,
     CurrencyRateModule,
+    MarketCapModule,
   ],
   controllers: [],
   providers: [],
