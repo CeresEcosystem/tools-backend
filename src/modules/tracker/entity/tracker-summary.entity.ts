@@ -1,4 +1,20 @@
-import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  Unique,
+  ValueTransformer,
+} from 'typeorm';
+
+class ColumnNumericTransformer implements ValueTransformer {
+  to(data: number): number {
+    return data;
+  }
+
+  from(data: string): number {
+    return parseFloat(data);
+  }
+}
 
 export enum SummaryPeriod {
   DAY = 'DAY',
@@ -19,9 +35,19 @@ export class TrackerSummary {
   @Column('enum', { enum: SummaryPeriod })
   period: SummaryPeriod;
 
-  @Column('float', { name: 'gross_burn' })
+  @Column('decimal', {
+    name: 'gross_burn',
+    precision: 16,
+    scale: 2,
+    transformer: new ColumnNumericTransformer(),
+  })
   grossBurn: number;
 
-  @Column('float', { name: 'net_burn' })
+  @Column('decimal', {
+    name: 'net_burn',
+    precision: 16,
+    scale: 2,
+    transformer: new ColumnNumericTransformer(),
+  })
   netBurn: number;
 }

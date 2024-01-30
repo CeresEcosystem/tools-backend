@@ -83,8 +83,8 @@ export class TrackerSummaryService {
         return {
           token,
           period: period.type,
-          grossBurn: summaryForPeriod.gross,
-          netBurn: summaryForPeriod.net,
+          grossBurn: summaryForPeriod.gross || 0,
+          netBurn: summaryForPeriod.net || 0,
         } as TrackerSummary;
       }),
     );
