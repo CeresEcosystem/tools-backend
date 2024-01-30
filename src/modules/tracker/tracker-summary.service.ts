@@ -35,12 +35,16 @@ export class TrackerSummaryService {
       where: { token },
     });
 
-    return new Map(
-      summary.map((sum) => [
-        sum.period,
-        { gross: sum.grossBurn, net: sum.netBurn },
-      ]),
-    );
+    const summaryPerPeriod = new Map<SummaryPeriod, TrackerBurnDto>();
+
+    summary.forEach((sum) => {
+      summaryPerPeriod[sum.period] = {
+        gross: sum.grossBurn,
+        net: sum.netBurn,
+      };
+    });
+
+    return summaryPerPeriod;
   }
 
   public async cacheBurningSummaryData(token: string): Promise<void> {
