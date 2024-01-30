@@ -21,23 +21,13 @@ export class MarketCapService {
   private async updateMarketCap(): Promise<void> {
     this.logger.log('Start updating market caps');
     const marketCaps = await this.getMarketCaps();
-    const allTokens = await this.tokenPriceService.findAll();
 
-    const tokenPriceBcDtos = marketCaps.map((tokenMarketCap) => {
-      const tokenPriceEntitity = allTokens.find((token) => tokenMarketCap.tokenSymbol === token.token);
-
-      tokenPriceEntitity.marketCap = tokenMarketCap.marketCap.toString();
-
-      return {
-        symbol: tokenPriceEntitity.token,
-        price: tokenPriceEntitity.price,
-        marketCap: tokenPriceEntitity.marketCap,
-        assetId: tokenPriceEntitity.assetId,
-        fullName: tokenPriceEntitity.fullName,
-      };
+    marketCaps.forEach((tokenMarketCap) => {
+      const symbol = tokenMarketCap.tokenSymbol;
+      const marketCap = tokenMarketCap.marketCap.toString();
+      this.tokenPriceService.updateMarketCap(symbol, marketCap);
     });
 
-    await this.tokenPriceService.save(tokenPriceBcDtos);
     this.logger.log('Updating market caps successful!');
   }
 

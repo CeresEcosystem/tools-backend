@@ -50,6 +50,10 @@ export class TokenPriceService {
     this.saveChronoPrices(tokenPrices);
   }
 
+  public updateMarketCap(tokenSymbol: string, marketCap: string): void {
+    this.tokenPriceRepository.updateBySymbol(tokenSymbol, marketCap);
+  }
+
   public update(tokenPrice: TokenPrice): void {
     this.tokenPriceRepository.update(tokenPrice);
   }

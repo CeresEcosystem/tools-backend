@@ -37,6 +37,10 @@ export class TokenPriceRepository {
     this.repository.update({ id: tokenPrice.id }, tokenPrice);
   }
 
+  public updateBySymbol(tokenSymbol: string, marketCap: string): void {
+    this.repository.update({ token: tokenSymbol }, { marketCap });
+  }
+
   public upsertAll(tokenPrices: TokenPrice[]): void {
     tokenPrices.forEach((tokenPrice) => {
       this.upsert(tokenPrice);

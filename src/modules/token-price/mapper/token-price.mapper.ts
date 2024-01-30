@@ -7,14 +7,13 @@ export class TokenPriceBcDtoToEntityMapper extends BaseEntityMapper<
   TokenPriceBcDto
 > {
   toEntity(dto: TokenPriceBcDto): TokenPrice {
-    const { symbol, price, assetId, fullName, marketCap } = dto;
+    const { symbol, price, assetId, fullName } = dto;
 
     return {
       token: symbol,
       price,
       assetId,
       fullName,
-      marketCap,
       deleted: false,
     } as TokenPrice;
   }
