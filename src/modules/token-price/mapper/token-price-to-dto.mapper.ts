@@ -8,12 +8,21 @@ export class TokenPriceToDtoMapper extends BaseDtoMapper<
   TokenPriceDto
 > {
   toDto(entity: TokenPrice): TokenPriceDto {
-    const { token, price, assetId, fullName, lockedTokens, updatedAt } = entity;
+    const {
+      token,
+      price,
+      marketCap,
+      assetId,
+      fullName,
+      lockedTokens,
+      updatedAt,
+    } = entity;
 
     return {
       token,
       price: new Big(price).toFixed(),
       assetId,
+      marketCap,
       fullName,
       lockedTokens,
       updatedAt,

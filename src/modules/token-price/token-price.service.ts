@@ -58,7 +58,7 @@ export class TokenPriceService {
     const whereStatements = searchTerms.map(
       (term) =>
         ({
-          fullName: Like(`%${ term }%`),
+          fullName: Like(`%${term}%`),
           deleted: false,
         } as FindOptionsWhere<TokenPrice>),
     );
