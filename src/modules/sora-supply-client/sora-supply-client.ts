@@ -25,12 +25,14 @@ export class SoraSupplyClient {
       if (typeof supply === 'string') {
         supply = parseFloat(supply);
       }
+
       return {
         token,
         supply,
       };
     });
     const tokenSupplies = await Promise.all(tokenSuppliesPromises);
+
     return tokenSupplies;
   }
 

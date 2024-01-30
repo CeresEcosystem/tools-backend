@@ -24,9 +24,7 @@ export class MarketCapService {
     const allTokens = await this.tokenPriceService.findAll();
 
     const tokenPriceBcDtos = marketCaps.map((tokenMarketCap) => {
-      const tokenPriceEntitity = allTokens.find((token) => {
-        return tokenMarketCap.tokenSymbol === token.token;
-      });
+      const tokenPriceEntitity = allTokens.find((token) => tokenMarketCap.tokenSymbol === token.token);
 
       tokenPriceEntitity.marketCap = tokenMarketCap.marketCap.toString();
 
@@ -59,6 +57,7 @@ export class MarketCapService {
     ).map((token) => {
       const tokenId = token.id;
       const tokenMarketCap = token.market_cap;
+
       return {
         tokenId,
         tokenMarketCap,
@@ -70,6 +69,7 @@ export class MarketCapService {
         SYMBOLS_AND_GECKO_IDS,
         token.tokenId,
       );
+
       return {
         tokenSymbol,
         marketCap: token.tokenMarketCap,
@@ -77,19 +77,13 @@ export class MarketCapService {
     });
 
     const soraTokens = allTokens
-      .filter((token) => {
-        return !tokenSymbols.includes(token.token);
-      })
-      .map((token) => {
-        return token.token;
-      });
+      .filter((token) => !tokenSymbols.includes(token.token))
+      .map((token) => token.token);
 
     const soraTokensAndMarketCaps = (
       await this.soraSupplyClient.getSoraTokensSupply(soraTokens)
     ).map((token) => {
-      const tokenPrice = allTokens.find((coin) => {
-        return token.token === coin.token;
-      });
+      const tokenPrice = allTokens.find((coin) => token.token === coin.token);
 
       const tokenSymbol = token.token;
       const marketCap = token.supply * tokenPrice.price;
@@ -103,9 +97,7 @@ export class MarketCapService {
     const marketCaps = [
       ...geckoTokensAndMarketCaps,
       ...soraTokensAndMarketCaps,
-    ].filter((value) => {
-      return value.marketCap;
-    });
+    ].filter((value) => value.marketCap);
 
     return marketCaps;
   }
