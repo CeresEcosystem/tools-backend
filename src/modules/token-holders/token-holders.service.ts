@@ -9,7 +9,6 @@ import { PageDto } from 'src/utils/pagination/page.dto';
 import { HolderDto } from './dto/holder.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { CronExpression, Cron } from '@nestjs/schedule';
-import * as Sentry from '@sentry/node';
 
 const DENOMINATOR = FPNumber.fromNatural(10 ** 18);
 
@@ -38,16 +37,10 @@ export class TokenHoldersService {
 
   @Cron(CronExpression.EVERY_30_MINUTES)
   private async updateHolders(): Promise<void> {
-    const transaction = Sentry.startTransaction({
-      op: 'updateHolders',
-      name: 'Update Holders',
-    });
-
     this.logger.log('Start updating holders balances');
     await this.upsertHolderTokensAndBalances();
     await this.holderRepo.deleteHoldersWithZeroBalance();
     this.logger.log('Updating holders balances successful.');
-    transaction.finish();
   }
 
   private async getTokenHolders(): Promise<Set<string>> {

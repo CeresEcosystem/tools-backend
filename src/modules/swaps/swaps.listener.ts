@@ -6,7 +6,6 @@ import { Swap } from './entity/swaps.entity';
 import { SwapGateway } from './swaps.gateway';
 import { SwapEntityToDto } from './mapper/swap-entity-to-dto.mapper';
 import { SoraClient } from '../sora-client/sora-client';
-import * as Sentry from '@sentry/node';
 
 @Injectable()
 export class SwapListener {
@@ -26,11 +25,6 @@ export class SwapListener {
     const soraApi = await this.soraClient.getSoraApi();
 
     soraApi.query.system.events(async (events) => {
-      const transaction = Sentry.startTransaction({
-        op: 'swapListenerEvents',
-        name: 'Swap Listener Events',
-      });
-
       this.logger.debug(
         `Swap listener events received, count: ${events.length}.`,
       );
@@ -80,8 +74,6 @@ export class SwapListener {
       }
 
       this.logger.debug('Swap listener events processed.');
-
-      transaction.finish();
     });
   }
 }

@@ -21,6 +21,3 @@ yarn-error.log*
 .idea
 
 .env
-
-# Sentry Config File
-.sentryclirc

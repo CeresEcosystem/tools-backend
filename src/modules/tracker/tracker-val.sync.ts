@@ -7,7 +7,6 @@ import { DENOMINATOR } from './tracker.constants';
 import { ValFeesTrackerBlockBcToEntityMapper } from './mapper/val-fees-tracker-to-entity.mapper';
 import { ValFeesTrackerBlockDto } from './dto/val-fees-tracker-bc-block';
 import { SoraClient } from '../sora-client/sora-client';
-import * as Sentry from '@sentry/node';
 import { TrackerBurnService } from './tracker-burn.service';
 import { BurnType } from './entity/tracker.entity';
 import { TrackerSummaryService } from './tracker-summary.service';
@@ -29,11 +28,6 @@ export class TrackerValSync {
 
   @Cron(CronExpression.EVERY_HOUR)
   async fetchTrackerData(): Promise<void> {
-    const transaction = Sentry.startTransaction({
-      op: 'fetchTrackerDataVal',
-      name: 'Fetch Tracker Data VAL',
-    });
-
     this.logger.log('Start fetching VAL burning data.');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
@@ -121,7 +115,5 @@ export class TrackerValSync {
     await this.trackerSummaryService.cacheBurningSummaryData(VAL_TOKEN);
 
     this.logger.log('Fetching of VAL burning data was successful!');
-
-    transaction.finish();
   }
 }

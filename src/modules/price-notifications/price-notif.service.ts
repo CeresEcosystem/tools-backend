@@ -6,7 +6,6 @@ import { UserDevice } from './entity/user-device.entity';
 import { Cron } from '@nestjs/schedule';
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import { OneSignalClient } from '../one-signal-client/one-signal-client';
-import * as Sentry from '@sentry/node';
 
 const DEVIATION_THRESHOLD = 4.5;
 
@@ -87,11 +86,6 @@ export class PriceNotifService {
 
   @Cron(CronExpression.EVERY_2_MINUTES)
   public async checkPriceDifferences(): Promise<void> {
-    const transaction = Sentry.startTransaction({
-      op: 'checkPriceDifferences',
-      name: 'Check Price Differences',
-    });
-
     this.logger.log('Start prices comparison');
     const allRelevantPrices =
       await this.relevantPricesService.findAllRelevantTokens();
@@ -128,8 +122,6 @@ export class PriceNotifService {
       }
     }
     this.logger.log('Prices comparison successful');
-
-    transaction.finish();
   }
 
   private calculatePriceDeviation(

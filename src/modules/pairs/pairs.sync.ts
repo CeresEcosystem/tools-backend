@@ -13,7 +13,6 @@ import { PairBcDto } from './dto/pair-bc.dto';
 import { PairsService } from './pairs.service';
 import { SoraClient } from '../sora-client/sora-client';
 import { XOR_ADDRESS, XSTUSD_ADDRESS } from '../../constants/constants';
-import * as Sentry from '@sentry/node';
 
 import * as whitelist from '../../utils/files/whitelist.json';
 import * as synthetics from 'src/utils/files/synthetics.json';
@@ -45,11 +44,6 @@ export class PairsSync {
 
   @Cron(CronExpression.EVERY_3_MINUTES)
   async fetchLiquidityPairs(): Promise<void> {
-    const transaction = Sentry.startTransaction({
-      op: 'fetchLiquidityPairs',
-      name: 'Fetch Liquidity Pairs',
-    });
-
     this.logger.log('Start fetching pairs data.');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
@@ -110,8 +104,6 @@ export class PairsSync {
     }
 
     this.logger.log('Fetching of pairs data was successful!');
-
-    transaction.finish();
   }
 
   private getBaseAndTargetPrices(
