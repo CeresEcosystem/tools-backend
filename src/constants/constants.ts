@@ -58,6 +58,7 @@ export const SYMBOLS_AND_GECKO_IDS = {
   RARE: 'unique-one',
   REEF: 'reef',
   DOT: 'polkadot',
+  CRO: 'crypto-com-chain',
 };
 
 export const COIN_GECKO_TOKEN_SYMBOLS = Object.keys(SYMBOLS_AND_GECKO_IDS);
