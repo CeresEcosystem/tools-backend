@@ -11,14 +11,6 @@ export interface TrackerV2Dto {
   last: number;
 }
 
-export interface TrackerDto {
-  blocks: TrackerBlockDto[];
-  burn: Map<string, TrackerBurnDto>;
-  graphBurning: TrackerBurningGraphPointDto[];
-  graphSupply: TrackerSupplyGraphPointDto[];
-  last: number;
-}
-
 export interface TrackerBlockDto {
   blockNum: number;
   burnType: BurnType;

@@ -11,7 +11,6 @@ import { ApiTags } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import {
   TrackerBlockDto,
-  TrackerDto,
   TrackerSupplyGraphPointDto,
   TrackerV2Dto,
 } from './dto/tracker.dto';
@@ -48,15 +47,6 @@ export class TrackerController {
     @Query() pageOptions: PageOptionsDto,
   ): Promise<PageDto<TrackerBlockDto>> {
     return this.trackerService.findAll(token, burnType, pageOptions);
-  }
-
-  @Get('/:token')
-  public getTrackerData(@Param('token') token: string): Promise<TrackerDto> {
-    return this.cacheManager.wrap(
-      `${CACHE_KEYS.TRACKER}-${token}`,
-      () => this.trackerService.getTrackerData(token),
-      CACHE_TTL.FIVE_MINUTES,
-    );
   }
 
   @Get('/supply/:token')
