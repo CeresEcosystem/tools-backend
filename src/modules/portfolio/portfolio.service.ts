@@ -6,7 +6,6 @@ import { ChronoPriceService } from '../chrono-price/chrono-price.service';
 import { SwapService } from '../swaps/swaps.service';
 import { PairsService } from '../pairs/pairs.service';
 import { DeoClient } from '../deo-client/deo-client';
-
 import { PortfolioDto } from './dto/portfolio.dto';
 import { StakingDto } from './dto/staking.dto';
 import { LiquidityDto } from './dto/liquidity.dto';
