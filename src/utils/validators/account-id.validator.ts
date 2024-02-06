@@ -28,6 +28,7 @@ export class AccountIdValidator implements PipeTransform<string> {
       encodeAddress(
         isHex(accountId) ? hexToU8a(accountId) : decodeAddress(accountId),
       );
+
       return true;
     } catch (error) {
       return false;

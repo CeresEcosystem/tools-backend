@@ -5,7 +5,6 @@ import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { SwaggerModule, DocumentBuilder, OpenAPIObject } from '@nestjs/swagger';
 import { NotFoundExceptionFilter } from './filters/not-found-exception.filter';
 import { TelegramLogger } from './modules/logger/telegram-logger';
-import { AccountIdValidator } from './utils/validators/account-id.validator';
 
 const DEV_ENV = 'dev';
 
@@ -29,10 +28,7 @@ async function bootstrap(): Promise<void> {
   );
 
   // https://docs.nestjs.com/techniques/validation
-  app.useGlobalPipes(
-    new ValidationPipe({ transform: true }),
-    new AccountIdValidator(),
-  );
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
   // https://docs.nestjs.com/faq/global-prefix
   app.setGlobalPrefix('api');

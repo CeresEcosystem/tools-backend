@@ -20,6 +20,7 @@ import { TransfersService } from '../transfers/transfers.service';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { CACHE_KEYS, CACHE_TTL } from './portfolio.const';
+import { AccountIdValidator } from 'src/utils/validators/account-id.validator';
 
 @Controller('portfolio')
 @ApiTags('Portfolio Controller')
@@ -33,7 +34,9 @@ export class PortfolioController {
   ) {}
 
   @Get(':accountId')
-  getPortfolio(@Param('accountId') accountId: string): Promise<PortfolioDto[]> {
+  getPortfolio(
+    @Param('accountId', AccountIdValidator) accountId: string,
+  ): Promise<PortfolioDto[]> {
     return this.cacheManager.wrap(
       `${CACHE_KEYS.PORTFOLIO}-${accountId}`,
       () => this.portfolioService.getPortfolio(accountId),
@@ -42,7 +45,9 @@ export class PortfolioController {
   }
 
   @Get('staking/:accountId')
-  getStaked(@Param('accountId') accountId: string): Promise<StakingDto[]> {
+  getStaked(
+    @Param('accountId', AccountIdValidator) accountId: string,
+  ): Promise<StakingDto[]> {
     return this.cacheManager.wrap(
       `${CACHE_KEYS.STAKING_PORTFOLIO}-${accountId}`,
       () => this.portfolioService.getStakingPortfolio(accountId),
@@ -51,7 +56,9 @@ export class PortfolioController {
   }
 
   @Get('rewards/:accountId')
-  getRewards(@Param('accountId') accountId: string): Promise<StakingDto[]> {
+  getRewards(
+    @Param('accountId', AccountIdValidator) accountId: string,
+  ): Promise<StakingDto[]> {
     return this.cacheManager.wrap(
       `${CACHE_KEYS.REWARDS_PORTFOLIO}-${accountId}`,
       () => this.portfolioService.getRewardsPortfolio(accountId),
@@ -60,7 +67,9 @@ export class PortfolioController {
   }
 
   @Get('liquidity/:accountId')
-  getLiquidity(@Param('accountId') accountId: string): Promise<LiquidityDto[]> {
+  getLiquidity(
+    @Param('accountId', AccountIdValidator) accountId: string,
+  ): Promise<LiquidityDto[]> {
     return this.cacheManager.wrap(
       `${CACHE_KEYS.LIQUIDITY_PORTFOLIO}-${accountId}`,
       () => this.portfolioService.getLiquidityPortfolio(accountId),
@@ -71,7 +80,7 @@ export class PortfolioController {
   @Get('swaps/:accountId')
   getSwaps(
     @Query() pageOptions: PageOptionsDto,
-    @Param('accountId') accountId: string,
+    @Param('accountId', AccountIdValidator) accountId: string,
   ): Promise<PageDto<SwapDto>> {
     return this.portfolioService.getSwapsPortfolio(pageOptions, accountId);
   }
@@ -79,7 +88,7 @@ export class PortfolioController {
   @Get('transfers/:accountId')
   getTransfers(
     @Query() pageOptions: PageOptionsDto,
-    @Param('accountId') accountId: string,
+    @Param('accountId', AccountIdValidator) accountId: string,
   ): Promise<PageDto<TransferDto>> {
     return this.transfersService.findTransfersByAccountId(
       pageOptions,
