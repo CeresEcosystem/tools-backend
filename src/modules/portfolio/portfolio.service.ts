@@ -15,6 +15,7 @@ import { SwapDto } from '../swaps/dto/swap.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { PriceChangeDto } from '../chrono-price/dto/price-change.dto';
 import { SoraClient } from '../sora-client/sora-client';
+import { Pair } from '../pairs/entity/pairs.entity';
 
 const DENOMINATOR = FPNumber.fromNatural(10 ** 18);
 const HOUR_INTERVALS = [1, 24, 24 * 7, 24 * 30];
@@ -266,6 +267,7 @@ export class PortfolioService {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
     const liquidityData: LiquidityDto[] = [];
+    let pairData: Pair;
 
     for (const { code: tokenAddress } of poolSet) {
       const [poolAddress] = (
@@ -284,10 +286,18 @@ export class PortfolioService {
       const percentageHolding = liquidityProviding / totalLiquidity;
 
       try {
-        const pairData = await this.pairsService.findOneByAssetIds(
-          XOR_ADDRESS,
-          tokenAddress.toString(),
-        );
+        if (baseAssetId === XOR_ADDRESS) {
+          pairData = await this.pairsService.findOneByAssetIds(
+            XOR_ADDRESS,
+            tokenAddress.toString(),
+          );
+        } else {
+          pairData = await this.pairsService.findOneByAssetIds(
+            XSTUSD_ADDRESS,
+            tokenAddress.toString(),
+          );
+        }
+
         const value = pairData.liquidity * percentageHolding;
 
         const baseAssetLiqHolding = pairData.baseAssetLiq * percentageHolding;
@@ -302,7 +312,6 @@ export class PortfolioService {
         });
       } catch (error) {}
     }
-
     return liquidityData;
   }
 }
