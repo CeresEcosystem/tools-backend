@@ -25,3 +25,16 @@ export const PRICE_HISTORY_QUERY = `
         ) AS t1
         ORDER BY ts ASC
     ) AS t2;`;
+
+export const AVG_PRICE_IN_FIVE_MINUTES_QUERY = `
+    SELECT 
+        token,
+        AVG(price) AS average_price
+    FROM 
+        prices 
+    WHERE 
+        token = $1
+    GROUP BY 
+        token
+    LIMIT 
+        5;`;

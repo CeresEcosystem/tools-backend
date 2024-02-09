@@ -8,7 +8,11 @@ import Big from 'big.js';
 import { subtractHours } from 'src/utils/date-utils';
 import { PriceChangeDto } from './dto/price-change.dto';
 import { TokenPrice } from '../token-price/entity/token-price.entity';
-import { PRICE_HISTORY_QUERY } from './chrono-price.const';
+import {
+  PRICE_HISTORY_QUERY,
+  AVG_PRICE_IN_FIVE_MINUTES_QUERY,
+} from './chrono-price.const';
+import { VolumePriceDto } from './dto/volume-price.dto';
 
 @Injectable()
 export class ChronoPriceService {
@@ -85,6 +89,15 @@ export class ChronoPriceService {
     tokenPrices.s = 'ok';
 
     return tokenPrices;
+  }
+
+  public async getPriceForVolume(token: string): Promise<VolumePriceDto> {
+    const [tokenPrice] = await this.dataSource.query(
+      AVG_PRICE_IN_FIVE_MINUTES_QUERY,
+      [token],
+    );
+
+    return tokenPrice;
   }
 
   private async getPriceChangeForInterval(

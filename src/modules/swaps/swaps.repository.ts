@@ -4,6 +4,7 @@ import {
   ObjectLiteral,
   Repository,
   SelectQueryBuilder,
+  Between,
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Swap } from './entity/swaps.entity';
@@ -54,6 +55,24 @@ export class SwapRepository {
     const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
 
     return new PageDto(this.swapMapper.toDtos(data), meta);
+  }
+
+  async findSwapsForVolumes(): Promise<SwapDto[]> {
+    const fiveMinutesAgo = new Date();
+    fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+
+    const lastSwap = await this.swapRepository
+      .createQueryBuilder('swap')
+      .orderBy('swap.swappedAt', 'DESC')
+      .getOne();
+
+    const lastFiveMinuteSwaps = await this.swapRepository.find({
+      where: {
+        swappedAt: Between(fiveMinutesAgo, lastSwap.swappedAt),
+      },
+    });
+
+    return lastFiveMinuteSwaps;
   }
 
   async findSwapsByAssetIds(

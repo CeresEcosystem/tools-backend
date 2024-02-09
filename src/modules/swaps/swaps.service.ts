@@ -36,6 +36,10 @@ export class SwapService {
     return this.swapRepo.findSwapsByAccountId(pageOptions, accountId);
   }
 
+  public findSwapsForVolumes(): Promise<SwapDto[]> {
+    return this.swapRepo.findSwapsForVolumes();
+  }
+
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   public async cleanUpSwaps(): Promise<void> {
     this.logger.log('Start cleaning up old token swaps.');
