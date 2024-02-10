@@ -5,11 +5,17 @@ import { TradingController } from './trading.controller';
 import { ChronoPriceModule } from '../chrono-price/chrono-price.module';
 import { SymbolChartMapper } from './mapper/symbol-to-chart-dto.mapper';
 import { TokenPriceToSymbolSearchMapper } from './mapper/token-price-to-symbol-search.mapper';
+import { VolumesModule } from '../volumes/volumes.module';
+import { TradingService } from './trading.service';
 
 @Module({
-  imports: [SymbolsModule, TokenPriceModule, ChronoPriceModule],
+  imports: [SymbolsModule, TokenPriceModule, ChronoPriceModule, VolumesModule],
   controllers: [TradingController],
-  providers: [TokenPriceToSymbolSearchMapper, SymbolChartMapper],
+  providers: [
+    TradingService,
+    TokenPriceToSymbolSearchMapper,
+    SymbolChartMapper,
+  ],
   exports: [],
 })
 export class TradingModule {}

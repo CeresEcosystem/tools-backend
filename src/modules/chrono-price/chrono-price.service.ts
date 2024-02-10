@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { Between, DataSource, In, Repository } from 'typeorm';
+import { Between, DataSource, In, MoreThan, Repository } from 'typeorm';
 import { ChronoPriceDto } from './dto/chrono-price.dto';
 import { ChronoPrice } from './entity/chrono-price.entity';
 import { isNumberString } from 'class-validator';
@@ -8,11 +8,8 @@ import Big from 'big.js';
 import { subtractHours } from 'src/utils/date-utils';
 import { PriceChangeDto } from './dto/price-change.dto';
 import { TokenPrice } from '../token-price/entity/token-price.entity';
-import {
-  PRICE_HISTORY_QUERY,
-  AVG_PRICE_IN_FIVE_MINUTES_QUERY,
-} from './chrono-price.const';
-import { VolumePriceDto } from './dto/volume-price.dto';
+import { PRICE_HISTORY_QUERY } from './chrono-price.const';
+import { TradingPricesChartDto } from './dto/trading-prices-chart.dto';
 
 @Injectable()
 export class ChronoPriceService {
@@ -58,14 +55,13 @@ export class ChronoPriceService {
     return Number(result.price);
   }
 
-  // TODO: Define return type
-  public async getPriceForChart(
+  public async getPricesForChart(
     symbol: string,
     resolution: string,
     from: number,
     to: number,
     countback: number,
-  ): Promise<unknown> {
+  ): Promise<TradingPricesChartDto> {
     const params = this.buildQueryParams(
       symbol,
       resolution,
@@ -79,25 +75,24 @@ export class ChronoPriceService {
       params,
     );
 
-    if (!tokenPrices || !tokenPrices.t) {
-      return {
-        s: 'no_data',
-        noData: true,
-      };
-    }
-
-    tokenPrices.s = 'ok';
-
     return tokenPrices;
   }
 
-  public async getPriceForVolume(token: string): Promise<VolumePriceDto> {
-    const [tokenPrice] = await this.dataSource.query(
-      AVG_PRICE_IN_FIVE_MINUTES_QUERY,
-      [token],
-    );
+  public async getAvgTokenPriceForLastMinutes(
+    token: string,
+    minutesLookback: number,
+  ): Promise<number> {
+    const startingTime = new Date();
+    startingTime.setMinutes(startingTime.getMinutes() - minutesLookback);
 
-    return tokenPrice;
+    const { avgPrice } = await this.repository
+      .createQueryBuilder()
+      .select('AVG(price)', 'avgPrice')
+      .where({ token, createdAt: MoreThan(startingTime) })
+      .groupBy('token')
+      .getRawOne<{ avgPrice: number }>();
+
+    return avgPrice;
   }
 
   private async getPriceChangeForInterval(
