@@ -76,7 +76,7 @@ export class VolumesService {
 
       await this.volumesRepo.insert(tokenVolumes);
 
-      i = i + 1;
+      i += 1;
     }
   }
 
