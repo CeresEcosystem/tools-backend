@@ -4,7 +4,7 @@ import {
   ObjectLiteral,
   Repository,
   SelectQueryBuilder,
-  MoreThan,
+  Between,
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Swap } from './entity/swaps.entity';
@@ -25,6 +25,8 @@ type WhereClause = {
   where: string;
   parameters: ObjectLiteral;
 };
+
+const TIME_FRAME = 5;
 
 @Injectable()
 export class SwapRepository {
@@ -57,17 +59,35 @@ export class SwapRepository {
     return new PageDto(this.swapMapper.toDtos(data), meta);
   }
 
-  async findSwapsForVolumes(): Promise<SwapDto[]> {
-    const fiveMinutesAgo = new Date();
-    fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+  async findSwapsForVolumes(i: number): Promise<SwapDto[]> {
+    /**
+     * dateFrom is the date from which we look to get swaps
+     * dateTo is the date until which we look to get swaps
 
-    const lastFiveMinuteSwaps = await this.swapRepository.find({
+     * Lets say that we have 3 intervals, two to make up to and one regular - 19:20, 19:25, 19:30
+      (last time volume was written to DB is 19:15)
+        - for first interval, i will be 3:
+           dateFrom: now - 3 * 5 or now - 15 will look for swaps starting from 15 minutes before
+           dateTo: now - 3*5 -5, or now - 10 will look for swaps where the last swap is 10 minutes before
+           so we get, for interval i=3 (19:20) swaps which are in the time between 19:15 and 19:20
+     *  - for second interval, i will be 2, and the calculations are the same, it will look for swaps
+          from 19:20 to 19: 25
+
+        - As the last interval(regular one), dateTo will be 1 * 5 - 5 or 0, which leaves us just with
+          now, so regular interval will look for swaps in between 5 minutes ago and now.
+     */
+    const dateFrom = new Date();
+    const dateTo = new Date();
+    dateFrom.setMinutes(dateFrom.getMinutes() - i * TIME_FRAME);
+    dateTo.setMinutes(dateTo.getMinutes() - (i * TIME_FRAME - TIME_FRAME));
+
+    const swaps = await this.swapRepository.find({
       where: {
-        swappedAt: MoreThan(fiveMinutesAgo),
+        swappedAt: Between(dateFrom, dateTo),
       },
     });
 
-    return lastFiveMinuteSwaps;
+    return swaps;
   }
 
   async findSwapsByAssetIds(

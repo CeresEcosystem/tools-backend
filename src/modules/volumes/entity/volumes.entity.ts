@@ -32,4 +32,7 @@ export class TokenVolume {
 
   @Column('timestamp', { name: 'created_at' })
   createdAt: Date;
+
+  @Column({ name: 'volume_at' })
+  volumeAt: number;
 }

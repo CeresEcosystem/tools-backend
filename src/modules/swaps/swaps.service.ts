@@ -36,8 +36,8 @@ export class SwapService {
     return this.swapRepo.findSwapsByAccountId(pageOptions, accountId);
   }
 
-  public findSwapsForVolumes(): Promise<SwapDto[]> {
-    return this.swapRepo.findSwapsForVolumes();
+  public findSwapsForVolumes(i: number): Promise<SwapDto[]> {
+    return this.swapRepo.findSwapsForVolumes(i);
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
