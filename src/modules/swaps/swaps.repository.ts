@@ -126,10 +126,10 @@ export class SwapRepository {
       });
     }
 
-    if (swapOptions.accountIds) {
+    if (swapOptions.excludedAccIds) {
       whereClause.push({
         where: 'swap.accountId NOT IN (:accountIds)',
-        parameters: { accountIds: swapOptions.accountIds },
+        parameters: { accountIds: swapOptions.excludedAccIds },
       });
     }
 

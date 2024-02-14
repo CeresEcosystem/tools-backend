@@ -52,5 +52,5 @@ export class SwapOptionsDto {
   assetId?: string;
 
   @IsOptional()
-  accountIds?: string[];
+  excludedAccIds?: string[];
 }
