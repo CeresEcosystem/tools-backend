@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { SwapService } from '../swaps/swaps.service';
 import { ChronoPriceService } from '../chrono-price/chrono-price.service';
 import { TokenPriceService } from '../token-price/token-price.service';
-import { TokenVolumeDto } from './dto/token-volume.dto';
 import Big from 'big.js';
 import { TokenVolume } from './entity/volumes.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -11,11 +10,13 @@ import { Cron } from '@nestjs/schedule';
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import { isNumberString } from 'class-validator';
 import { TradingVolumesChartDto } from './dto/trading-volumes-chart.dto';
-import { VOLUMES_HISTORY_QUERY } from './volumes.const';
+import {
+  MINUTES_ELAPSED_SINCE_LAST_VOLUME_QUERY,
+  VOLUMES_HISTORY_QUERY,
+} from './volumes.const';
+import { subtractMinutes, toTimeZoneDate } from 'src/utils/date-utils';
 
-const AVG_PRICE_MINUTE_LOOKBACK = 5;
-// Interval on which the volume should be written in the DB
-const INTERVAL = 5;
+const VOLUME_INTERVAL_MINUTES = 5;
 
 @Injectable()
 export class VolumesService {
@@ -57,34 +58,26 @@ export class VolumesService {
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   private async persistTokenVolumes(): Promise<void> {
-    const timePassed = await this.timePassedSinceLastVolume();
-    // How many intervals have passed since last time volumes were written to the DB
-    /*
-      For example, if 19:20 and 19:25 were missed,
-      time passed from 19:15(last time written to DB) to 19:30 is 15 minutes
+    const minutesSinceLastVolume =
+      await this.getMinutesElapsedSinceLastVolume();
 
-      15 minutes / 5 is 3 intervals we need to make for (compensate);
-      19:20, 19:25 and 19:30(regularly called cron) respectfuly
-    */
-    const intervals = timePassed / INTERVAL;
+    const missingPeriods = Math.floor(
+      minutesSinceLastVolume / VOLUME_INTERVAL_MINUTES,
+    );
 
-    // Write volumes for each interval missed.
-    // Why this while-loop works descedently is explained in swaps.repository.ts
-    let i = 0;
-    while (i < intervals) {
-      const tokenVolumes = await this.calcTokenVolumes(intervals - i);
+    for (let periodsBack = 0; periodsBack < missingPeriods; periodsBack += 1) {
+      const from = this.getVolumeDateFrom(periodsBack);
+      const to = this.getVolumeDateTo(periodsBack);
 
-      await this.volumesRepo.insert(tokenVolumes);
-
-      i += 1;
+      this.calcAndSaveTokenVolumes(from, to);
     }
   }
 
-  private async calcTokenVolumes(i: number): Promise<TokenVolumeDto[]> {
+  private async calcAndSaveTokenVolumes(from: Date, to: Date): Promise<void> {
     const tokens = await this.tokenPriceService.findAll();
-    const swaps = await this.swapService.findSwapsForVolumes(i);
+    const swaps = await this.swapService.findSwapsForPeriod(from, to);
 
-    const tokenAndVolume = await Promise.all(
+    const tokenVolumes = await Promise.all(
       tokens.map(async (token) => {
         const tokenSwaps = swaps.filter(
           (swap) =>
@@ -103,26 +96,29 @@ export class VolumesService {
         if (totalAmountSwapped === 0) {
           return {
             token: token.token,
-            volumeAt: 5,
             volume: 0,
+            volumeAt: toTimeZoneDate(to),
           };
         }
 
         const avgTokenPrice =
-          await this.chronoPriceService.getAvgTokenPriceForLastMinutes(
+          await this.chronoPriceService.getAvgTokenPriceForPeriod(
             token.token,
-            AVG_PRICE_MINUTE_LOOKBACK,
+            from,
+            to,
           );
 
         return {
           token: token.token,
-          volumeAt: 5,
           volume: new Big(totalAmountSwapped).mul(avgTokenPrice).toNumber(),
+          volumeAt: toTimeZoneDate(to),
         };
       }),
     );
 
-    return tokenAndVolume;
+    const positiveTokenVolumes = tokenVolumes.filter((tv) => tv.volume > 0);
+
+    await this.volumesRepo.insert(positiveTokenVolumes);
   }
 
   private buildQueryParams(
@@ -149,29 +145,31 @@ export class VolumesService {
     return resolution;
   }
 
-  // Get last volume written in the DB
-  private getLastVolume(): Promise<TokenVolume> {
-    const lastVolume = this.volumesRepo
-      .createQueryBuilder('volume')
-      .orderBy('volume.createdAt', 'DESC')
-      .getOne();
+  private async getMinutesElapsedSinceLastVolume(): Promise<number> {
+    const [{ minutes }] = await this.volumesRepo.query(
+      MINUTES_ELAPSED_SINCE_LAST_VOLUME_QUERY,
+    );
 
-    return lastVolume;
+    return minutes;
   }
 
-  // Calculate the time passed since the last volume update
-  private async timePassedSinceLastVolume(): Promise<number> {
-    // Get the current date and time
-    const now = new Date();
-    // Adjust the date and time to the Belgrade timezone (as done in DB)
-    now.setHours(now.getHours() + 1);
-    const lastVolume = await this.getLastVolume();
-    // Turn time and date into the timestamp
-    const lastVolumeTime = lastVolume.createdAt.getTime();
-    // get the time passed between the current time and last time volume was written in the DB
-    const timePassed = now.getTime() - lastVolumeTime;
-    const timePassedMinutes = timePassed / (1000 * 60);
+  private getVolumeDateFrom(periodsBack: number): Date {
+    const dateFrom = subtractMinutes(
+      new Date(),
+      periodsBack * VOLUME_INTERVAL_MINUTES + VOLUME_INTERVAL_MINUTES,
+    );
+    dateFrom.setSeconds(0);
 
-    return Math.round(timePassedMinutes);
+    return dateFrom;
+  }
+
+  private getVolumeDateTo(periodsBack: number): Date {
+    const dateTo = subtractMinutes(
+      new Date(),
+      periodsBack * VOLUME_INTERVAL_MINUTES,
+    );
+    dateTo.setSeconds(-1); // Set time to end of the previous minute
+
+    return dateTo;
   }
 }

@@ -30,9 +30,9 @@ export class TokenVolume {
   })
   volume: number;
 
+  @Column('timestamp', { name: 'volume_at', default: null })
+  volumeAt: Date;
+
   @Column('timestamp', { name: 'created_at' })
   createdAt: Date;
-
-  @Column({ name: 'volume_at' })
-  volumeAt: number;
 }

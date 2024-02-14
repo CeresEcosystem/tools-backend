@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { Between, DataSource, In, MoreThan, Repository } from 'typeorm';
+import { Between, DataSource, In, Repository } from 'typeorm';
 import { ChronoPriceDto } from './dto/chrono-price.dto';
 import { ChronoPrice } from './entity/chrono-price.entity';
 import { isNumberString } from 'class-validator';
@@ -22,8 +22,8 @@ export class ChronoPriceService {
     private readonly repository: Repository<ChronoPrice>,
   ) {}
 
-  public save(chronoPriceDtos: ChronoPriceDto[]): void {
-    this.repository.insert(chronoPriceDtos);
+  public async save(chronoPriceDtos: ChronoPriceDto[]): Promise<void> {
+    await this.repository.insert(chronoPriceDtos);
   }
 
   public async getPriceChangePerIntervals(
@@ -78,21 +78,19 @@ export class ChronoPriceService {
     return tokenPrices;
   }
 
-  public async getAvgTokenPriceForLastMinutes(
+  public async getAvgTokenPriceForPeriod(
     token: string,
-    minutesLookback: number,
+    dateFrom: Date,
+    dateTo: Date,
   ): Promise<number> {
-    const startingTime = new Date();
-    startingTime.setMinutes(startingTime.getMinutes() - minutesLookback);
-
-    const { avgPrice } = await this.repository
+    const avgPriceResult = await this.repository
       .createQueryBuilder()
       .select('AVG(price)', 'avgPrice')
-      .where({ token, createdAt: MoreThan(startingTime) })
+      .where({ token, createdAt: Between(dateFrom, dateTo) })
       .groupBy('token')
       .getRawOne<{ avgPrice: number }>();
 
-    return avgPrice;
+    return avgPriceResult?.avgPrice || 0;
   }
 
   private async getPriceChangeForInterval(
