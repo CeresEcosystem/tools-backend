@@ -126,6 +126,13 @@ export class SwapRepository {
       });
     }
 
+    if (swapOptions.accountIds) {
+      whereClause.push({
+        where: 'swap.accountId NOT IN (:accountIds)',
+        parameters: { accountIds: swapOptions.accountIds },
+      });
+    }
+
     whereClause.push(this.getAmountWhereClause(swapOptions, assetIds));
 
     return whereClause;
