@@ -1,3 +1,13 @@
+export function toTimeZoneDate(date: Date): Date {
+  const timeZoneDate = new Date(date);
+
+  timeZoneDate.setMinutes(
+    timeZoneDate.getMinutes() - timeZoneDate.getTimezoneOffset(),
+  );
+
+  return timeZoneDate;
+}
+
 export function getDateFormatted(date: Date): string {
   date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
   const dateFormatted = date.toISOString().slice(0, 10);
@@ -17,6 +27,12 @@ export function subtractDays(date: Date, days: number): Date {
 
 export function subtractHours(date: Date, hours: number): Date {
   date.setHours(date.getHours() - hours);
+
+  return date;
+}
+
+export function subtractMinutes(date: Date, minutes: number): Date {
+  date.setMinutes(date.getMinutes() - minutes);
 
   return date;
 }
