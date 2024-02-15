@@ -25,7 +25,7 @@ export const VOLUMES_HISTORY_QUERY = `
 export const MINUTES_ELAPSED_SINCE_LAST_VOLUME_QUERY = `
     SELECT ROUND(EXTRACT(EPOCH FROM( 
         (now() - (
-            SELECT COALESCE(MAX(volume_at), NOW() - INTERVAL '15 MINUTES') 
+            SELECT COALESCE(MAX(volume_at), NOW() - INTERVAL '30 DAYS') 
             FROM volumes
         ))
     )) / 60) AS minutes;`;
