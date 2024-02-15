@@ -27,6 +27,7 @@ import { ReservesModule } from './modules/reserves/reserves.module';
 import { TokenHoldersModule } from './modules/token-holders/token-holders.module';
 import { CurrencyRateModule } from './modules/currency-rate/currency-rate.module';
 import { MarketCapModule } from './modules/market-cap/market-cap.module';
+import { VolumesModule } from './modules/volumes/volumes.module';
 
 @Module({
   imports: [
@@ -88,6 +89,7 @@ import { MarketCapModule } from './modules/market-cap/market-cap.module';
     TokenHoldersModule,
     CurrencyRateModule,
     MarketCapModule,
+    VolumesModule,
   ],
   controllers: [],
   providers: [],
