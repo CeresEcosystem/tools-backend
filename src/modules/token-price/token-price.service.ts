@@ -46,10 +46,8 @@ export class TokenPriceService {
       });
     });
 
-    await this.tokenPriceRepository.upsertAll(tokenPrices);
-
-    const allCurrentTokenPrices = await this.tokenPriceRepository.findAll();
-    await this.saveChronoPrices(allCurrentTokenPrices);
+    this.tokenPriceRepository.upsertAll(tokenPrices);
+    this.saveChronoPrices(tokenPrices);
   }
 
   public updateMarketCap(tokenSymbol: string, marketCap: string): void {
@@ -75,12 +73,12 @@ export class TokenPriceService {
     });
   }
 
-  private async saveChronoPrices(tokenPrices: TokenPrice[]): Promise<void> {
+  private saveChronoPrices(tokenPrices: TokenPrice[]): void {
     const chronoPrices = tokenPrices.map((tokenPrice) => ({
       token: tokenPrice.token,
       price: tokenPrice.price,
     }));
 
-    await this.chronoPriceService.save(chronoPrices);
+    this.chronoPriceService.save(chronoPrices);
   }
 }

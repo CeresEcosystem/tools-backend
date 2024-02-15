@@ -9,7 +9,6 @@ import { subtractHours } from 'src/utils/date-utils';
 import { PriceChangeDto } from './dto/price-change.dto';
 import { TokenPrice } from '../token-price/entity/token-price.entity';
 import { PRICE_HISTORY_QUERY } from './chrono-price.const';
-import { TradingPricesChartDto } from './dto/trading-prices-chart.dto';
 
 @Injectable()
 export class ChronoPriceService {
@@ -22,8 +21,8 @@ export class ChronoPriceService {
     private readonly repository: Repository<ChronoPrice>,
   ) {}
 
-  public async save(chronoPriceDtos: ChronoPriceDto[]): Promise<void> {
-    await this.repository.insert(chronoPriceDtos);
+  public save(chronoPriceDtos: ChronoPriceDto[]): void {
+    this.repository.insert(chronoPriceDtos);
   }
 
   public async getPriceChangePerIntervals(
@@ -55,13 +54,14 @@ export class ChronoPriceService {
     return Number(result.price);
   }
 
-  public async getPricesForChart(
+  // TODO: Define return type
+  public async getPriceForChart(
     symbol: string,
     resolution: string,
     from: number,
     to: number,
     countback: number,
-  ): Promise<TradingPricesChartDto> {
+  ): Promise<unknown> {
     const params = this.buildQueryParams(
       symbol,
       resolution,
@@ -75,22 +75,16 @@ export class ChronoPriceService {
       params,
     );
 
+    if (!tokenPrices || !tokenPrices.t) {
+      return {
+        s: 'no_data',
+        noData: true,
+      };
+    }
+
+    tokenPrices.s = 'ok';
+
     return tokenPrices;
-  }
-
-  public async getAvgTokenPriceForPeriod(
-    token: string,
-    dateFrom: Date,
-    dateTo: Date,
-  ): Promise<number> {
-    const avgPriceResult = await this.repository
-      .createQueryBuilder()
-      .select('AVG(price)', 'avgPrice')
-      .where({ token, createdAt: Between(dateFrom, dateTo) })
-      .groupBy('token')
-      .getRawOne<{ avgPrice: number }>();
-
-    return avgPriceResult?.avgPrice || 0;
   }
 
   private async getPriceChangeForInterval(

@@ -94,7 +94,7 @@ export class TokenPriceSync {
     }
 
     if (pricesToUpsert.length > 0) {
-      await this.tokenPriceService.save(pricesToUpsert);
+      this.tokenPriceService.save(pricesToUpsert);
     }
 
     this.logger.log('Fetching of tokens prices was successful!');

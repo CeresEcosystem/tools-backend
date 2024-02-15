@@ -41,12 +41,10 @@ export class TokenPriceRepository {
     this.repository.update({ token: tokenSymbol }, { marketCap });
   }
 
-  public upsertAll(tokenPrices: TokenPrice[]): Promise<void[]> {
-    return Promise.all(
-      tokenPrices.map(async (tokenPrice) => {
-        await this.upsert(tokenPrice);
-      }),
-    );
+  public upsertAll(tokenPrices: TokenPrice[]): void {
+    tokenPrices.forEach((tokenPrice) => {
+      this.upsert(tokenPrice);
+    });
   }
 
   private async upsert(tokenPrice: TokenPrice): Promise<void> {
@@ -57,12 +55,12 @@ export class TokenPriceRepository {
     });
 
     if (!existingPrice) {
-      await this.repository.insert(tokenPrice);
+      this.repository.insert(tokenPrice);
 
       return;
     }
 
-    await this.repository.update(
+    this.repository.update(
       {
         token: tokenPrice.token,
       },

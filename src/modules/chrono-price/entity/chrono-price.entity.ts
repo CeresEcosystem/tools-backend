@@ -1,8 +1,8 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('prices')
 export class ChronoPrice {
-  @PrimaryGeneratedColumn()
+  @PrimaryColumn()
   id: string;
 
   @Column()
