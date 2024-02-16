@@ -136,7 +136,7 @@ export class VolumesService {
       ),
     );
 
-    const result = await this.volumesRepo.insert(positiveTokenVolumes);
+    const result = await this.volumesRepo.insert(tokenVolumes);
     this.logger.log(`Insert result: ${JSON.stringify(result)}`);
   }
 
