@@ -16,6 +16,8 @@ import {
 } from './volumes.const';
 import { subtractMinutes } from 'src/utils/date-utils';
 import { TokenVolumeDto } from './dto/token-volume.dto';
+import { SwapDto } from '../swaps/dto/swap.dto';
+import { TokenPrice } from '../token-price/entity/token-price.entity';
 
 const VOLUME_INTERVAL_MINUTES = 5;
 
@@ -54,8 +56,8 @@ export class VolumesService {
     );
 
     return {
-      t: tokenVolumes.t || [],
-      v: tokenVolumes.v || [],
+      t: tokenVolumes.t,
+      v: tokenVolumes.v,
     };
   }
 
@@ -86,39 +88,23 @@ export class VolumesService {
     const swaps = await this.swapService.findSwapsForPeriod(from, to);
 
     const tokenVolumes: TokenVolumeDto[] = await Promise.all(
-      tokens.map(async (token) => {
+      tokens.map(async (tokenEntity) => {
+        const { token, assetId } = tokenEntity;
         const tokenSwaps = swaps.filter(
           (swap) =>
-            swap.inputAssetId === token.assetId ||
-            swap.outputAssetId === token.assetId,
+            swap.inputAssetId === assetId || swap.outputAssetId === assetId,
         );
 
-        const totalAmountSwapped = tokenSwaps.reduce((acc, swap) => {
-          if (swap.inputAssetId === token.assetId) {
-            return new Big(acc).add(swap.assetInputAmount).toNumber();
-          }
-
-          return new Big(acc).add(swap.assetOutputAmount).toNumber();
-        }, 0);
-
-        if (totalAmountSwapped === 0) {
-          return {
-            token: token.token,
-            volume: 0,
-            volumeAt: to,
-          };
-        }
-
-        const avgTokenPrice =
-          await this.chronoPriceService.getAvgTokenPriceForPeriod(
-            token.token,
-            from,
-            to,
-          );
+        const volume = await this.calcVolumeForToken(
+          tokenEntity,
+          tokenSwaps,
+          from,
+          to,
+        );
 
         return {
-          token: token.token,
-          volume: new Big(totalAmountSwapped).mul(avgTokenPrice).toNumber(),
+          token,
+          volume,
           volumeAt: to,
         };
       }),
@@ -130,14 +116,40 @@ export class VolumesService {
       `${positiveTokenVolumes.length} volumes available for period: ${from} - ${to}`,
     );
 
-    positiveTokenVolumes.forEach((volume) =>
-      this.logger.log(
-        `Volume: ${volume.token}, ${volume.volume}, ${volume.volumeAt}`,
-      ),
-    );
+    await this.volumesRepo.insert(tokenVolumes);
+  }
 
-    const result = await this.volumesRepo.insert(tokenVolumes);
-    this.logger.log(`Insert result: ${JSON.stringify(result)}`);
+  private async calcVolumeForToken(
+    tokenEntity: TokenPrice,
+    tokenSwaps: SwapDto[],
+    from: Date,
+    to: Date,
+  ): Promise<number> {
+    const { token, assetId } = tokenEntity;
+
+    const totalAmountSwapped = tokenSwaps.reduce((acc, swap) => {
+      if (swap.inputAssetId === assetId) {
+        return new Big(acc).add(swap.assetInputAmount).toNumber();
+      }
+
+      return new Big(acc).add(swap.assetOutputAmount).toNumber();
+    }, 0);
+
+    if (totalAmountSwapped === 0) {
+      return 0;
+    }
+
+    const avgTokenPrice = await this.getAvgTokenPrice(token, from, to);
+
+    return new Big(totalAmountSwapped).mul(avgTokenPrice).toNumber();
+  }
+
+  private getAvgTokenPrice(
+    token: string,
+    from: Date,
+    to: Date,
+  ): Promise<number> {
+    return this.chronoPriceService.getAvgTokenPriceForPeriod(token, from, to);
   }
 
   private buildQueryParams(

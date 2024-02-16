@@ -1,7 +1,7 @@
 export const VOLUMES_HISTORY_QUERY = `
     SELECT 
-        array_agg(ts) AS t, 
-        array_agg(volume) AS v
+        COALESCE(array_agg(ts), '{}') AS t, 
+        COALESCE(array_agg(volume), '{}') AS v
     FROM (
         SELECT 
             extract(epoch from period) AS ts, 

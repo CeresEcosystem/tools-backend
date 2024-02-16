@@ -1,8 +1,8 @@
 export const PRICE_HISTORY_QUERY = `
     SELECT 
-        array_agg(ts) AS t, 
-        array_agg(open) AS o, array_agg(close) AS c, 
-        array_agg(high) AS h, array_agg(low) AS l
+        COALESCE(array_agg(ts), '{}') AS t, 
+        COALESCE(array_agg(open), '{}') AS o, COALESCE(array_agg(close), '{}') AS c, 
+        COALESCE(array_agg(high), '{}') AS h, COALESCE(array_agg(low), '{}') AS l
     FROM (
         SELECT 
             extract(epoch from period) AS ts, 

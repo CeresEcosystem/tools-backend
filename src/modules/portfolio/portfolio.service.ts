@@ -312,6 +312,7 @@ export class PortfolioService {
         });
       } catch (error) {}
     }
+
     return liquidityData;
   }
 }

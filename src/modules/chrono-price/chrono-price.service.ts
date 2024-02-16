@@ -75,7 +75,13 @@ export class ChronoPriceService {
       params,
     );
 
-    return tokenPrices;
+    return {
+      t: tokenPrices.t,
+      o: tokenPrices.o,
+      h: tokenPrices.h,
+      c: tokenPrices.c,
+      l: tokenPrices.l,
+    };
   }
 
   public async getAvgTokenPriceForPeriod(
