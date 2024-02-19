@@ -50,4 +50,7 @@ export class SwapOptionsDto {
   @IsString()
   @IsOptional()
   assetId?: string;
+
+  @IsOptional()
+  excludedAccIds?: string[];
 }
