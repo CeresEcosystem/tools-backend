@@ -9,10 +9,11 @@ import {
 } from 'typeorm';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { SearchOptionsDto } from './dto/search-request.dto';
-import { PageDto } from 'src/utils/pagination/page.dto';
 import { KensetsuBurnDto } from './dto/kensetsu-burn.dto';
 import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
 import { plainToInstance } from 'class-transformer';
+import { PageWithSummaryDto } from 'src/utils/pagination/page-with-summary.dto';
+import { KensetsuBurnSummaryDto } from './dto/kensetsu-burn-summary.dto';
 
 @Injectable()
 export class KensetsuService {
@@ -26,25 +27,10 @@ export class KensetsuService {
   public async getKensetsuBurns(
     searchOptions: SearchOptionsDto,
     pageOptions: PageOptionsDto,
-  ): Promise<PageDto<KensetsuBurnDto>> {
-    const queryBuilder: SelectQueryBuilder<KensetsuBurn> =
-      this.kensetsuRepo.createQueryBuilder();
+  ): Promise<PageWithSummaryDto<KensetsuBurnDto, KensetsuBurnSummaryDto>> {
+    const queryBuilder = this.kensetsuRepo.createQueryBuilder();
 
-    if (searchOptions.accountId) {
-      queryBuilder.andWhere({ accountId: searchOptions.accountId });
-    }
-
-    if (searchOptions.dateFrom) {
-      queryBuilder.andWhere({
-        createdAt: MoreThanOrEqual(searchOptions.dateFrom),
-      });
-    }
-
-    if (searchOptions.dateTo) {
-      queryBuilder.andWhere({
-        createdAt: LessThanOrEqual(searchOptions.dateTo),
-      });
-    }
+    this.addWhereClauses(queryBuilder, searchOptions);
 
     queryBuilder
       .orderBy('created_at', 'DESC')
@@ -61,6 +47,45 @@ export class KensetsuService {
       }),
     );
 
-    return new PageDto(dtos, meta);
+    const amountBurnedTotal = await this.getAmountBurnedTotal(searchOptions);
+
+    return new PageWithSummaryDto(dtos, meta, { amountBurnedTotal });
+  }
+
+  private async getAmountBurnedTotal(
+    searchOptions: SearchOptionsDto,
+  ): Promise<number> {
+    const queryBuilder = this.kensetsuRepo
+      .createQueryBuilder()
+      .select('SUM(amount_burned)', 'amountBurnedTotal');
+
+    this.addWhereClauses(queryBuilder, searchOptions);
+
+    const { amountBurnedTotal } = await queryBuilder.getRawOne<{
+      amountBurnedTotal: number;
+    }>();
+
+    return amountBurnedTotal;
+  }
+
+  private addWhereClauses(
+    queryBuilder: SelectQueryBuilder<KensetsuBurn>,
+    searchOptions: SearchOptionsDto,
+  ): void {
+    if (searchOptions.accountId) {
+      queryBuilder.andWhere({ accountId: searchOptions.accountId });
+    }
+
+    if (searchOptions.dateFrom) {
+      queryBuilder.andWhere({
+        createdAt: MoreThanOrEqual(searchOptions.dateFrom),
+      });
+    }
+
+    if (searchOptions.dateTo) {
+      queryBuilder.andWhere({
+        createdAt: LessThanOrEqual(searchOptions.dateTo),
+      });
+    }
   }
 }
