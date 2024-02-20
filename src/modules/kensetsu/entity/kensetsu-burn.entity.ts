@@ -15,7 +15,7 @@ class ColumnNumericTransformer implements ValueTransformer {
   }
 }
 
-@Entity('kensetsu-burn')
+@Entity('kensetsu_burn')
 export class KensetsuBurn {
   @PrimaryGeneratedColumn()
   id: string;
