@@ -33,7 +33,7 @@ export class SwapListener {
         const { event } = record;
 
         if (
-          event?.section !== 'liquidityProxy' &&
+          event?.section !== 'liquidityProxy' ||
           event?.method !== 'Exchange'
         ) {
           continue;

@@ -37,20 +37,19 @@ export class TransfersListener {
 
   private trackTransfers(soraApi: any): void {
     soraApi.query.system.events(async (events) => {
-      for (const record of events) {
-        const { block } = await soraApi.rpc.chain.getBlock();
-        const blockNum = block.header.toHuman().number;
-        const blockNumStr = blockNum.toString().replaceAll(',', '');
+      const { block } = await soraApi.rpc.chain.getBlock();
+      const blockNum = block.header.toHuman().number;
+      const blockNumStr = blockNum.toString().replaceAll(',', '');
 
+      for (const record of events) {
         const { event } = record;
 
-        if (event?.section !== 'assets' && event?.method !== 'transfer') {
+        if (event?.section !== 'assets' || event?.method !== 'Transfer') {
           continue;
         }
 
-        const transfer = new Transfer();
         const eventData = event.data.toHuman();
-        const [senderAccountId, receiverAccountId, { code: AssetId }, amount] =
+        const [senderAccountId, receiverAccountId, { code: assetId }, amount] =
           eventData;
 
         if (
@@ -62,8 +61,9 @@ export class TransfersListener {
 
         this.logger.debug('Start storing transfers.');
 
+        const transfer = new Transfer();
         transfer.senderAccountId = senderAccountId;
-        transfer.asset = AssetId;
+        transfer.asset = assetId;
         transfer.amount = FPNumber.fromCodecValue(amount).toNumber();
         transfer.receiverAccountId = receiverAccountId;
         transfer.transferredAt = new Date();

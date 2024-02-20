@@ -55,7 +55,7 @@ export class TrackerPswapSync {
       for (const elem of distributions) {
         retStr = blockNum.toString();
         for (const x of elem) {
-          retStr = `${retStr },${ new FPNumber(x).div(DENOMINATOR).toString()}`;
+          retStr = `${retStr},${new FPNumber(x).div(DENOMINATOR).toString()}`;
         }
         retStr = retStr.slice(0, -1);
         if (retStr !== '') {
@@ -108,6 +108,7 @@ export class TrackerPswapSync {
     const result = [];
     const blockHash = await soraApi.rpc.chain.getBlockHash(blockNum);
     const apiAt = await soraApi.at(blockHash);
+
     let events = await apiAt.query.system.events();
     events = events.toHuman();
 

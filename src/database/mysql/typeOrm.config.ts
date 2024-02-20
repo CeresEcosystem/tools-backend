@@ -25,6 +25,7 @@ export default new DataSource({
     'src/modules/currency-rate/entity/currency-rate.entity.ts',
     'src/modules/tracker/entity/tracker-burn.entity.ts',
     'src/modules/tracker/entity/tracker-summary.entity.ts',
+    'src/modules/kensetsu/entity/kensetsu-burn.entity.ts',
   ],
   migrations: ['src/database/mysql/migrations/*'],
   migrationsTableName: 'migrations_tools',
