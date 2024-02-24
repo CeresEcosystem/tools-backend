@@ -43,7 +43,7 @@ export class RewardsSync {
     const apr =
       (365 * 2500000 * pswapPrice * 100) / (baseAssetLiquidity * xorPrice * 2);
 
-    this.rewardsService.save(apr.toFixed(2), pswapRewards.toFixed(2));
+    this.rewardsService.save(apr, pswapRewards);
 
     this.logger.log('Calculating of farming rewards was successful!');
   }

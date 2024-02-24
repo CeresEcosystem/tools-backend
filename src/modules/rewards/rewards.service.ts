@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { KeyValueData } from './key-value-data.entity';
 import { FARMING_APR_KEY, FARMING_REWARDS_KEY } from './rewards.constants';
 import { RewardsDto } from './rewards.dto';
+import { twoNonZeroDecimals } from 'src/utils/number-utils';
 
 @Injectable()
 export class RewardsService {
@@ -13,47 +14,54 @@ export class RewardsService {
   ) {}
 
   public async getRewards(): Promise<RewardsDto> {
-    const { value: apr } = await this.keyValueRepository.findOneBy({
+    const farmingApr = await this.keyValueRepository.findOneBy({
       id: FARMING_APR_KEY,
     });
-    const { value: rewards } = await this.keyValueRepository.findOneBy({
+    const farmingRewards = await this.keyValueRepository.findOneBy({
       id: FARMING_REWARDS_KEY,
     });
+    const apr = Number(farmingApr.value);
+    const rewards = Number(farmingRewards.value);
 
     return {
-      apr,
-      rewards,
-      aprDouble: (Number(apr) * 2).toFixed(2),
-      rewardsDouble: (Number(rewards) * 2).toFixed(2),
+      apr: this.formatNumber(apr),
+      rewards: this.formatNumber(rewards),
+      aprDouble: this.formatNumber(apr * 2),
+      rewardsDouble: this.formatNumber(rewards * 2),
     };
   }
 
-  public save(apr: string, rewards: string): void {
+  public save(apr: number, rewards: number): void {
     this.upsertKeyValue(FARMING_APR_KEY, apr);
     this.upsertKeyValue(FARMING_REWARDS_KEY, rewards);
   }
 
-  private async upsertKeyValue(key: string, value: string): Promise<void> {
+  private async upsertKeyValue(key: string, value: number): Promise<void> {
     const existingKey = await this.keyValueRepository.findOneBy({ id: key });
+    const valueStr = value.toString();
 
     if (!existingKey) {
       this.keyValueRepository.insert({
         id: key,
-        value,
+        value: valueStr,
         updatedAt: new Date(),
       });
 
       return;
     }
 
-    if (existingKey.value !== value) {
+    if (existingKey.value !== valueStr) {
       this.keyValueRepository.update(
         { id: key },
         {
-          value,
+          value: valueStr,
           updatedAt: new Date(),
         },
       );
     }
+  }
+
+  private formatNumber(value: number): string {
+    return value < 1 ? twoNonZeroDecimals(value).toString() : value.toFixed(2);
   }
 }
