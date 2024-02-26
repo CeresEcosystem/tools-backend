@@ -1,7 +1,7 @@
 // Lib specific fields chat_id and parse_mode
 /* eslint-disable camelcase */
 import { ConsoleLogger, Injectable, LogLevel } from '@nestjs/common';
-import { TelegramService } from 'nestjs-telegram';
+import { TelegramSendMessageParams, TelegramService } from 'nestjs-telegram';
 
 const STANDARD_LOG_LEVELS: LogLevel[] = ['log', 'warn', 'error'];
 const DEBUG_LOG_LEVELS: LogLevel[] = ['debug', 'verbose'];
@@ -17,23 +17,45 @@ export class TelegramLogger extends ConsoleLogger {
     );
   }
 
+  override async warn(
+    message: string,
+    stack?: string,
+    context?: string,
+  ): Promise<void> {
+    const tlgrmMsg = this.buildMessage(
+      process.env.TELEGRAM_WARN_CHAT_ID,
+      'WARN',
+      message,
+      context,
+      stack,
+    );
+
+    await this.telegram
+      .sendMessage(tlgrmMsg)
+      .toPromise()
+      .catch(() => {
+        this.warn(
+          'Failed to send warning report to Telegram, check server logs for more details.',
+        );
+      });
+
+    super.warn(message, stack, context);
+  }
   override async error(
     message: string,
     stack?: string,
     context?: string,
   ): Promise<void> {
+    const tlgrmMsg = this.buildMessage(
+      process.env.TELEGRAM_ERROR_CHAT_ID,
+      'ERROR',
+      message,
+      context,
+      stack,
+    );
+
     await this.telegram
-      .sendMessage({
-        chat_id: process.env.TELEGRAM_CHAT_ID,
-        text:
-          `🚨 <b>Application:</b> ${process.env.APP_NAME} 🚨\n` +
-          `<b>Environment:</b> ${process.env.APP_ENV}\n` +
-          '<b>Log Level:</b> ERROR\n' +
-          `${context ? `<b>Context:</b> ${context}\n` : ''}` +
-          `<b>Message:</b> ${message}\n` +
-          `${stack ? `<b>Stack:</b> ${stack}` : ''}`,
-        parse_mode: 'html',
-      })
+      .sendMessage(tlgrmMsg)
       .toPromise()
       .catch(() => {
         this.error(
@@ -42,5 +64,26 @@ export class TelegramLogger extends ConsoleLogger {
       });
 
     super.error(message, stack, context);
+  }
+
+  private buildMessage(
+    chatId: string,
+    logLevel: string,
+    messageTxt: string,
+    context?: string,
+    stack?: string,
+  ): TelegramSendMessageParams {
+    return {
+      chat_id: chatId,
+      text:
+        `⚠️ <b>Application:</b> ${process.env.APP_NAME} ⚠️\n` +
+        `<b>Environment:</b> ${process.env.APP_ENV}\n` +
+        `<b>Log Level:</b> ${logLevel}\n` +
+        `${context ? `<b>Context:</b> ${context}\n` : ''}` +
+        `<b>Message:</b> ${messageTxt}\n` +
+        `${stack ? `<b>Stack:</b> ${stack}` : ''}`,
+      parse_mode: 'html',
+      disable_web_page_preview: true,
+    };
   }
 }

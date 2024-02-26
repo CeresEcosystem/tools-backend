@@ -5,6 +5,7 @@ import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { SwaggerModule, DocumentBuilder, OpenAPIObject } from '@nestjs/swagger';
 import { NotFoundExceptionFilter } from './filters/not-found-exception.filter';
 import { TelegramLogger } from './modules/logger/telegram-logger';
+import { LoggingInterceptor } from './interceptors/logging.interceptor';
 
 const DEV_ENV = 'dev';
 
@@ -15,11 +16,17 @@ async function bootstrap(): Promise<void> {
 
   // https://docs.nestjs.com/techniques/logger#dependency-injection
   // Use TelegramLogger only if env variables are set
-  if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
+  if (
+    process.env.TELEGRAM_BOT_TOKEN &&
+    process.env.TELEGRAM_ERROR_CHAT_ID &&
+    process.env.TELEGRAM_WARN_CHAT_ID
+  ) {
     app.useLogger(app.get(TelegramLogger));
   }
 
   app.enableCors();
+
+  app.useGlobalInterceptors(new LoggingInterceptor());
 
   // https://docs.nestjs.com/exception-filters#exception-filters-1
   app.useGlobalFilters(
