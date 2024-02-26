@@ -11,6 +11,8 @@ import { tap } from 'rxjs/operators';
 
 const REQUEST_DURATION_THRESHOLD_MS = 2000;
 
+const IGNORED_URLS = ['/api/trading/history'];
+
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger(LoggingInterceptor.name);
@@ -54,7 +56,10 @@ export class LoggingInterceptor implements NestInterceptor {
       `Response duration: ${method} ${url} ${statusCode}: ${duration}ms`,
     );
 
-    if (duration > REQUEST_DURATION_THRESHOLD_MS) {
+    if (
+      duration > REQUEST_DURATION_THRESHOLD_MS &&
+      IGNORED_URLS.indexOf(url) === -1
+    ) {
       this.logger.warn(
         `Execution too long: ${method} ${url} ${statusCode}: ${duration}ms`,
       );
