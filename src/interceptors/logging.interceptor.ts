@@ -9,7 +9,8 @@ import { Request, Response } from 'express';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-const REQUEST_DURATION_THRESHOLD_MS = 2000;
+const REQUEST_DURATION_WARN_THRESHOLD_MS = 1000;
+const REQUEST_DURATION_ERROR_THRESHOLD_MS = 10000;
 
 const IGNORED_URLS = ['/api/trading/history'];
 
@@ -57,10 +58,19 @@ export class LoggingInterceptor implements NestInterceptor {
     );
 
     if (
-      duration > REQUEST_DURATION_THRESHOLD_MS &&
+      duration > REQUEST_DURATION_WARN_THRESHOLD_MS &&
       IGNORED_URLS.indexOf(url) === -1
     ) {
       this.logger.warn(
+        `Execution too long: ${method} ${url} ${statusCode}: ${duration}ms`,
+      );
+    }
+
+    if (
+      duration > REQUEST_DURATION_ERROR_THRESHOLD_MS &&
+      IGNORED_URLS.indexOf(url) === -1
+    ) {
+      this.logger.error(
         `Execution too long: ${method} ${url} ${statusCode}: ${duration}ms`,
       );
     }
