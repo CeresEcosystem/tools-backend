@@ -9,10 +9,23 @@ import { Request, Response } from 'express';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-const REQUEST_DURATION_WARN_THRESHOLD_MS = 1000;
-const REQUEST_DURATION_ERROR_THRESHOLD_MS = 10000;
-
-const IGNORED_URLS = ['/api/trading/history'];
+const URL_THRESHOLDS = [
+  {
+    url: '/api/trading/history',
+    warn: 10000,
+    error: 20000,
+  },
+  {
+    url: '/api/portfolio',
+    warn: 3000,
+    error: 10000,
+  },
+  {
+    url: '/',
+    warn: 1000,
+    error: 3000,
+  },
+];
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
@@ -49,30 +62,23 @@ export class LoggingInterceptor implements NestInterceptor {
   ): void {
     const response = context.switchToHttp().getResponse<Response>();
     const { statusCode } = response;
-    const endTimestamp = Date.now();
-
-    const duration = endTimestamp - startTimestamp;
+    const duration = Date.now() - startTimestamp;
+    const urlThreshold = URL_THRESHOLDS.find((threshold) =>
+      url.startsWith(threshold.url),
+    );
 
     this.logger.debug(
       `Response duration: ${method} ${url} ${statusCode}: ${duration}ms`,
     );
 
-    if (
-      duration > REQUEST_DURATION_WARN_THRESHOLD_MS &&
-      IGNORED_URLS.indexOf(url) === -1
-    ) {
-      this.logger.warn(
-        `Execution too long: ${method} ${url} ${statusCode}: ${duration}ms`,
-      );
+    const msg = `Execution too long: ${method} ${url} ${statusCode}: ${duration}ms`;
+
+    if (duration > urlThreshold.warn) {
+      this.logger.warn(msg);
     }
 
-    if (
-      duration > REQUEST_DURATION_ERROR_THRESHOLD_MS &&
-      IGNORED_URLS.indexOf(url) === -1
-    ) {
-      this.logger.error(
-        `Execution too long: ${method} ${url} ${statusCode}: ${duration}ms`,
-      );
+    if (duration > urlThreshold.error) {
+      this.logger.error(msg);
     }
   }
 }
