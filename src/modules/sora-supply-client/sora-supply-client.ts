@@ -5,7 +5,7 @@ import { AxiosError } from 'axios';
 import { catchError, firstValueFrom, retry } from 'rxjs';
 import { SoraTokenSupplyDto } from './dto/sora-tokens-supply.dto';
 
-const SORA_SUPPLY_API = 'SORA_SUPPLY_API';
+const SORA_API = 'SORA_API';
 
 @Injectable()
 export class SoraSupplyClient {
@@ -16,10 +16,14 @@ export class SoraSupplyClient {
     private readonly configs: ConfigService,
   ) {}
 
-  public getSoraTokensSupply(tokens: string[]): Promise<SoraTokenSupplyDto[]> {
+  public async getSoraTokensSupply(
+    tokens: string[],
+  ): Promise<SoraTokenSupplyDto[]> {
+    await this.verifyApiAvailable();
+
     return Promise.all(
       tokens.map(async (token) => {
-        const url = `${this.configs.get(SORA_SUPPLY_API)}/${token}`;
+        const url = `${this.configs.get(SORA_API)}/qty/${token}`;
         let supply = await this.sendGetRequest<number | string>(url);
 
         if (!supply) {
@@ -36,6 +40,10 @@ export class SoraSupplyClient {
         };
       }),
     );
+  }
+
+  private async verifyApiAvailable(): Promise<void> {
+    await this.sendGetRequest<string>(this.configs.get(SORA_API));
   }
 
   private async sendGetRequest<T>(url: string): Promise<T> {
