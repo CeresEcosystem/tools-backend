@@ -51,13 +51,33 @@ import { KensetsuModule } from './modules/kensetsu/kensetsu.module';
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: process.env.MYSQL_HOST,
-      port: Number(process.env.MYSQL_PORT),
-      username: process.env.MYSQL_USER,
-      password: process.env.MYSQL_PASSWORD,
-      database: process.env.MYSQL_DB_NAME,
       autoLoadEntities: true,
       logging: Boolean(process.env.LOG_MYSQL_QUERIES),
+      replication: {
+        master: {
+          host: process.env.MYSQL_HOST,
+          port: Number(process.env.MYSQL_PORT),
+          username: process.env.MYSQL_USER,
+          password: process.env.MYSQL_PASSWORD,
+          database: process.env.MYSQL_DB_NAME,
+        },
+        slaves: [
+          {
+            host: process.env.MYSQL_HOST,
+            port: Number(process.env.MYSQL_PORT),
+            username: process.env.MYSQL_USER,
+            password: process.env.MYSQL_PASSWORD,
+            database: process.env.MYSQL_DB_NAME,
+          },
+          // {
+          //   host: process.env.MYSQL_SLAVE_HOST,
+          //   port: Number(process.env.MYSQL_SLAVE_PORT),
+          //   username: process.env.MYSQL_SLAVE_USER,
+          //   password: process.env.MYSQL_SLAVE_PASSWORD,
+          //   database: process.env.MYSQL_SLAVE_DB_NAME,
+          // },
+        ],
+      },
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
