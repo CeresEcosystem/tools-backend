@@ -139,15 +139,13 @@ export class PortfolioService {
     }
 
     const stakedTokens = pools
-      .filter(
-        (pool) => FPNumber.fromCodecValue(pool.pooledTokens).toNumber() > 0,
-      )
+      .filter((pool) => pool.pooledTokens > 0)
       .map((pool) => {
         const tokenEntity = allTokenEntities.find(
           (entity) => entity.assetId === pool.poolAsset,
         );
 
-        const balance = FPNumber.fromCodecValue(pool.pooledTokens).toNumber();
+        const balance = pool.pooledTokens;
         const price = Number(tokenEntity.price);
 
         return {
