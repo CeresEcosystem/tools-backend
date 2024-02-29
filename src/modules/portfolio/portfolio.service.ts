@@ -170,10 +170,10 @@ export class PortfolioService {
     }
 
     const rewards: StakingDto[] = [...stakingPools, ...farmingPools]
-      .filter(({ rewards }) => FPNumber.fromCodecValue(rewards).toNumber() > 0)
+      .filter(({ rewards }) => rewards > 0)
       .reduce((accumulatedTokens, pool) => {
         const { rewardAsset } = pool;
-        const rewardAmount = FPNumber.fromCodecValue(pool.rewards).toNumber();
+        const rewardAmount = pool.rewards;
 
         const existingAsset = accumulatedTokens.find(
           (token) => token.rewardAsset === rewardAsset,
