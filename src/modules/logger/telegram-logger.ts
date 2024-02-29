@@ -73,10 +73,12 @@ export class TelegramLogger extends ConsoleLogger {
     context?: string,
     stack?: string,
   ): TelegramSendMessageParams {
+    const icon = logLevel === 'ERROR' ? '🚨' : '⚠️';
+
     return {
       chat_id: chatId,
       text:
-        `⚠️ <b>Application:</b> ${process.env.APP_NAME} ⚠️\n` +
+        `${icon} <b>Application:</b> ${process.env.APP_NAME} ${icon}\n` +
         `<b>Environment:</b> ${process.env.APP_ENV}\n` +
         `<b>Log Level:</b> ${logLevel}\n` +
         `${context ? `<b>Context:</b> ${context}\n` : ''}` +
