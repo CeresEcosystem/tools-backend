@@ -77,8 +77,8 @@ export class LoggingInterceptor implements NestInterceptor {
       this.logger.warn(msg);
     }
 
-    if (duration > urlThreshold.error) {
-      this.logger.error(msg);
-    }
+    // if (duration > urlThreshold.error) {
+    //   this.logger.error(msg);
+    // }
   }
 }
