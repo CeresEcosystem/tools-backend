@@ -59,10 +59,9 @@ export class SwapListener {
         swap.swappedAt = new Date();
 
         try {
-          const savedSwap = await this.swapRepository.save(swap);
-          const swapDto = this.swapMapper.toDto(savedSwap);
+          await this.swapRepository.insert(swap);
+          const swapDto = this.swapMapper.toDto(swap);
           this.swapGateway.onSwap(swapDto);
-          this.logger.debug(`Persisted swap ${savedSwap.id}`);
         } catch (error) {
           if (error instanceof QueryFailedError) {
             const { driverError } = error;
