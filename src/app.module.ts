@@ -89,6 +89,9 @@ import { KensetsuModule } from './modules/kensetsu/kensetsu.module';
       database: process.env.PG_DB_NAME,
       autoLoadEntities: true,
       logging: Boolean(process.env.LOG_PSQL_QUERIES),
+      extra: {
+        max: 100,
+      },
     }),
     TradingModule,
     TelegramLoggerModule,
