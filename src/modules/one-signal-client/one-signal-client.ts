@@ -74,9 +74,9 @@ export class OneSignalClient {
   ): void {
     firstValueFrom(
       this.httpService
-        .post(oneSignalApi, data, { headers, timeout: 1000 })
+        .post(oneSignalApi, data, { headers, timeout: 10000 })
         .pipe(
-          retry({ count: 10, delay: 1000 }),
+          retry({ count: 10, delay: 2000 }),
           catchError((error: AxiosError) => {
             this.logError<T>(error, data);
 

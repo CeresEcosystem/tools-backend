@@ -17,7 +17,7 @@ const URL_THRESHOLDS = [
   },
   {
     url: '/api/portfolio',
-    warn: 3000,
+    warn: 6000,
     error: 10000,
   },
   {
