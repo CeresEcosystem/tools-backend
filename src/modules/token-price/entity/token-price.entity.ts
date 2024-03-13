@@ -11,7 +11,7 @@ export class TokenPrice {
   @Column('float')
   price: number;
 
-  @Column({ name: 'market_cap', type: 'bigint' })
+  @Column({ name: 'market_cap', type: 'bigint', default: '0' })
   marketCap: string;
 
   @Column({ name: 'asset_id' })

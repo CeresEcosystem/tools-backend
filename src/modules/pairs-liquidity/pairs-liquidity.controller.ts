@@ -5,6 +5,7 @@ import { PageDto } from 'src/utils/pagination/page.dto';
 import { PairLiquidityChangeDto } from './dto/pair-liquidity-change.dto';
 import { PairsLiquidityService } from './pairs-liquidity.service';
 import { PairPeriodicLiquidityChangeDto } from './dto/pair-periodic-liquidity-change.dto';
+import { PairLiquidityProviderDto } from './dto/pair-liquidity-provider.dto';
 
 @Controller('pairs-liquidity')
 @ApiTags('Pairs Liquidity Controller')
@@ -30,6 +31,17 @@ export class PairsLiquidityController {
     return this.pairsLiquidityChangesService.getPeriodicChanges(
       baseSymbol,
       tokenSymbol,
+    );
+  }
+
+  @Get('/providers/:baseAsset/:tokenAsset')
+  public getLiquidityProviders(
+    @Param('baseAsset') baseAsset: string,
+    @Param('tokenAsset') tokenAsset: string,
+  ): Promise<PairLiquidityProviderDto[]> {
+    return this.pairsLiquidityChangesService.getLiquidityProviders(
+      baseAsset,
+      tokenAsset,
     );
   }
 }
