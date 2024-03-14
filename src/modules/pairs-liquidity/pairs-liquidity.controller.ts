@@ -51,7 +51,7 @@ export class PairsLiquidityController {
           baseAsset,
           tokenAsset,
         ),
-      CACHE_TTL.ONE_HOUR,
+      CACHE_TTL.HALF_HOUR,
     );
   }
 }

@@ -3,5 +3,5 @@ export const CACHE_KEYS = {
 };
 
 export const CACHE_TTL = {
-  ONE_HOUR: 3600000,
+  HALF_HOUR: 1800000,
 };
