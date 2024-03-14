@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PairLiquidityChangeEntity } from './entity/pair-liquidity-change.entity';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
@@ -13,6 +13,8 @@ import { PairsService } from '../pairs/pairs.service';
 import { Cron } from '@nestjs/schedule';
 import { CronExpression } from 'src/utils/cron-expression.enum';
 import { PairPeriodicLiquidityChangeDto } from './dto/pair-periodic-liquidity-change.dto';
+import { SoraClient } from '../sora-client/sora-client';
+import { PairLiquidityProviderDto } from './dto/pair-liquidity-provider.dto';
 
 @Injectable()
 export class PairsLiquidityService {
@@ -24,6 +26,7 @@ export class PairsLiquidityService {
     private readonly periodicMapper: PairPeriodicLiquidityChangeEntityToDtoMapper,
     private readonly periodicLiqChangeRepo: PairsPeriodicLiquidityChangeRepository,
     private readonly pairsService: PairsService,
+    private readonly soraClient: SoraClient,
   ) {}
 
   public insert(data: PairLiquidityChangeEntity): void {
@@ -57,6 +60,55 @@ export class PairsLiquidityService {
       );
 
     return this.periodicMapper.toDtos(pairPeriodicChange);
+  }
+
+  public async getLiquidityProviders(
+    baseAsset: string,
+    tokenAsset: string,
+  ): Promise<PairLiquidityProviderDto[]> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const soraApi: any = await this.soraClient.getSoraApi();
+
+    const liquidityProviders: PairLiquidityProviderDto[] = [];
+
+    try {
+      const [poolAddress] = (
+        await soraApi.query.poolXYK.properties(baseAsset, tokenAsset)
+      ).toHuman();
+
+      const pairData = await this.pairsService.findOneByAssetIds(
+        baseAsset,
+        tokenAsset,
+      );
+
+      const poolProviders = await soraApi.query.poolXYK.poolProviders.entries(
+        poolAddress,
+      );
+
+      const totalLiquidity = await soraApi.query.poolXYK.totalIssuances(
+        poolAddress,
+      );
+
+      for (const [liquidityProvider, lpTokens] of poolProviders) {
+        const provider = liquidityProvider.toHuman();
+
+        liquidityProviders.push({
+          address: provider[1],
+          liquidity: (lpTokens / totalLiquidity) * pairData.liquidity,
+        });
+      }
+
+      liquidityProviders.sort(
+        (
+          providerA: PairLiquidityProviderDto,
+          providerB: PairLiquidityProviderDto,
+        ) => providerB.liquidity - providerA.liquidity,
+      );
+    } catch (_) {
+      throw new BadRequestException('Invalid asset id.');
+    }
+
+    return liquidityProviders;
   }
 
   @Cron(CronExpression.EVERY_HOUR)
