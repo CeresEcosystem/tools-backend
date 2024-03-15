@@ -92,10 +92,14 @@ export class PairsLiquidityService {
       for (const [liquidityProvider, lpTokens] of poolProviders) {
         const provider = liquidityProvider.toHuman();
 
-        liquidityProviders.push({
-          address: provider[1],
-          liquidity: (lpTokens / totalLiquidity) * pairData.liquidity,
-        });
+        const liquidity = (lpTokens / totalLiquidity) * pairData.liquidity;
+
+        if (liquidity >= 1) {
+          liquidityProviders.push({
+            address: provider[1],
+            liquidity,
+          });
+        }
       }
 
       liquidityProviders.sort(
