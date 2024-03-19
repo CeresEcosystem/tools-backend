@@ -16,6 +16,7 @@ import { XOR_ADDRESS, XSTUSD_ADDRESS } from '../../constants/constants';
 
 import * as whitelist from '../../utils/files/whitelist.json';
 import * as synthetics from 'src/utils/files/synthetics.json';
+import { PairsVolumeChangeDto } from './dto/pairs-volume-change.dto';
 
 const VOLUME_URL = 'https://stats.sora.org/pairs';
 const BASE_ASSETS = [
@@ -104,6 +105,47 @@ export class PairsSync {
     }
 
     this.logger.log('Fetching of pairs data was successful!');
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async fetchPairsVolume(): Promise<void> {
+    this.logger.log('Start fetching pairs volume changes.');
+
+    const volumeData = await this.fetchSoraPairs();
+    const tokenPrices = await this.tokenPriceService.findAll();
+
+    const dtos: PairsVolumeChangeDto[] = [];
+
+    for (const pair of this.pairs) {
+      const { token, baseAsset, baseAssetId, tokenAssetId } = pair;
+
+      if (
+        !tokenPrices.some((tp) => tp.token === baseAsset) ||
+        !tokenPrices.some((tp) => tp.token === token)
+      ) {
+        continue;
+      }
+
+      const { basePrice } = this.getBaseAndTargetPrices(
+        tokenPrices,
+        token,
+        baseAsset,
+      );
+
+      const pairData = volumeData[`${tokenAssetId}_${baseAssetId}`];
+      const volume = pairData ? pairData.quote_volume * basePrice : 0;
+
+      dtos.push({
+        tokenAssetId,
+        baseAssetId,
+        volume: volume.toFixed(2),
+        timestamp: new Date(),
+      });
+    }
+
+    this.pairsService.savePairsVolumeChanges(dtos);
+
+    this.logger.log('Fetching of pairs volume changes was successful!');
   }
 
   private getBaseAndTargetPrices(

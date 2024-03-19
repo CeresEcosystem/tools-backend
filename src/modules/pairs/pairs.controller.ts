@@ -1,7 +1,6 @@
 import { Controller, Get, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ApiTags } from '@nestjs/swagger';
-import { PairToDtoMapper } from './mapper/pair-to-dto.mapper';
 import { Cache } from 'cache-manager';
 import { CACHE_KEYS, CACHE_TTL } from './pairs.constants';
 import { PairsService } from './pairs.service';
@@ -12,7 +11,6 @@ import { PairDto } from './dto/pair.dto';
 export class PairsController {
   constructor(
     private readonly pairsService: PairsService,
-    private readonly mapper: PairToDtoMapper,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
   ) {}
@@ -21,7 +19,7 @@ export class PairsController {
   public getPairs(): Promise<PairDto[]> {
     return this.cacheManager.wrap(
       CACHE_KEYS.PAIRS,
-      () => this.mapper.toDtosAsync(this.pairsService.findAll()),
+      () => this.pairsService.findAll(),
       CACHE_TTL.TWO_MINUTES,
     );
   }
