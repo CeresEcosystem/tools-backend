@@ -1,3 +1,10 @@
+interface PairVolume {
+  '24h': number;
+  '7d': number;
+  '1M': number;
+  '3M': number;
+}
+
 export interface PairDto {
   token: string;
   tokenFullName: string;
@@ -12,6 +19,7 @@ export interface PairDto {
   targetAssetLiq: number;
   lockedLiquidity: number;
   volume: number;
+  volumes: PairVolume;
 
   updatedAt: Date;
 }

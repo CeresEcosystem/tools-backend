@@ -8,10 +8,12 @@ import { PairsRepository } from './pairs.repository';
 import { PairsService } from './pairs.service';
 import { TokenPriceModule } from '../token-price/token-price.module';
 import { PairsController } from './pairs.controller';
-import { PairToDtoMapper } from './mapper/pair-to-dto.mapper';
 import { CeresClientModule } from '../ceres-client/ceres-client.module';
 import { PairsLockerSync } from './pairs-locker.sync';
 import { SoraClientModule } from '../sora-client/sora-client-module';
+import { PairsVolumeChangeEntity } from './entity/pairs-volume-change.entity';
+import { PairsVolumeChangeRepository } from './pairs-volume.repository';
+import { PairsVolumeChangeDtoToEntityMapper } from './mapper/pairs-volume-change-dto-to-entity.mapper';
 
 @Module({
   imports: [
@@ -19,14 +21,15 @@ import { SoraClientModule } from '../sora-client/sora-client-module';
     TokenPriceModule,
     CeresClientModule,
     SoraClientModule,
-    TypeOrmModule.forFeature([Pair]),
+    TypeOrmModule.forFeature([Pair, PairsVolumeChangeEntity]),
   ],
   controllers: [PairsController],
   providers: [
     PairsService,
     PairsMapper,
-    PairToDtoMapper,
+    PairsVolumeChangeDtoToEntityMapper,
     PairsRepository,
+    PairsVolumeChangeRepository,
     PairsSync,
     PairsLockerSync,
   ],
