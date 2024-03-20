@@ -35,10 +35,10 @@ export class PairsService {
         return {
           ...pair,
           volumes: {
-            d: pair.volume,
-            w: weekVolume,
-            m: monthVolume,
-            threeM: threeMonthsVolume,
+            '24h': pair.volume,
+            '7d': weekVolume,
+            '1M': monthVolume,
+            '3M': threeMonthsVolume,
           },
         };
       }),

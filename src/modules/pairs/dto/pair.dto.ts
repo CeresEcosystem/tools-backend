@@ -1,8 +1,8 @@
 interface PairVolume {
-  d: number;
-  w: number;
-  m: number;
-  threeM: number;
+  '24h': number;
+  '7d': number;
+  '1M': number;
+  '3M': number;
 }
 
 export interface PairDto {
