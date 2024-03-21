@@ -69,6 +69,13 @@ import { KensetsuModule } from './modules/kensetsu/kensetsu.module';
             password: process.env.MYSQL_PASSWORD,
             database: process.env.MYSQL_DB_NAME,
           },
+          {
+            host: process.env.MYSQL_SLAVE_HOST,
+            port: Number(process.env.MYSQL_SLAVE_PORT),
+            username: process.env.MYSQL_SLAVE_USER,
+            password: process.env.MYSQL_SLAVE_PASSWORD,
+            database: process.env.MYSQL_SLAVE_DB_NAME,
+          },
         ],
       },
     }),
