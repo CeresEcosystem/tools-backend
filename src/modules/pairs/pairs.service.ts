@@ -27,9 +27,9 @@ export class PairsService {
     const pairsWithVolume: PairDto[] = await Promise.all(
       pairs.map(async (pair) => {
         const [weekVolume, monthVolume, threeMonthsVolume] = await Promise.all([
-          this.getVolumeForTimeInterval(pair, 7),
-          this.getVolumeForTimeInterval(pair, 30),
-          this.getVolumeForTimeInterval(pair, 90),
+          await this.getVolumeForTimeInterval(pair, 7),
+          await this.getVolumeForTimeInterval(pair, 30),
+          await this.getVolumeForTimeInterval(pair, 90),
         ]);
 
         return {
