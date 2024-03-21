@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import { Injectable } from '@nestjs/common';
 import { PairBcDto } from './dto/pair-bc.dto';
 import { Pair } from './entity/pairs.entity';
@@ -24,23 +25,23 @@ export class PairsService {
   public async findAll(): Promise<PairDto[]> {
     const pairs = await this.pairsRepository.findAll();
 
-    const pairsWithVolume: PairDto[] = await Promise.all(
-      pairs.map(async (pair) => {
-        const weekVolume = await this.getVolumeForTimeInterval(pair, 7);
-        const monthVolume = await this.getVolumeForTimeInterval(pair, 30);
-        const threeMonthsVolume = await this.getVolumeForTimeInterval(pair, 90);
+    const pairsWithVolume: PairDto[] = [];
 
-        return {
-          ...pair,
-          volumes: {
-            '24h': pair.volume,
-            '7d': weekVolume,
-            '1M': monthVolume,
-            '3M': threeMonthsVolume,
-          },
-        };
-      }),
-    );
+    for (const pair of pairs) {
+      const weekVolume = await this.getVolumeForTimeInterval(pair, 7);
+      const monthVolume = await this.getVolumeForTimeInterval(pair, 30);
+      const threeMonthsVolume = await this.getVolumeForTimeInterval(pair, 90);
+
+      pairsWithVolume.push({
+        ...pair,
+        volumePeriods: {
+          '24h': pair.volume,
+          '7d': weekVolume,
+          '1M': monthVolume,
+          '3M': threeMonthsVolume,
+        },
+      });
+    }
 
     return pairsWithVolume;
   }
