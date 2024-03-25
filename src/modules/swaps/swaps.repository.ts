@@ -20,6 +20,8 @@ import {
   subtractDays,
 } from 'src/utils/date-utils';
 import { SwapOptionsDto } from './dto/swap-options.dto';
+import { SwapsStatsDto } from './dto/swaps-stats.dto';
+import { SwapsPageDto } from './dto/swaps-page.dto';
 
 type WhereClause = {
   where: string;
@@ -69,7 +71,7 @@ export class SwapRepository {
     pageOptions: PageOptionsDto,
     swapOptions: SwapOptionsDto,
     assetIds: string[],
-  ): Promise<PageDto<SwapDto>> {
+  ): Promise<SwapsPageDto<SwapDto>> {
     const queryBuilder: SelectQueryBuilder<Swap> =
       this.swapRepository.createQueryBuilder('swap');
 
@@ -85,13 +87,20 @@ export class SwapRepository {
     });
 
     queryBuilder.orderBy({ 'swap.id': swapOptions.orderBy });
+
+    let swapsStats = new SwapsStatsDto();
+
+    if (assetIds.length === 1) {
+      swapsStats = await this.getSwapStats(queryBuilder.clone(), assetIds[0]);
+    }
+
     queryBuilder.skip(pageOptions.skip).take(pageOptions.size);
 
     const [data, count] = await queryBuilder.getManyAndCount();
 
     const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
 
-    return new PageDto(this.swapMapper.toDtos(data), meta);
+    return new SwapsPageDto(this.swapMapper.toDtos(data), meta, swapsStats);
   }
 
   public async findSwapsByAccountId(
@@ -191,6 +200,31 @@ export class SwapRepository {
         dateFrom,
         dateTo,
       },
+    };
+  }
+
+  private async getSwapStats(
+    queryBuilder: SelectQueryBuilder<Swap>,
+    assetId: string,
+  ): Promise<SwapsStatsDto> {
+    const [data] = await queryBuilder.getManyAndCount();
+
+    let buys = 0;
+    let sells = 0;
+
+    for (const swap of data) {
+      if (swap.inputAssetId === assetId) {
+        sells += swap.assetInputAmount;
+      }
+
+      if (swap.outputAssetId === assetId) {
+        buys += swap.assetOutputAmount;
+      }
+    }
+
+    return {
+      buys,
+      sells,
     };
   }
 }

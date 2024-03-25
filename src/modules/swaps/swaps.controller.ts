@@ -6,6 +6,7 @@ import { SwapDto } from './dto/swap.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { SwapOptionsDto } from './dto/swap-options.dto';
 import { SwapTokensDto } from './dto/swap-tokens.dto';
+import { SwapsPageDto } from './dto/swaps-page.dto';
 
 @Controller('swaps')
 @ApiTags('Swaps controller')
@@ -17,7 +18,7 @@ export class SwapsController {
     @Body() swapTokens: SwapTokensDto,
     @Query() pageOptions: PageOptionsDto,
     @Query() swapOptions: SwapOptionsDto,
-  ): Promise<PageDto<SwapDto>> {
+  ): Promise<SwapsPageDto<SwapDto>> {
     return this.swapService.findSwapsByTokens(
       pageOptions,
       swapOptions,
