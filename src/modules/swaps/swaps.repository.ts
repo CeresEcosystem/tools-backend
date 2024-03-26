@@ -21,7 +21,7 @@ import {
 } from 'src/utils/date-utils';
 import { SwapOptionsDto } from './dto/swap-options.dto';
 import { SwapsStatsDto } from './dto/swaps-stats.dto';
-import { SwapsPageDto } from './dto/swaps-page.dto';
+import { PageWithSummaryDto } from 'src/utils/pagination/page-with-summary.dto';
 
 type WhereClause = {
   where: string;
@@ -71,7 +71,7 @@ export class SwapRepository {
     pageOptions: PageOptionsDto,
     swapOptions: SwapOptionsDto,
     assetIds: string[],
-  ): Promise<SwapsPageDto<SwapDto>> {
+  ): Promise<PageWithSummaryDto<SwapDto, SwapsStatsDto>> {
     const queryBuilder: SelectQueryBuilder<Swap> =
       this.swapRepository.createQueryBuilder('swap');
 
@@ -100,7 +100,11 @@ export class SwapRepository {
 
     const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
 
-    return new SwapsPageDto(this.swapMapper.toDtos(data), meta, swapsStats);
+    return new PageWithSummaryDto(
+      this.swapMapper.toDtos(data),
+      meta,
+      swapsStats,
+    );
   }
 
   public async findSwapsByAccountId(
@@ -207,24 +211,30 @@ export class SwapRepository {
     queryBuilder: SelectQueryBuilder<Swap>,
     assetId: string,
   ): Promise<SwapsStatsDto> {
-    const [data] = await queryBuilder.getManyAndCount();
+    const data = await queryBuilder.getMany();
 
     let buys = 0;
+    let tokensBought = 0;
     let sells = 0;
+    let tokensSold = 0;
 
     for (const swap of data) {
       if (swap.inputAssetId === assetId) {
-        sells += swap.assetInputAmount;
+        sells += 1;
+        tokensSold += swap.assetInputAmount;
       }
 
       if (swap.outputAssetId === assetId) {
-        buys += swap.assetOutputAmount;
+        buys += 1;
+        tokensBought += swap.assetOutputAmount;
       }
     }
 
     return {
       buys,
+      tokensBought,
       sells,
+      tokensSold,
     };
   }
 }
