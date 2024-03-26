@@ -211,30 +211,31 @@ export class SwapRepository {
     queryBuilder: SelectQueryBuilder<Swap>,
     assetId: string,
   ): Promise<SwapsStatsDto> {
-    const data = await queryBuilder.getMany();
+    const buyQuery = queryBuilder
+      .select('SUM(swap.assetOutputAmount) AS tokensBought')
+      .addSelect('COUNT(*) AS buys')
+      .where('swap.outputAssetId = :assetId', {
+        assetId,
+      });
 
-    let buys = 0;
-    let tokensBought = 0;
-    let sells = 0;
-    let tokensSold = 0;
+    const sellQuery = queryBuilder
+      .clone()
+      .select('SUM(swap.assetInputAmount) AS tokensSold')
+      .addSelect('COUNT(*) AS sells')
+      .where('swap.inputAssetId = :assetId', {
+        assetId,
+      });
 
-    for (const swap of data) {
-      if (swap.inputAssetId === assetId) {
-        sells += 1;
-        tokensSold += swap.assetInputAmount;
-      }
-
-      if (swap.outputAssetId === assetId) {
-        buys += 1;
-        tokensBought += swap.assetOutputAmount;
-      }
-    }
+    const [buyResult, sellResult] = await Promise.all([
+      await buyQuery.getRawOne(),
+      await sellQuery.getRawOne(),
+    ]);
 
     return {
-      buys,
-      tokensBought,
-      sells,
-      tokensSold,
+      buys: parseInt(buyResult.buys) || 0,
+      tokensBought: buyResult.tokensBought || 0,
+      sells: parseInt(sellResult.sells) || 0,
+      tokensSold: sellResult.tokensSold || 0,
     };
   }
 }
