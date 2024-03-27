@@ -7,12 +7,14 @@ import { HoldersRepository } from './holders.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Holder } from './entity/holders.entity';
 import { HolderEntityToDto } from './mapper/holder-entity-to-dto.mapper';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
     SoraClientModule,
     RelevantPricesModule,
     TypeOrmModule.forFeature([Holder]),
+    ConfigModule.forRoot(),
   ],
   controllers: [TokenHoldersController],
   providers: [TokenHoldersService, HoldersRepository, HolderEntityToDto],
