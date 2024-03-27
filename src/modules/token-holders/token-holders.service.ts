@@ -9,8 +9,10 @@ import { PageDto } from 'src/utils/pagination/page.dto';
 import { HolderDto } from './dto/holder.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { CronExpression, Cron } from '@nestjs/schedule';
+import { ConfigService } from '@nestjs/config';
 
 const DENOMINATOR = FPNumber.fromNatural(10 ** 18);
+const BATCH_SIZE = 'BATCH_SIZE';
 
 @Injectable()
 export class TokenHoldersService {
@@ -21,6 +23,7 @@ export class TokenHoldersService {
     private readonly soraClient: SoraClient,
     private readonly relevantPricesService: RelevantPricesService,
     private holderRepo: HoldersRepository,
+    private configs: ConfigService,
   ) {}
 
   public async getHoldersAndBalances(
@@ -83,6 +86,7 @@ export class TokenHoldersService {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const soraApi: any = await this.soraClient.getSoraApi();
     const holders = await this.getTokenHolders();
+    const batchSize = parseInt(this.configs.get(BATCH_SIZE), 10) || 2500;
 
     this.logger.log(
       `Iterate all unique holders and get their portfolios, number of unique holders: ${holders.size}`,
@@ -115,6 +119,7 @@ export class TokenHoldersService {
         holdersAndAssets.flat().length
       }`,
     );
+
     const holderEntities = holdersAndAssets.flat().map((value) => {
       const holderEntity = new Holder();
       holderEntity.holder = value.holder;
@@ -123,10 +128,18 @@ export class TokenHoldersService {
 
       return holderEntity;
     });
+
     this.logger.log('Array that holds holderEntities created');
 
     this.logger.log('upsert DB');
-    await this.holderRepo.upsertHolders(holderEntities);
+
+    for (let i = 0; i < holderEntities.length; i += batchSize) {
+      this.logger.log(`batch ${i} started`);
+      const batch = holderEntities.slice(i, i + batchSize);
+      await this.holderRepo.upsertHolders(batch);
+      this.logger.log(`batch ${i} done`);
+    }
+
     this.logger.log('DB upserted');
   }
 }
