@@ -38,7 +38,7 @@ export class TokenHoldersService {
     return holders;
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_30_MINUTES)
   private async updateHolders(): Promise<void> {
     this.logger.log('Start updating holders balances');
     await this.upsertHolderTokensAndBalances();
