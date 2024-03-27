@@ -91,7 +91,7 @@ export class SwapRepository {
     let swapsStats = new SwapsStatsDto();
 
     if (assetIds.length === 1) {
-      swapsStats = await this.getSwapStats(queryBuilder.clone(), assetIds[0]);
+      swapsStats = await this.getSwapStats(queryBuilder, assetIds[0]);
     }
 
     queryBuilder.skip(pageOptions.skip).take(pageOptions.size);
@@ -212,9 +212,10 @@ export class SwapRepository {
     assetId: string,
   ): Promise<SwapsStatsDto> {
     const buyQuery = queryBuilder
+      .clone()
       .select('SUM(swap.assetOutputAmount) AS tokensBought')
       .addSelect('COUNT(*) AS buys')
-      .where('swap.outputAssetId = :assetId', {
+      .andWhere('swap.outputAssetId = :assetId', {
         assetId,
       });
 
@@ -222,7 +223,7 @@ export class SwapRepository {
       .clone()
       .select('SUM(swap.assetInputAmount) AS tokensSold')
       .addSelect('COUNT(*) AS sells')
-      .where('swap.inputAssetId = :assetId', {
+      .andWhere('swap.inputAssetId = :assetId', {
         assetId,
       });
 
