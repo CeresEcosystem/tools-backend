@@ -20,6 +20,8 @@ import {
   subtractDays,
 } from 'src/utils/date-utils';
 import { SwapOptionsDto } from './dto/swap-options.dto';
+import { SwapsStatsDto } from './dto/swaps-stats.dto';
+import { PageWithSummaryDto } from 'src/utils/pagination/page-with-summary.dto';
 
 type WhereClause = {
   where: string;
@@ -69,7 +71,7 @@ export class SwapRepository {
     pageOptions: PageOptionsDto,
     swapOptions: SwapOptionsDto,
     assetIds: string[],
-  ): Promise<PageDto<SwapDto>> {
+  ): Promise<PageWithSummaryDto<SwapDto, SwapsStatsDto>> {
     const queryBuilder: SelectQueryBuilder<Swap> =
       this.swapRepository.createQueryBuilder('swap');
 
@@ -85,13 +87,24 @@ export class SwapRepository {
     });
 
     queryBuilder.orderBy({ 'swap.id': swapOptions.orderBy });
+
+    let swapsStats = new SwapsStatsDto();
+
+    if (assetIds.length === 1) {
+      swapsStats = await this.getSwapStats(queryBuilder.clone(), assetIds[0]);
+    }
+
     queryBuilder.skip(pageOptions.skip).take(pageOptions.size);
 
     const [data, count] = await queryBuilder.getManyAndCount();
 
     const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
 
-    return new PageDto(this.swapMapper.toDtos(data), meta);
+    return new PageWithSummaryDto(
+      this.swapMapper.toDtos(data),
+      meta,
+      swapsStats,
+    );
   }
 
   public async findSwapsByAccountId(
@@ -191,6 +204,38 @@ export class SwapRepository {
         dateFrom,
         dateTo,
       },
+    };
+  }
+
+  private async getSwapStats(
+    queryBuilder: SelectQueryBuilder<Swap>,
+    assetId: string,
+  ): Promise<SwapsStatsDto> {
+    const buyQuery = queryBuilder
+      .select('SUM(swap.assetOutputAmount) AS tokensBought')
+      .addSelect('COUNT(*) AS buys')
+      .where('swap.outputAssetId = :assetId', {
+        assetId,
+      });
+
+    const sellQuery = queryBuilder
+      .clone()
+      .select('SUM(swap.assetInputAmount) AS tokensSold')
+      .addSelect('COUNT(*) AS sells')
+      .where('swap.inputAssetId = :assetId', {
+        assetId,
+      });
+
+    const [buyResult, sellResult] = await Promise.all([
+      await buyQuery.getRawOne(),
+      await sellQuery.getRawOne(),
+    ]);
+
+    return {
+      buys: parseInt(buyResult.buys) || 0,
+      tokensBought: buyResult.tokensBought || 0,
+      sells: parseInt(sellResult.sells) || 0,
+      tokensSold: sellResult.tokensSold || 0,
     };
   }
 }
