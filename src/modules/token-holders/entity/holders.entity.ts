@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
 
 @Entity('holders')
 @Index(['holder', 'assetId'], { unique: true })
+@Index('updatedAt')
 export class Holder {
   @PrimaryGeneratedColumn()
   id: number;
@@ -14,4 +15,7 @@ export class Holder {
 
   @Column('float', { name: 'balance' })
   balance: number;
+
+  @Column('timestamp', { name: 'updated_at' })
+  updatedAt: Date;
 }

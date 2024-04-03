@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Holder } from './entity/holders.entity';
-import { Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import { PageDto } from 'src/utils/pagination/page.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { HolderDto } from './dto/holder.dto';
@@ -11,7 +11,8 @@ import { HolderEntityToDto } from './mapper/holder-entity-to-dto.mapper';
 @Injectable()
 export class HoldersRepository {
   constructor(
-    @InjectRepository(Holder) private holderRepo: Repository<Holder>,
+    @InjectRepository(Holder)
+    private holderRepo: Repository<Holder>,
     private holderMapper: HolderEntityToDto,
   ) {}
 
@@ -19,8 +20,8 @@ export class HoldersRepository {
     await this.holderRepo.upsert(holders, ['holder', 'assetId']);
   }
 
-  public async deleteHoldersWithZeroBalance(): Promise<void> {
-    await this.holderRepo.delete({ balance: 0 });
+  public async deleteHoldersUpdatedBefore(updatedAt: Date): Promise<void> {
+    await this.holderRepo.delete({ updatedAt: LessThan(updatedAt) });
   }
 
   public findAllHolders(): Promise<Holder[]> {

@@ -10,8 +10,8 @@ import { HolderDto } from './dto/holder.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { CronExpression, Cron } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
+import { HolderAssetDto } from './dto/holder-asset.dto';
 
-const DENOMINATOR = FPNumber.fromNatural(10 ** 18);
 const BATCH_SIZE = 'BATCH_SIZE';
 
 @Injectable()
@@ -26,42 +26,68 @@ export class TokenHoldersService {
     private configs: ConfigService,
   ) {}
 
-  public async getHoldersAndBalances(
+  public getHoldersAndBalances(
     pageOptions: PageOptionsDto,
     assetId: string,
   ): Promise<PageDto<HolderDto>> {
-    const holders = await this.holderRepo.findHoldersAndBalances(
-      pageOptions,
-      assetId,
-    );
-
-    return holders;
+    return this.holderRepo.findHoldersAndBalances(pageOptions, assetId);
   }
 
   @Cron(CronExpression.EVERY_30_MINUTES)
-  private async updateHolders(): Promise<void> {
+  private async upsertHolderTokensAndBalances(): Promise<void> {
     this.logger.log('Start updating holders balances');
-    await this.upsertHolderTokensAndBalances();
-    await this.holderRepo.deleteHoldersWithZeroBalance();
+    const holders = await this.getTokenHolders();
+    const updateTime = new Date();
+    const batchSize = this.configs.get<number>(BATCH_SIZE, 2500);
+
+    this.logger.log(
+      `Iterate all unique holders and get their portfolios, number of unique holders: ${holders.size}`,
+    );
+
+    const holdersAssets = await this.getHolderAssets(holders);
+
+    this.logger.log(
+      `Map an array that holds all holderEntities. Holders and assets array size: ${holdersAssets.length}`,
+    );
+
+    const holderEntities = holdersAssets.map((value) => {
+      const holderEntity = new Holder();
+      holderEntity.holder = value.holder;
+      holderEntity.assetId = value.assetId;
+      holderEntity.balance = value.balance;
+      holderEntity.updatedAt = updateTime;
+
+      return holderEntity;
+    });
+
+    const holderEntitiesBatches = [];
+
+    for (let i = 0; i < holderEntities.length; i += batchSize) {
+      holderEntitiesBatches.push(holderEntities.slice(i, i + batchSize));
+    }
+
+    await Promise.all(
+      holderEntitiesBatches.map((batch) =>
+        this.holderRepo.upsertHolders(batch),
+      ),
+    );
+
+    await this.holderRepo.deleteHoldersUpdatedBefore(updateTime);
+
     this.logger.log('Updating holders balances successful.');
   }
 
   private async getTokenHolders(): Promise<Set<string>> {
     this.logger.log('Start getTokenHolders function - get all unique holders');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const soraApi: any = await this.soraClient.getSoraApi();
     const allTokens = await this.relevantPricesService.findAllRelevantTokens();
-    const allStorageKeysSerialized = await soraApi.rpc.state.getKeys(
-      '0x99971b5749ac43e0235e41b0d37869188ee7418a6531173d60d1f6a82d8f4d51',
-    );
-
-    const allStorageKeys = allStorageKeysSerialized.toHuman() as string[];
+    const allStorageKeys = await this.getStorageKeys();
 
     const uniqueHolders = new Set<string>();
 
     this.logger.log(
       `Start iterating all storage keys for each token, tokens: ${allTokens.length}, keys: ${allStorageKeys.length}`,
     );
+
     allTokens.forEach((token) => {
       allStorageKeys
         .filter((key) => key.includes(token.assetId.slice(2)))
@@ -71,75 +97,54 @@ export class TokenHoldersService {
             69,
           );
 
-          if (!uniqueHolders.has(address)) {
-            uniqueHolders.add(address);
-          }
+          uniqueHolders.add(address);
         });
     });
+
     this.logger.log('Iterating storage keys complete - got all unique holders');
 
     return uniqueHolders;
   }
 
-  private async upsertHolderTokensAndBalances(): Promise<void> {
-    this.logger.log('Start upserting token holders and their balances');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const soraApi: any = await this.soraClient.getSoraApi();
-    const holders = await this.getTokenHolders();
-    const batchSize = parseInt(this.configs.get(BATCH_SIZE), 10) || 2500;
-
-    this.logger.log(
-      `Iterate all unique holders and get their portfolios, number of unique holders: ${holders.size}`,
+  private async getStorageKeys(): Promise<string[]> {
+    const soraApi = await this.soraClient.getSoraApi();
+    const allStorageKeysSerialized = await soraApi.rpc.state.getKeys(
+      '0x99971b5749ac43e0235e41b0d37869188ee7418a6531173d60d1f6a82d8f4d51',
     );
 
-    const holdersAndAssets = await Promise.all(
-      Array.from(holders).map(async (holder) => {
-        const portfolio = await soraApi.query.tokens.accounts.entries(holder);
+    return allStorageKeysSerialized.toHuman() as string[];
+  }
 
-        return portfolio.map((portfolioAsset) => {
-          const [assetsId, assetAmount] = portfolioAsset;
-          const [, { code: assetId }] = assetsId.toHuman();
-          const { free: assetBalance } = assetAmount.toHuman();
+  private async getHolderAssets(
+    holders: Set<string>,
+  ): Promise<HolderAssetDto[]> {
+    const soraApi = await this.soraClient.getSoraApi();
 
-          return {
-            holder,
-            assetId,
-            balance: new FPNumber(assetBalance).div(DENOMINATOR).toNumber(),
-          };
-        });
-      }),
-    );
+    return (
+      await Promise.all(
+        Array.from(holders).map(async (holder) => {
+          const portfolio = await soraApi.query.tokens.accounts.entries(holder);
 
-    this.logger.log(
-      'Iteration complete - got all unique holders assets and balances',
-    );
+          return portfolio.map((portfolioAsset) => {
+            const [assetsId, assetAmount] = portfolioAsset;
+            const [, { code: assetId }] = assetsId.toHuman() as [
+              string,
+              { code: string },
+            ];
+            const { free: assetBalance } = assetAmount.toHuman() as {
+              free: number;
+            };
 
-    this.logger.log(
-      `Map an array that holds all holderEntities. Holders and assets array size: ${
-        holdersAndAssets.flat().length
-      }`,
-    );
-
-    const holderEntities = holdersAndAssets.flat().map((value) => {
-      const holderEntity = new Holder();
-      holderEntity.holder = value.holder;
-      holderEntity.assetId = value.assetId;
-      holderEntity.balance = value.balance;
-
-      return holderEntity;
-    });
-
-    this.logger.log('Array that holds holderEntities created');
-
-    this.logger.log('upsert DB');
-
-    for (let i = 0; i < holderEntities.length; i += batchSize) {
-      this.logger.log(`batch ${i} started`);
-      const batch = holderEntities.slice(i, i + batchSize);
-      await this.holderRepo.upsertHolders(batch);
-      this.logger.log(`batch ${i} done`);
-    }
-
-    this.logger.log('DB upserted');
+            return {
+              holder,
+              assetId,
+              balance: FPNumber.fromCodecValue(assetBalance).toNumber(),
+            };
+          });
+        }),
+      )
+    )
+      .flat()
+      .filter((holder) => holder.balance > 0);
   }
 }
