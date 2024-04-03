@@ -64,13 +64,13 @@ export class TokenPriceSync {
           0,
           token.assetId,
           DAI_ADDRESS,
-          FPNumber.fromNatural(amount).bnToString(),
+          FPNumber.fromNatural(amount).toCodecString(),
           'WithDesiredInput',
           ['XYKPool'],
           'Disabled',
           (result) => {
             const value = result.isNone
-              ? { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0 }
+              ? { amount: 0, fee: {}, rewards: [], amountWithoutImpact: 0 }
               : result.unwrap();
 
             let price = new FPNumber(value.amount).toNumber();
