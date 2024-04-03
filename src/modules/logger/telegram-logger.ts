@@ -33,14 +33,15 @@ export class TelegramLogger extends ConsoleLogger {
     await this.telegram
       .sendMessage(tlgrmMsg)
       .toPromise()
-      .catch(() => {
+      .catch((reason) => {
         this.warn(
-          'Failed to send warning report to Telegram, check server logs for more details.',
+          `Failed to send warning report to Telegram, check server logs for more details: ${reason}`,
         );
       });
 
     super.warn(message, stack, context);
   }
+
   override async error(
     message: string,
     stack?: string,
@@ -57,9 +58,9 @@ export class TelegramLogger extends ConsoleLogger {
     await this.telegram
       .sendMessage(tlgrmMsg)
       .toPromise()
-      .catch(() => {
+      .catch((reason) => {
         this.error(
-          'Failed to send error report to Telegram, check server logs for more details.',
+          `Failed to send error report to Telegram, check server logs for more details: ${reason}`,
         );
       });
 
