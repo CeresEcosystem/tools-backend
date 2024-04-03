@@ -33,13 +33,18 @@ export class TelegramLogger extends ConsoleLogger {
     await this.telegram
       .sendMessage(tlgrmMsg)
       .toPromise()
-      .catch((reason) => {
-        this.warn(
-          `Failed to send warning report to Telegram, check server logs for more details: ${reason}`,
-        );
-      });
-
-    super.warn(message, stack, context);
+      .catch(async (reason) => {
+        if (reason.toString().indexOf('429') >= 0) {
+          // eslint-disable-next-line no-promise-executor-return
+          await new Promise((resolve) => setTimeout(resolve, 200));
+          this.warn(message, stack, context);
+        } else {
+          this.warn(
+            `Failed to send warning report to Telegram, check server logs for more details: ${reason}`,
+          );
+        }
+      })
+      .finally(() => super.warn(message, stack, context));
   }
 
   override async error(
@@ -58,13 +63,18 @@ export class TelegramLogger extends ConsoleLogger {
     await this.telegram
       .sendMessage(tlgrmMsg)
       .toPromise()
-      .catch((reason) => {
-        this.error(
-          `Failed to send error report to Telegram, check server logs for more details: ${reason}`,
-        );
-      });
-
-    super.error(message, stack, context);
+      .catch(async (reason) => {
+        if (reason.toString().indexOf('429') >= 0) {
+          // eslint-disable-next-line no-promise-executor-return
+          await new Promise((resolve) => setTimeout(resolve, 200));
+          this.error(message, stack, context);
+        } else {
+          this.error(
+            `Failed to send error report to Telegram, check server logs for more details: ${reason}`,
+          );
+        }
+      })
+      .finally(() => super.warn(message, stack, context));
   }
 
   private buildMessage(
@@ -87,6 +97,7 @@ export class TelegramLogger extends ConsoleLogger {
         `${stack ? `<b>Stack:</b> ${stack}` : ''}`,
       parse_mode: 'html',
       disable_web_page_preview: true,
+      disable_notification: logLevel !== 'ERROR',
     };
   }
 }
