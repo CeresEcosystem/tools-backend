@@ -26,9 +26,9 @@ export class TrackerSupplySync {
 
     const trackedTokens = await this.getTokenNames();
 
-    for (const token of trackedTokens) {
-      await this.updateTokenSupply(token);
-    }
+    await Promise.all(
+      trackedTokens.map((token) => this.updateTokenSupply(token)),
+    );
 
     this.logger.log('Fetching of token supplies was successful!');
   }
