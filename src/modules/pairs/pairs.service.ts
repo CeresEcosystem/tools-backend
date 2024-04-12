@@ -26,42 +26,36 @@ export class PairsService {
     const pairs = await this.pairsRepository.findAll();
 
     const pairsWithVolume: PairDto[] = [];
+    const weekVolumes = await this.pairsVolumeRepository.findTotalVolumes(7);
+    const monthVolumes = await this.pairsVolumeRepository.findTotalVolumes(30);
+    const threeMonthsVolumes =
+      await this.pairsVolumeRepository.findTotalVolumes(90);
 
     for (const pair of pairs) {
-      const weekVolume = await this.getVolumeForTimeInterval(pair, 7);
-      const monthVolume = await this.getVolumeForTimeInterval(pair, 30);
-      const threeMonthsVolume = await this.getVolumeForTimeInterval(pair, 90);
-
       pairsWithVolume.push({
         ...pair,
         volumePeriods: {
           '24h': pair.volume,
-          '7d': weekVolume,
-          '1M': monthVolume,
-          '3M': threeMonthsVolume,
+          '7d': weekVolumes.find(
+            (vol) =>
+              vol.baseAssetId === pair.baseAssetId &&
+              vol.tokenAssetId === pair.tokenAssetId,
+          )?.volume,
+          '1M': monthVolumes.find(
+            (vol) =>
+              vol.baseAssetId === pair.baseAssetId &&
+              vol.tokenAssetId === pair.tokenAssetId,
+          )?.volume,
+          '3M': threeMonthsVolumes.find(
+            (vol) =>
+              vol.baseAssetId === pair.baseAssetId &&
+              vol.tokenAssetId === pair.tokenAssetId,
+          )?.volume,
         },
       });
     }
 
     return pairsWithVolume;
-  }
-
-  private async getVolumeForTimeInterval(
-    pair: Pair,
-    numEntries: number,
-  ): Promise<number> {
-    const volumeEntities =
-      await this.pairsVolumeRepository.findOneByBaseAssetIdAndTokenAssetId(
-        pair.baseAssetId,
-        pair.tokenAssetId,
-        numEntries,
-      );
-    const totalVolume = volumeEntities.reduce(
-      (acc, curr) => acc + curr.volume,
-      0,
-    );
-
-    return totalVolume;
   }
 
   public findOneByAssetIds(

@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PairsVolumeChangeEntity } from './entity/pairs-volume-change.entity';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
+import { PairsVolumeTotalDto } from './dto/pairs-volume-total.dto';
+import { subtractDays } from 'src/utils/date-utils';
 
 @Injectable()
 export class PairsVolumeChangeRepository {
@@ -10,18 +12,15 @@ export class PairsVolumeChangeRepository {
     private readonly repository: Repository<PairsVolumeChangeEntity>,
   ) {}
 
-  public findOneByBaseAssetIdAndTokenAssetId(
-    baseAssetId: string,
-    tokenAssetId: string,
-    numEntries: number,
-  ): Promise<PairsVolumeChangeEntity[]> {
-    return this.repository.find({
-      where: {
-        tokenAssetId,
-        baseAssetId,
-      },
-      take: numEntries,
-    });
+  public findTotalVolumes(numEntries: number): Promise<PairsVolumeTotalDto[]> {
+    return this.repository
+      .createQueryBuilder()
+      .select('SUM(volume)', 'volume')
+      .addSelect('token_asset_id', 'tokenAssetId')
+      .addSelect('base_asset_id', 'baseAssetId')
+      .groupBy('tokenAssetId, baseAssetId')
+      .where({ timestamp: MoreThan(subtractDays(new Date(), numEntries)) })
+      .getRawMany<PairsVolumeTotalDto>();
   }
 
   public insertAll(pairsVolumeChanges: PairsVolumeChangeEntity[]): void {
