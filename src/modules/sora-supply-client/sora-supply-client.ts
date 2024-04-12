@@ -19,40 +19,42 @@ export class SoraSupplyClient {
   public async getSoraTokensSupply(
     tokens: string[],
   ): Promise<SoraTokenSupplyDto[]> {
-    await this.verifyApiAvailable();
+    try {
+      return await Promise.all(
+        tokens.map(async (token) => {
+          const url = `${this.configs.get(SORA_API)}/qty/${token}`;
+          let supply = await this.sendGetRequest<number | string>(url);
 
-    return Promise.all(
-      tokens.map(async (token) => {
-        const url = `${this.configs.get(SORA_API)}/qty/${token}`;
-        let supply = await this.sendGetRequest<number | string>(url);
+          if (!supply) {
+            supply = 0;
+          }
 
-        if (!supply) {
-          supply = 0;
-        }
+          if (typeof supply === 'string') {
+            supply = parseFloat(supply);
+          }
 
-        if (typeof supply === 'string') {
-          supply = parseFloat(supply);
-        }
+          return {
+            token,
+            supply,
+          };
+        }),
+      );
+    } catch (error) {
+      const axiosError = (
+        error as BadGatewayException
+      ).getResponse() as AxiosError;
 
-        return {
-          token,
-          supply,
-        };
-      }),
-    );
-  }
-
-  private async verifyApiAvailable(): Promise<void> {
-    await this.sendGetRequest<string>(this.configs.get(SORA_API));
+      this.logError(axiosError, this.configs.get(SORA_API));
+      throw new Error('Aborting, Sora supply api unreachable.');
+    }
   }
 
   private async sendGetRequest<T>(url: string): Promise<T> {
     const { data } = await firstValueFrom(
       this.httpService.get<T>(url, { timeout: 1000 }).pipe(
-        retry({ count: 10, delay: 1000 }),
+        retry({ count: 2, delay: 1000 }),
         catchError((error) => {
-          this.logError(error, url);
-          throw new BadGatewayException('Sora supply api unreachable.');
+          throw new BadGatewayException(error);
         }),
       ),
     );
