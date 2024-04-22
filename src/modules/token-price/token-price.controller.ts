@@ -39,4 +39,16 @@ export class TokenPriceController {
       CACHE_TTL.TWO_MINUTES,
     );
   }
+
+  @Get('/asset-id/:assetId')
+  public getByAssetId(
+    @Param('assetId') assetId: string,
+  ): Promise<TokenPriceDto> {
+    return this.cacheManager.wrap(
+      `${CACHE_KEYS.TOKEN}-${assetId}`,
+      () =>
+        this.mapper.toDtoAsync(this.tokenPriceService.findByAssetId(assetId)),
+      CACHE_TTL.TWO_MINUTES,
+    );
+  }
 }

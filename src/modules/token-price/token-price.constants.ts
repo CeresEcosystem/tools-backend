@@ -1,5 +1,6 @@
 export const CACHE_KEYS = {
   PRICES: 'prices',
+  TOKEN: 'token'
 };
 
 export const CACHE_TTL = {
