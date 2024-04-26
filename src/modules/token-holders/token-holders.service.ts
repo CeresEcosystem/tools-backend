@@ -36,9 +36,10 @@ export class TokenHoldersService {
   @Cron(CronExpression.EVERY_30_MINUTES)
   private async upsertHolderTokensAndBalances(): Promise<void> {
     this.logger.log('Start updating holders balances');
-    const holders = await this.getTokenHolders();
     const updateTime = new Date();
     const batchSize = this.configs.get<number>(BATCH_SIZE, 2500);
+
+    const holders = await this.getTokenHolders();
 
     this.logger.log(
       `Iterate all unique holders and get their portfolios, number of unique holders: ${holders.size}`,
@@ -123,6 +124,7 @@ export class TokenHoldersService {
     return (
       await Promise.all(
         Array.from(holders).map(async (holder) => {
+          await this.waitForRandomTime();
           const portfolio = await soraApi.query.tokens.accounts.entries(holder);
 
           return portfolio.map((portfolioAsset) => {
@@ -146,5 +148,12 @@ export class TokenHoldersService {
     )
       .flat()
       .filter((holder) => holder.balance > 0);
+  }
+
+  private async waitForRandomTime(): Promise<void> {
+    await new Promise((resolve) =>
+      // eslint-disable-next-line no-promise-executor-return
+      setTimeout(resolve, Math.floor(Math.random() * 2000) + 100),
+    );
   }
 }
