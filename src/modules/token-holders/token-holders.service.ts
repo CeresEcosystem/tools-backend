@@ -109,11 +109,32 @@ export class TokenHoldersService {
 
   private async getStorageKeys(): Promise<string[]> {
     const soraApi = await this.soraClient.getSoraApi();
-    const allStorageKeysSerialized = await soraApi.rpc.state.getKeys(
-      '0x99971b5749ac43e0235e41b0d37869188ee7418a6531173d60d1f6a82d8f4d51',
-    );
+    const allStorageKeys = [];
 
-    return allStorageKeysSerialized.toHuman() as string[];
+    let batchedStorageKeysHuman = (
+      await soraApi.rpc.state.getKeysPaged(
+        '0x99971b5749ac43e0235e41b0d37869188ee7418a6531173d60d1f6a82d8f4d51',
+        1000,
+      )
+    ).toHuman() as string[];
+    allStorageKeys.push(batchedStorageKeysHuman);
+
+    while (batchedStorageKeysHuman.length > 0) {
+      const startAt =
+        batchedStorageKeysHuman[batchedStorageKeysHuman.length - 1];
+
+      batchedStorageKeysHuman = (
+        await soraApi.rpc.state.getKeysPaged(
+          '0x99971b5749ac43e0235e41b0d37869188ee7418a6531173d60d1f6a82d8f4d51',
+          1000,
+          startAt,
+        )
+      ).toHuman() as string[];
+
+      allStorageKeys.push(...batchedStorageKeysHuman);
+    }
+
+    return allStorageKeys;
   }
 
   private async getHolderAssets(
@@ -124,7 +145,6 @@ export class TokenHoldersService {
     return (
       await Promise.all(
         Array.from(holders).map(async (holder) => {
-          await this.waitForRandomTime();
           const portfolio = await soraApi.query.tokens.accounts.entries(holder);
 
           return portfolio.map((portfolioAsset) => {
@@ -148,12 +168,5 @@ export class TokenHoldersService {
     )
       .flat()
       .filter((holder) => holder.balance > 0);
-  }
-
-  private async waitForRandomTime(): Promise<void> {
-    await new Promise((resolve) =>
-      // eslint-disable-next-line no-promise-executor-return
-      setTimeout(resolve, Math.floor(Math.random() * 2000) + 100),
-    );
   }
 }
