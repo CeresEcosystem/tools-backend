@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import { Injectable, Logger } from '@nestjs/common';
 import { SoraClient } from '../sora-client/sora-client';
 import { Keyring } from '@polkadot/api';
@@ -9,6 +10,11 @@ import { PageDto } from 'src/utils/pagination/page.dto';
 import { HolderDto } from './dto/holder.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { CronExpression, Cron } from '@nestjs/schedule';
+import { RelevantPrices } from '../notification-relevant-prices/entity/relevant-prices.entity';
+
+const KEY =
+  '0x99971b5749ac43e0235e41b0d37869188ee7418a6531173d60d1f6a82d8f4d51';
+const STORAGE_KEYS_PAGE_SIZE = 500;
 
 @Injectable()
 export class TokenHoldersService {
@@ -18,7 +24,7 @@ export class TokenHoldersService {
   constructor(
     private readonly soraClient: SoraClient,
     private readonly relevantPricesService: RelevantPricesService,
-    private holderRepo: HoldersRepository,
+    private readonly holderRepo: HoldersRepository,
   ) {}
 
   public getHoldersAndBalances(
@@ -30,32 +36,91 @@ export class TokenHoldersService {
 
   @Cron(CronExpression.EVERY_30_MINUTES)
   private async upsertHolderTokensAndBalances(): Promise<void> {
-    this.logger.log('Start updating holders balances');
+    this.logger.log('Start updating holders balances.');
 
-    const holders = await this.getTokenHolders();
+    const updateTime = new Date();
+    const allTokens = await this.relevantPricesService.findAllRelevantTokens();
 
-    this.logger.log(
-      `Iterate all unique holders and get their portfolios, number of unique holders: ${holders.size}`,
-    );
+    let storageKeysPage = [];
+    let lastKey = null;
+    let pageCount = 0;
 
-    await this.updateHolderAssets(holders);
+    do {
+      pageCount += 1;
+      this.logger.log(`Processing storage keys page ${pageCount}`);
+
+      storageKeysPage = await this.getStorageKeysPage(lastKey);
+      lastKey = storageKeysPage.at(-1);
+      await this.updateHolderAssets(allTokens, storageKeysPage);
+
+      await this.wait(1);
+    } while (storageKeysPage.length === STORAGE_KEYS_PAGE_SIZE);
+
+    await this.holderRepo.deleteHoldersUpdatedBefore(updateTime);
 
     this.logger.log('Updating holders balances successful.');
   }
 
-  private async getTokenHolders(): Promise<Set<string>> {
-    this.logger.log('Start getTokenHolders function - get all unique holders');
-    const allTokens = await this.relevantPricesService.findAllRelevantTokens();
-    const allStorageKeys = await this.getStorageKeys();
+  private async updateHolderAssets(
+    allTokens: RelevantPrices[],
+    storageKeysPage: string[],
+  ): Promise<void> {
+    const holders = this.getTokenHolders(allTokens, storageKeysPage);
+    const soraApi = await this.soraClient.getSoraApi();
 
+    this.logger.log(`Updating balances for ${holders.size} holders.`);
+
+    const holderAssets = (
+      await Promise.all(
+        Array.from(holders).map(async (holder) => {
+          const portfolio = await soraApi.query.tokens.accounts.entries(holder);
+
+          return portfolio
+            .map((portfolioAsset): Holder => {
+              const [assetsId, assetAmount] = portfolioAsset;
+              const [, { code: assetId }] = assetsId.toHuman() as [
+                string,
+                { code: string },
+              ];
+              const { free: assetBalance } = assetAmount.toHuman() as {
+                free: number;
+              };
+
+              return {
+                holder,
+                assetId,
+                balance: FPNumber.fromCodecValue(assetBalance).toNumber(),
+                updatedAt: new Date(),
+              } as Holder;
+            })
+            .filter((holder) => holder.balance > 0);
+        }),
+      )
+    ).flat();
+
+    this.logger.log(`Updating ${holderAssets.length} holder assets.`);
+
+    await this.holderRepo.upsertHolders(holderAssets);
+  }
+
+  private async getStorageKeysPage(startAt?: string): Promise<string[]> {
+    const soraApi = await this.soraClient.getSoraApi();
+
+    const storageKeys = startAt
+      ? soraApi.rpc.state.getKeysPaged(KEY, STORAGE_KEYS_PAGE_SIZE, startAt)
+      : soraApi.rpc.state.getKeysPaged(KEY, STORAGE_KEYS_PAGE_SIZE);
+
+    return (await storageKeys).toHuman() as string[];
+  }
+
+  private getTokenHolders(
+    allTokens: RelevantPrices[],
+    storageKeysPage: string[],
+  ): Set<string> {
     const uniqueHolders = new Set<string>();
 
-    this.logger.log(
-      `Start iterating all storage keys for each token, tokens: ${allTokens.length}, keys: ${allStorageKeys.length}`,
-    );
-
     allTokens.forEach((token) => {
-      allStorageKeys
+      storageKeysPage
         .filter((key) => key.includes(token.assetId.slice(2)))
         .forEach((key) => {
           const address = this.keyring.encodeAddress(
@@ -67,70 +132,11 @@ export class TokenHoldersService {
         });
     });
 
-    this.logger.log('Iterating storage keys complete - got all unique holders');
-
     return uniqueHolders;
   }
 
-  private async getStorageKeys(): Promise<string[]> {
-    const soraApi = await this.soraClient.getSoraApi();
-    const allStorageKeys = [];
-
-    let batchedStorageKeysHuman = (
-      await soraApi.rpc.state.getKeysPaged(
-        '0x99971b5749ac43e0235e41b0d37869188ee7418a6531173d60d1f6a82d8f4d51',
-        1000,
-      )
-    ).toHuman() as string[];
-    allStorageKeys.push(batchedStorageKeysHuman);
-
-    while (batchedStorageKeysHuman.length > 0) {
-      const startAt =
-        batchedStorageKeysHuman[batchedStorageKeysHuman.length - 1];
-
-      batchedStorageKeysHuman = (
-        await soraApi.rpc.state.getKeysPaged(
-          '0x99971b5749ac43e0235e41b0d37869188ee7418a6531173d60d1f6a82d8f4d51',
-          1000,
-          startAt,
-        )
-      ).toHuman() as string[];
-
-      allStorageKeys.push(...batchedStorageKeysHuman);
-    }
-
-    return allStorageKeys;
-  }
-
-  private async updateHolderAssets(holders: Set<string>): Promise<void> {
-    const soraApi = await this.soraClient.getSoraApi();
-
-    this.logger.log('Updating holders balances.');
-
-    Array.from(holders).forEach((holder) => {
-      setImmediate(async () => {
-        const portfolio = await soraApi.query.tokens.accounts.entries(holder);
-
-        portfolio.map(async (portfolioAsset) => {
-          const [assetsId, assetAmount] = portfolioAsset;
-          const [, { code: assetId }] = assetsId.toHuman() as [
-            string,
-            { code: string },
-          ];
-          const { free: assetBalance } = assetAmount.toHuman() as {
-            free: number;
-          };
-
-          const holderEntity = new Holder();
-          holderEntity.holder = holder;
-          holderEntity.assetId = assetId;
-          holderEntity.balance =
-            FPNumber.fromCodecValue(assetBalance).toNumber();
-          holderEntity.updatedAt = new Date();
-
-          await this.holderRepo.upsertHolders([holderEntity]);
-        });
-      });
-    });
+  private async wait(seconds: number): Promise<void> {
+    // eslint-disable-next-line no-promise-executor-return
+    await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
   }
 }
