@@ -9,10 +9,6 @@ import { PageDto } from 'src/utils/pagination/page.dto';
 import { HolderDto } from './dto/holder.dto';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { CronExpression, Cron } from '@nestjs/schedule';
-import { ConfigService } from '@nestjs/config';
-import { HolderAssetDto } from './dto/holder-asset.dto';
-
-const BATCH_SIZE = 'BATCH_SIZE';
 
 @Injectable()
 export class TokenHoldersService {
@@ -23,7 +19,6 @@ export class TokenHoldersService {
     private readonly soraClient: SoraClient,
     private readonly relevantPricesService: RelevantPricesService,
     private holderRepo: HoldersRepository,
-    private configs: ConfigService,
   ) {}
 
   public getHoldersAndBalances(
@@ -36,8 +31,6 @@ export class TokenHoldersService {
   @Cron(CronExpression.EVERY_30_MINUTES)
   private async upsertHolderTokensAndBalances(): Promise<void> {
     this.logger.log('Start updating holders balances');
-    const updateTime = new Date();
-    const batchSize = this.configs.get<number>(BATCH_SIZE, 2500);
 
     const holders = await this.getTokenHolders();
 
@@ -45,35 +38,7 @@ export class TokenHoldersService {
       `Iterate all unique holders and get their portfolios, number of unique holders: ${holders.size}`,
     );
 
-    const holdersAssets = await this.getHolderAssets(holders);
-
-    this.logger.log(
-      `Map an array that holds all holderEntities. Holders and assets array size: ${holdersAssets.length}`,
-    );
-
-    const holderEntities = holdersAssets.map((value) => {
-      const holderEntity = new Holder();
-      holderEntity.holder = value.holder;
-      holderEntity.assetId = value.assetId;
-      holderEntity.balance = value.balance;
-      holderEntity.updatedAt = updateTime;
-
-      return holderEntity;
-    });
-
-    const holderEntitiesBatches = [];
-
-    for (let i = 0; i < holderEntities.length; i += batchSize) {
-      holderEntitiesBatches.push(holderEntities.slice(i, i + batchSize));
-    }
-
-    await Promise.all(
-      holderEntitiesBatches.map((batch) =>
-        this.holderRepo.upsertHolders(batch),
-      ),
-    );
-
-    await this.holderRepo.deleteHoldersUpdatedBefore(updateTime);
+    await this.updateHolderAssets(holders);
 
     this.logger.log('Updating holders balances successful.');
   }
@@ -137,36 +102,35 @@ export class TokenHoldersService {
     return allStorageKeys;
   }
 
-  private async getHolderAssets(
-    holders: Set<string>,
-  ): Promise<HolderAssetDto[]> {
+  private async updateHolderAssets(holders: Set<string>): Promise<void> {
     const soraApi = await this.soraClient.getSoraApi();
 
-    return (
-      await Promise.all(
-        Array.from(holders).map(async (holder) => {
-          const portfolio = await soraApi.query.tokens.accounts.entries(holder);
+    this.logger.log('Updating holders balances.');
 
-          return portfolio.map((portfolioAsset) => {
-            const [assetsId, assetAmount] = portfolioAsset;
-            const [, { code: assetId }] = assetsId.toHuman() as [
-              string,
-              { code: string },
-            ];
-            const { free: assetBalance } = assetAmount.toHuman() as {
-              free: number;
-            };
+    Array.from(holders).forEach((holder) => {
+      setImmediate(async () => {
+        const portfolio = await soraApi.query.tokens.accounts.entries(holder);
 
-            return {
-              holder,
-              assetId,
-              balance: FPNumber.fromCodecValue(assetBalance).toNumber(),
-            };
-          });
-        }),
-      )
-    )
-      .flat()
-      .filter((holder) => holder.balance > 0);
+        portfolio.map(async (portfolioAsset) => {
+          const [assetsId, assetAmount] = portfolioAsset;
+          const [, { code: assetId }] = assetsId.toHuman() as [
+            string,
+            { code: string },
+          ];
+          const { free: assetBalance } = assetAmount.toHuman() as {
+            free: number;
+          };
+
+          const holderEntity = new Holder();
+          holderEntity.holder = holder;
+          holderEntity.assetId = assetId;
+          holderEntity.balance =
+            FPNumber.fromCodecValue(assetBalance).toNumber();
+          holderEntity.updatedAt = new Date();
+
+          await this.holderRepo.upsertHolders([holderEntity]);
+        });
+      });
+    });
   }
 }
