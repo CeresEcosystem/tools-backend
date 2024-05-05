@@ -49,7 +49,7 @@ export class LoggingInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap(() => {
-        this.handleResponse(context, method, url, startTimestamp);
+        this.handleResponse(context, method, url, query, startTimestamp);
       }),
     );
   }
@@ -58,6 +58,7 @@ export class LoggingInterceptor implements NestInterceptor {
     context: ExecutionContext,
     method: string,
     url: string,
+    query: string,
     startTimestamp: number,
   ): void {
     const response = context.switchToHttp().getResponse<Response>();
@@ -68,10 +69,10 @@ export class LoggingInterceptor implements NestInterceptor {
     );
 
     this.logger.debug(
-      `Response duration: ${method} ${url} ${statusCode}: ${duration}ms`,
+      `Response duration: ${method} ${url} ${query} ${statusCode}: ${duration}ms`,
     );
 
-    const msg = `Execution too long: ${method} ${url} ${statusCode}: ${duration}ms`;
+    const msg = `Execution too long: ${method} ${url} ${query} ${statusCode}: ${duration}ms`;
 
     if (duration > urlThreshold.warn) {
       this.logger.warn(msg);
