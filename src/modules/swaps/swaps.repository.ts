@@ -43,14 +43,14 @@ export class SwapRepository {
     const queryBuilder: SelectQueryBuilder<Swap> =
       this.swapRepository.createQueryBuilder('swap');
 
-    const whereClauses = this.getWhereClauses(swapOptions);
-
-    whereClauses.forEach((whereClause) => {
+    this.getWhereClauses(swapOptions).forEach((whereClause) => {
       queryBuilder.andWhere(whereClause.where, whereClause.parameters);
     });
 
-    queryBuilder.orderBy({ 'swap.id': swapOptions.orderBy });
-    queryBuilder.skip(pageOptions.skip).take(pageOptions.size);
+    queryBuilder
+      .orderBy({ 'swap.id': swapOptions.orderBy })
+      .skip(pageOptions.skip)
+      .take(pageOptions.size);
 
     const [data, count] = await queryBuilder.getManyAndCount();
 
@@ -59,12 +59,10 @@ export class SwapRepository {
     return new PageDto(this.swapMapper.toDtos(data), meta);
   }
 
-  public async findSwapsForPeriod(from: Date, to: Date): Promise<SwapDto[]> {
-    const swaps = await this.swapRepository.findBy({
+  public findSwapsForPeriod(from: Date, to: Date): Promise<SwapDto[]> {
+    return this.swapRepository.findBy({
       swappedAt: Between(from, to),
     });
-
-    return swaps;
   }
 
   public async findSwapsByAssetIds(
@@ -72,31 +70,28 @@ export class SwapRepository {
     swapOptions: SwapOptionsDto,
     assetIds: string[],
   ): Promise<PageWithSummaryDto<SwapDto, SwapsStatsDto>> {
-    const queryBuilder: SelectQueryBuilder<Swap> =
-      this.swapRepository.createQueryBuilder('swap');
+    const queryBuilder: SelectQueryBuilder<Swap> = this.swapRepository
+      .createQueryBuilder('swap')
+      .where(
+        '(swap.inputAssetId IN (:...assetIds) OR swap.outputAssetId IN (:...assetIds))',
+        { assetIds },
+      );
 
-    queryBuilder.where(
-      '(swap.inputAssetId IN (:...assetIds) OR swap.outputAssetId IN (:...assetIds))',
-      { assetIds },
-    );
-
-    const whereClauses = this.getWhereClauses(swapOptions, assetIds);
-
-    whereClauses.forEach((whereClause) => {
+    this.getWhereClauses(swapOptions, assetIds).forEach((whereClause) => {
       queryBuilder.andWhere(whereClause.where, whereClause.parameters);
     });
 
-    queryBuilder.orderBy({ 'swap.id': swapOptions.orderBy });
+    queryBuilder
+      .orderBy({ 'swap.id': swapOptions.orderBy })
+      .skip(pageOptions.skip)
+      .take(pageOptions.size);
 
-    let swapsStats = new SwapsStatsDto();
-
-    if (assetIds.length === 1) {
-      swapsStats = await this.getSwapStats(queryBuilder, assetIds[0]);
-    }
-
-    queryBuilder.skip(pageOptions.skip).take(pageOptions.size);
-
-    const [data, count] = await queryBuilder.getManyAndCount();
+    const [[data, count], swapsStats] = await Promise.all([
+      queryBuilder.getManyAndCount(),
+      assetIds.length === 1
+        ? this.getSwapStats(queryBuilder, assetIds[0])
+        : new SwapsStatsDto(),
+    ]);
 
     const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
 
@@ -215,28 +210,24 @@ export class SwapRepository {
       .clone()
       .select('SUM(swap.assetOutputAmount) AS tokensBought')
       .addSelect('COUNT(*) AS buys')
-      .andWhere('swap.outputAssetId = :assetId', {
-        assetId,
-      });
+      .andWhere({ outputAssetId: assetId });
 
     const sellQuery = queryBuilder
       .clone()
       .select('SUM(swap.assetInputAmount) AS tokensSold')
       .addSelect('COUNT(*) AS sells')
-      .andWhere('swap.inputAssetId = :assetId', {
-        assetId,
-      });
+      .andWhere({ inputAssetId: assetId });
 
     const [buyResult, sellResult] = await Promise.all([
-      await buyQuery.getRawOne(),
-      await sellQuery.getRawOne(),
+      buyQuery.getRawOne<{ buys: string; tokensBought: number }>(),
+      sellQuery.getRawOne<{ sells: string; tokensSold: number }>(),
     ]);
 
     return {
-      buys: parseInt(buyResult.buys) || 0,
-      tokensBought: buyResult.tokensBought || 0,
-      sells: parseInt(sellResult.sells) || 0,
-      tokensSold: sellResult.tokensSold || 0,
+      buys: Number(buyResult?.buys) || 0,
+      tokensBought: buyResult?.tokensBought || 0,
+      sells: Number(sellResult?.sells) || 0,
+      tokensSold: sellResult?.tokensSold || 0,
     };
   }
 }
