@@ -1,6 +1,6 @@
 import { Expose } from 'class-transformer';
 
-export class KensetsuBurnSummaryDto {
+export class TokenBurnSummaryDto {
   @Expose()
   amountBurnedTotal: number;
 }

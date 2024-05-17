@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { KensetsuBurn } from './entity/kensetsu-burn.entity';
+import { TokenBurn } from './entity/token-burn.entity';
 import {
   LessThanOrEqual,
   MoreThanOrEqual,
@@ -9,28 +9,40 @@ import {
 } from 'typeorm';
 import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { SearchOptionsDto } from './dto/search-request.dto';
-import { KensetsuBurnDto } from './dto/kensetsu-burn.dto';
+import { TokenBurnDto } from './dto/token-burn.dto';
 import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
 import { plainToInstance } from 'class-transformer';
 import { PageWithSummaryDto } from 'src/utils/pagination/page-with-summary.dto';
-import { KensetsuBurnSummaryDto } from './dto/kensetsu-burn-summary.dto';
+import { TokenBurnSummaryDto } from './dto/token-burn-summary.dto';
+import { XOR_ADDRESS } from 'src/constants/constants';
+
+export enum BurningToken {
+  KENSETSU = 'kensetsu',
+  KARMA = 'karma',
+}
 
 @Injectable()
-export class KensetsuService {
-  private readonly logger = new Logger(KensetsuService.name);
+export class TokenBurnService {
+  private readonly logger = new Logger(TokenBurnService.name);
+
+  private tokenBlockLimits = new Map<BurningToken, [string, string]>();
 
   constructor(
-    @InjectRepository(KensetsuBurn)
-    private readonly kensetsuRepo: Repository<KensetsuBurn>,
-  ) {}
+    @InjectRepository(TokenBurn)
+    private readonly tokenBurnRepo: Repository<TokenBurn>,
+  ) {
+    this.tokenBlockLimits.set(BurningToken.KENSETSU, ['0', '14939187']);
+    this.tokenBlockLimits.set(BurningToken.KARMA, ['14939188', '16056666']);
+  }
 
-  public async getKensetsuBurns(
+  public async getTokenBurns(
     searchOptions: SearchOptionsDto,
     pageOptions: PageOptionsDto,
-  ): Promise<PageWithSummaryDto<KensetsuBurnDto, KensetsuBurnSummaryDto>> {
-    const queryBuilder = this.kensetsuRepo.createQueryBuilder();
+    token: BurningToken,
+  ): Promise<PageWithSummaryDto<TokenBurnDto, TokenBurnSummaryDto>> {
+    const queryBuilder = this.tokenBurnRepo.createQueryBuilder();
 
-    this.addWhereClauses(queryBuilder, searchOptions);
+    this.addWhereClauses(queryBuilder, searchOptions, token);
 
     queryBuilder
       .orderBy('created_at', 'DESC')
@@ -42,36 +54,50 @@ export class KensetsuService {
     const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
 
     const dtos = data.map((element) =>
-      plainToInstance(KensetsuBurnDto, element, {
+      plainToInstance(TokenBurnDto, element, {
         excludeExtraneousValues: true,
       }),
     );
 
-    const amountBurnedTotal = await this.getAmountBurnedTotal(searchOptions);
+    const amountBurnedTotal = await this.getAmountBurnedTotal(
+      searchOptions,
+      token,
+    );
 
     return new PageWithSummaryDto(dtos, meta, { amountBurnedTotal });
   }
 
   private async getAmountBurnedTotal(
     searchOptions: SearchOptionsDto,
+    token: BurningToken,
   ): Promise<number> {
-    const queryBuilder = this.kensetsuRepo
+    const queryBuilder = this.tokenBurnRepo
       .createQueryBuilder()
       .select('SUM(amount_burned)', 'amountBurnedTotal');
 
-    this.addWhereClauses(queryBuilder, searchOptions);
+    this.addWhereClauses(queryBuilder, searchOptions, token);
 
     const { amountBurnedTotal } = await queryBuilder.getRawOne<{
       amountBurnedTotal: number;
     }>();
 
-    return amountBurnedTotal;
+    return amountBurnedTotal || 0;
   }
 
   private addWhereClauses(
-    queryBuilder: SelectQueryBuilder<KensetsuBurn>,
+    queryBuilder: SelectQueryBuilder<TokenBurn>,
     searchOptions: SearchOptionsDto,
+    token: BurningToken,
   ): void {
+    queryBuilder
+      .andWhere({ assetId: XOR_ADDRESS })
+      .andWhere({
+        blockNum: MoreThanOrEqual(this.tokenBlockLimits.get(token)[0]),
+      })
+      .andWhere({
+        blockNum: LessThanOrEqual(this.tokenBlockLimits.get(token)[1]),
+      });
+
     if (searchOptions.accountId) {
       queryBuilder.andWhere({ accountId: searchOptions.accountId });
     }

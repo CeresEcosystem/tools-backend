@@ -1,18 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { KensetsuBurn } from './entity/kensetsu-burn.entity';
+import { TokenBurn } from './entity/token-burn.entity';
 import { Repository } from 'typeorm';
 import { SoraClient } from '../sora-client/sora-client';
 import { XOR_ADDRESS } from 'src/constants/constants';
 import { FPNumber } from '@sora-substrate/math';
 
 @Injectable()
-export class KensetsuListener {
-  private readonly logger = new Logger(KensetsuListener.name);
+export class TokenBurnListener {
+  private readonly logger = new Logger(TokenBurnListener.name);
 
   constructor(
-    @InjectRepository(KensetsuBurn)
-    private readonly kensetsuRepo: Repository<KensetsuBurn>,
+    @InjectRepository(TokenBurn)
+    private readonly tokenBurnRepo: Repository<TokenBurn>,
     private readonly soraClient: SoraClient,
   ) {
     this.trackBurns();
@@ -44,20 +44,20 @@ export class KensetsuListener {
 
         this.logger.log('XOR burn event received.');
 
-        const kensetsuBurn = {
+        const tokenBurn = {
           accountId,
           assetId,
           amountBurned: FPNumber.fromCodecValue(amount).toNumber(),
           createdAt: new Date(),
           blockNum: blockNumStr,
-        } as KensetsuBurn;
+        } as TokenBurn;
 
-        this.kensetsuRepo.insert(kensetsuBurn);
+        this.tokenBurnRepo.insert(tokenBurn);
 
         this.logger.log('Asset burn event received.');
       }
 
-      this.logger.debug('Kensetsu burn events processed.');
+      this.logger.debug('Token burn events processed.');
     });
   }
 }

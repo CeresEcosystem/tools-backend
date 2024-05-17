@@ -1,6 +1,6 @@
 import { Expose } from 'class-transformer';
 
-export class KensetsuBurnDto {
+export class TokenBurnDto {
   @Expose()
   accountId: string;
 

@@ -27,7 +27,7 @@ import { TokenHoldersModule } from './modules/token-holders/token-holders.module
 import { CurrencyRateModule } from './modules/currency-rate/currency-rate.module';
 import { MarketCapModule } from './modules/market-cap/market-cap.module';
 import { VolumesModule } from './modules/volumes/volumes.module';
-import { KensetsuModule } from './modules/kensetsu/kensetsu.module';
+import { TokenBurnModule } from './modules/token-burn/token-burn.module';
 
 @Module({
   imports: [
@@ -113,7 +113,7 @@ import { KensetsuModule } from './modules/kensetsu/kensetsu.module';
     CurrencyRateModule,
     MarketCapModule,
     VolumesModule,
-    KensetsuModule,
+    TokenBurnModule,
   ],
   controllers: [],
   providers: [],
