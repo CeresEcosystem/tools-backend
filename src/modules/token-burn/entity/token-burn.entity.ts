@@ -15,8 +15,7 @@ class ColumnNumericTransformer implements ValueTransformer {
   }
 }
 
-// TODO: change table name
-@Entity('kensetsu_burn')
+@Entity('token_burn')
 export class TokenBurn {
   @PrimaryGeneratedColumn()
   id: string;
