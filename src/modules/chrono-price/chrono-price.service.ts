@@ -8,7 +8,10 @@ import Big from 'big.js';
 import { subtractHours } from 'src/utils/date-utils';
 import { PriceChangeDto } from './dto/price-change.dto';
 import { TokenPrice } from '../token-price/entity/token-price.entity';
-import { PRICE_HISTORY_QUERY } from './chrono-price.const';
+import {
+  PRICE_HISTORY_CACHE_QUERY,
+  PRICE_HISTORY_QUERY,
+} from './chrono-price.const';
 import { TradingPricesChartDto } from './dto/trading-prices-chart.dto';
 
 @Injectable()
@@ -71,7 +74,9 @@ export class ChronoPriceService {
     );
 
     const [tokenPrices] = await this.dataSource.query(
-      PRICE_HISTORY_QUERY,
+      process.env.CHART_USE_CACHE
+        ? PRICE_HISTORY_CACHE_QUERY
+        : PRICE_HISTORY_QUERY,
       params,
     );
 
@@ -127,29 +132,20 @@ export class ChronoPriceService {
       );
 
       const currentPrice = new Big(tokenEntity.price);
-
-      if (!priceChange) {
-        return {
-          token: tokenEntity.token,
-          intervalHours,
-          currentPrice,
-          oldPrice: new Big(0),
-          valueDiff: new Big(0),
-          percentageDiff: new Big(0),
-        };
-      }
-
-      const oldPrice = new Big(priceChange.price);
+      const oldPrice = priceChange ? new Big(priceChange.price) : new Big(0);
+      const valueDiff = priceChange ? currentPrice.minus(oldPrice) : new Big(0);
+      const percentageDiff =
+        priceChange && oldPrice.gt(0)
+          ? currentPrice.div(oldPrice).minus(1).mul(100)
+          : new Big(0);
 
       return {
         token: tokenEntity.token,
         intervalHours,
         currentPrice,
         oldPrice,
-        valueDiff: currentPrice.minus(oldPrice),
-        percentageDiff: oldPrice.eq(0)
-          ? new Big(0)
-          : currentPrice.div(oldPrice).minus(1).mul(100),
+        valueDiff,
+        percentageDiff,
       };
     });
   }
