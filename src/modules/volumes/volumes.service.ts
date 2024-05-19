@@ -6,18 +6,17 @@ import Big from 'big.js';
 import { TokenVolume } from './entity/volumes.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { Cron } from '@nestjs/schedule';
-import { CronExpression } from 'src/utils/cron-expression.enum';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { isNumberString } from 'class-validator';
 import { TradingVolumesChartDto } from './dto/trading-volumes-chart.dto';
 import {
   MINUTES_ELAPSED_SINCE_LAST_VOLUME_QUERY,
   VOLUMES_HISTORY_QUERY,
 } from './volumes.const';
-import { subtractMinutes } from 'src/utils/date-utils';
 import { TokenVolumeDto } from './dto/token-volume.dto';
 import { SwapDto } from '../swaps/dto/swap.dto';
 import { TokenPrice } from '../token-price/entity/token-price.entity';
+import { subtractMinutes } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 const VOLUME_INTERVAL_MINUTES = 5;
 

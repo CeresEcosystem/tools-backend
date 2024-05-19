@@ -5,7 +5,6 @@ import { ChronoPriceDto } from './dto/chrono-price.dto';
 import { ChronoPrice } from './entity/chrono-price.entity';
 import { isNumberString } from 'class-validator';
 import Big from 'big.js';
-import { subtractHours } from 'src/utils/date-utils';
 import { PriceChangeDto } from './dto/price-change.dto';
 import { TokenPrice } from '../token-price/entity/token-price.entity';
 import {
@@ -13,6 +12,7 @@ import {
   PRICE_HISTORY_QUERY,
 } from './chrono-price.const';
 import { TradingPricesChartDto } from './dto/trading-prices-chart.dto';
+import { subtractHours } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Injectable()
 export class ChronoPriceService {

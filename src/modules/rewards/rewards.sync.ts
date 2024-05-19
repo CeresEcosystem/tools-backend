@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
-import { CronExpression } from 'src/utils/cron-expression.enum';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { RewardsService } from './rewards.service';
 import { PairsService } from '../pairs/pairs.service';
 import { TokenPriceService } from '../token-price/token-price.service';

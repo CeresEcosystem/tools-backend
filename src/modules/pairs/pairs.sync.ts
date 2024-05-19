@@ -8,15 +8,14 @@ import { AxiosError } from 'axios';
 import { TokenPriceService } from '../token-price/token-price.service';
 import { TokenPrice } from '../token-price/entity/token-price.entity';
 
-import { CronExpression } from 'src/utils/cron-expression.enum';
 import { PairBcDto } from './dto/pair-bc.dto';
 import { PairsService } from './pairs.service';
-import { SoraClient } from '../sora-client/sora-client';
 import { XOR_ADDRESS, XSTUSD_ADDRESS } from '../../constants/constants';
 
 import * as whitelist from '../../utils/files/whitelist.json';
 import * as synthetics from 'src/utils/files/synthetics.json';
 import { PairsVolumeChangeDto } from './dto/pairs-volume-change.dto';
+import { CronExpression, SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 const VOLUME_URL = 'https://stats.sora.org/pairs';
 const BASE_ASSETS = [

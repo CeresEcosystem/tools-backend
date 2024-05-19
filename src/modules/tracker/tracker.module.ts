@@ -15,12 +15,12 @@ import { TokenPriceModule } from '../token-price/token-price.module';
 import { ValFeesTrackerBlockBcToEntityMapper } from './mapper/val-fees-tracker-to-entity.mapper';
 import { ValTbcTrackerToEntityMapper } from './mapper/val-tbc-tracker-to-entity.mapper';
 import { TrackerValTbcBurningsListener } from './tracker-val-tbc-burning.listener';
-import { SoraClientModule } from '../sora-client/sora-client-module';
 import { TrackerBurn } from './entity/tracker-burn.entity';
 import { TrackerBurnService } from './tracker-burn.service';
 import { TrackerBurnToDtoMapper } from './mapper/tracker-burn-to-dto.mapper';
 import { TrackerSummaryService } from './tracker-summary.service';
 import { TrackerSummary } from './entity/tracker-summary.entity';
+import { SoraClientModule } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Module({
   imports: [

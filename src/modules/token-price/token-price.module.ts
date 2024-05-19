@@ -13,7 +13,7 @@ import { TokenPriceToDtoMapper } from './mapper/token-price-to-dto.mapper';
 import { CeresClientModule } from '../ceres-client/ceres-client.module';
 import { TokenLockerSync } from './token-locker.sync';
 import { TokenOrderModule } from '../token-order/token-order.module';
-import { SoraClientModule } from '../sora-client/sora-client-module';
+import { SoraClientModule } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Module({
   imports: [

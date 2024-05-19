@@ -1,6 +1,6 @@
-import { BaseEntityMapper } from 'src/utils/mappers/base-entity-mapper';
 import { CurrencyRate } from '../entity/currency-rate.entity';
 import { CurrencyRateDto } from '../dto/currency-rate.dto';
+import { BaseEntityMapper } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 export class CurrencyRateToEntityMapper extends BaseEntityMapper<
   CurrencyRate,

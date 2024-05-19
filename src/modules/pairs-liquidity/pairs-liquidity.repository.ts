@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PairLiquidityChangeEntity } from './entity/pair-liquidity-change.entity';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
+import { PageOptionsDto } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Injectable()
 export class PairsLiquidityRepository {

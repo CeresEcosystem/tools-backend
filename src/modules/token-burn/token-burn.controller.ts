@@ -1,11 +1,13 @@
 import { Controller, Get, Param, ParseEnumPipe, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { SearchOptionsDto } from './dto/search-request.dto';
 import { TokenBurnDto } from './dto/token-burn.dto';
-import { PageWithSummaryDto } from 'src/utils/pagination/page-with-summary.dto';
 import { TokenBurnSummaryDto } from './dto/token-burn-summary.dto';
 import { BurningToken, TokenBurnService } from './token-burn.service';
+import {
+  PageOptionsDto,
+  PageWithSummaryDto,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Controller('burns')
 @ApiTags('Token Burn Controller')

@@ -5,7 +5,7 @@ import { FPNumber } from '@sora-substrate/math';
 import { Swap } from './entity/swaps.entity';
 import { SwapGateway } from './swaps.gateway';
 import { SwapEntityToDto } from './mapper/swap-entity-to-dto.mapper';
-import { SoraClient } from '../sora-client/sora-client';
+import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Injectable()
 export class SwapListener {

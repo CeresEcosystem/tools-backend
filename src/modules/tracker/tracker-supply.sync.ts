@@ -1,9 +1,8 @@
 import { HttpService } from '@nestjs/axios';
 import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { AxiosError } from 'axios';
 import { catchError, firstValueFrom, retry } from 'rxjs';
-import { CronExpression } from 'src/utils/cron-expression.enum';
 import { TrackerSupplyRepository } from './tracker-supply.repository';
 import { TokenPrice } from '../token-price/entity/token-price.entity';
 import { TokenPriceService } from '../token-price/token-price.service';

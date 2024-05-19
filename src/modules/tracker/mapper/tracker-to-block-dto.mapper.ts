@@ -1,6 +1,6 @@
-import { BaseDtoMapper } from 'src/utils/mappers/base-dto-mapper';
 import { Tracker } from '../entity/tracker.entity';
 import { TrackerBlockDto } from '../dto/tracker.dto';
+import { BaseDtoMapper } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 export class TrackerToBlockDtoMapper extends BaseDtoMapper<
   Tracker,

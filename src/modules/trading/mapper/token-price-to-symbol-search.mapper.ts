@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
-import { BaseDtoMapper } from 'src/utils/mappers/base-dto-mapper';
 import { SymbolChartSearchDto } from '../dto/symbol-chart-search.dto';
 import { TokenPrice } from '../../token-price/entity/token-price.entity';
+import { BaseDtoMapper } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 export class TokenPriceToSymbolSearchMapper extends BaseDtoMapper<
   TokenPrice,

@@ -1,7 +1,7 @@
-import { BaseEntityMapper } from 'src/utils/mappers/base-entity-mapper';
 import { BurnType, Tracker } from '../entity/tracker.entity';
 import { Big } from 'big.js';
 import { ValFeesTrackerBlockDto } from '../dto/val-fees-tracker-bc-block';
+import { BaseEntityMapper } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 export class ValFeesTrackerBlockBcToEntityMapper extends BaseEntityMapper<
   Tracker,

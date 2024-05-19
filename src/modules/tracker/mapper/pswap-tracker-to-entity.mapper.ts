@@ -1,4 +1,4 @@
-import { BaseEntityMapper } from 'src/utils/mappers/base-entity-mapper';
+import { BaseEntityMapper } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 import { BurnType, Tracker } from '../entity/tracker.entity';
 
 export class PSWAPTrackerBlockBcToEntityMapper extends BaseEntityMapper<

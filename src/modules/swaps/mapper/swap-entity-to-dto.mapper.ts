@@ -1,6 +1,6 @@
-import { BaseDtoMapper } from 'src/utils/mappers/base-dto-mapper';
 import { Swap } from '../entity/swaps.entity';
 import { SwapDto } from '../dto/swap.dto';
+import { BaseDtoMapper } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 export class SwapEntityToDto extends BaseDtoMapper<Swap, SwapDto> {
   toDto(entity: Swap): SwapDto {

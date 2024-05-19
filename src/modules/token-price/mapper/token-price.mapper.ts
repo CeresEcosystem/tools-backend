@@ -1,4 +1,4 @@
-import { BaseEntityMapper } from 'src/utils/mappers/base-entity-mapper';
+import { BaseEntityMapper } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 import { TokenPriceBcDto } from '../dto/token-price-bc.dto';
 import { TokenPrice } from '../entity/token-price.entity';
 

@@ -1,9 +1,11 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { TokenHoldersService } from './token-holders.service';
-import { PageDto } from 'src/utils/pagination/page.dto';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { HolderDto } from './dto/holder.dto';
+import {
+  PageOptionsDto,
+  PageDto,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @ApiTags('Holders controller')
 @Controller('/holders')

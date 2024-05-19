@@ -1,16 +1,18 @@
 /* eslint-disable no-await-in-loop */
 import { Injectable, Logger } from '@nestjs/common';
-import { SoraClient } from '../sora-client/sora-client';
 import { Keyring } from '@polkadot/api';
 import { FPNumber } from '@sora-substrate/math';
 import { RelevantPricesService } from '../notification-relevant-prices/relevant-prices.service';
 import { HoldersRepository } from './holders.repository';
 import { Holder } from './entity/holders.entity';
-import { PageDto } from 'src/utils/pagination/page.dto';
 import { HolderDto } from './dto/holder.dto';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { CronExpression, Cron } from '@nestjs/schedule';
 import { RelevantPrices } from '../notification-relevant-prices/entity/relevant-prices.entity';
+import {
+  PageDto,
+  PageOptionsDto,
+  SoraClient,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 const KEY =
   '0x99971b5749ac43e0235e41b0d37869188ee7418a6531173d60d1f6a82d8f4d51';

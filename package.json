@@ -28,6 +28,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "@ceresecosystem/ceres-lib": "0.0.33",
     "@nestjs-modules/mailer": "^1.9.1",
     "@nestjs/axios": "^3.0.0",
     "@nestjs/cache-manager": "^2.1.0",
@@ -62,7 +63,7 @@
     "ethers": "5.7.1",
     "husky": "^8.0.3",
     "mysql2": "^3.1.0",
-    "nestjs-console": "^8.0.0",
+    "nestjs-console": "^9.0.0",
     "nestjs-form-data": "^1.9.0",
     "nestjs-telegram": "^1.2.0",
     "nodemailer": "^6.9.1",

@@ -8,15 +8,17 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Roles } from 'src/guards/roles.decorator';
-import { RolesGuard } from 'src/guards/roles.guard';
-import { Role } from '../auth/user-role.enum';
-import { AuthGuard } from 'src/guards/auth.guard';
-import { PageDto } from 'src/utils/pagination/page.dto';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { SymbolsService } from './symbols.service';
 import { SymbolAdminDto } from './dto/symbol-admin-dto';
 import { UpdateSymbolDto } from './dto/update-symbol-dto';
+import {
+  Roles,
+  Role,
+  RolesGuard,
+  AuthGuard,
+  PageDto,
+  PageOptionsDto,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Controller('symbols')
 @ApiTags('Symbols Controller', 'Admin')

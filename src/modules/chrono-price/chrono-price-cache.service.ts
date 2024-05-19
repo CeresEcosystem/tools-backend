@@ -7,8 +7,7 @@ import {
   AggResolution,
   ChronoPriceAgg,
 } from './entity/chrono-price-agg.entity';
-import { Cron } from '@nestjs/schedule';
-import { CronExpression } from 'src/utils/cron-expression.enum';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 const MONTH_IN_SECONDS = 30 * 24 * 60 * 60;
 const RESOLUTIONS = ['5m', '15m', '30m', '60m', '1D'];

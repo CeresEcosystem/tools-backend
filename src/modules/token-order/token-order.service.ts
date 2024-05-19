@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TokenOrder } from './entity/token-order.entity';
-import { PageDto } from 'src/utils/pagination/page.dto';
-import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { TokenOrderToDtoMapper } from './mapper/to-dto.mapper';
 import { UpsertTokenOrderDto } from './dto/upsert-token-order.dto';
 import { TokenOrderDto } from './dto/token-order.dto';
+import {
+  PageOptionsDto,
+  PageDto,
+  PageMetaDto,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Injectable()
 export class TokenOrderService {

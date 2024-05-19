@@ -1,15 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
-import { CronExpression } from 'src/utils/cron-expression.enum';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { PSWAPTrackerBlockBcToEntityMapper } from './mapper/pswap-tracker-to-entity.mapper';
 import { TrackerService } from './tracker.service';
 import { FPNumber } from '@sora-substrate/math';
 import { DENOMINATOR } from './tracker.constants';
-import { SoraClient } from '../sora-client/sora-client';
 import { TrackerBurnService } from './tracker-burn.service';
 import { BurnType } from './entity/tracker.entity';
 import { TrackerSummaryService } from './tracker-summary.service';
+import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 const DAY = 14400;
 const PSWAP_TOKEN = 'PSWAP';

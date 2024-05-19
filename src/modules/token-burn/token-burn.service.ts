@@ -7,14 +7,16 @@ import {
   Repository,
   SelectQueryBuilder,
 } from 'typeorm';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { SearchOptionsDto } from './dto/search-request.dto';
 import { TokenBurnDto } from './dto/token-burn.dto';
-import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
 import { plainToInstance } from 'class-transformer';
-import { PageWithSummaryDto } from 'src/utils/pagination/page-with-summary.dto';
 import { TokenBurnSummaryDto } from './dto/token-burn-summary.dto';
 import { XOR_ADDRESS } from 'src/constants/constants';
+import {
+  PageOptionsDto,
+  PageWithSummaryDto,
+  PageMetaDto,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 export enum BurningToken {
   KENSETSU = 'kensetsu',

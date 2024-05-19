@@ -2,11 +2,13 @@ import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Transfer } from './entity/transfer.entity';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
-import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
-import { PageDto } from 'src/utils/pagination/page.dto';
 import { TransferEntityToDto } from './mapper/transfer-entity-to-dto.mapper';
 import { TransferDto } from './dto/transfer.dto';
+import {
+  PageOptionsDto,
+  PageDto,
+  PageMetaDto,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Injectable()
 export class TransfersRepository {

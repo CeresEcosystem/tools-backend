@@ -1,9 +1,8 @@
 import { HttpService } from '@nestjs/axios';
 import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { catchError, firstValueFrom, retry } from 'rxjs';
 import { createFile } from 'src/utils/storage.helper';
-import { CronExpression } from 'src/utils/cron-expression.enum';
 import {
   ALLOWED_ICON_TYPE,
   ICONS_URL,

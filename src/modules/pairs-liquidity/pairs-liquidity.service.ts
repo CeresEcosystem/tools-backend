@@ -1,8 +1,5 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PairLiquidityChangeEntity } from './entity/pair-liquidity-change.entity';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
-import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
-import { PageDto } from 'src/utils/pagination/page.dto';
 import { PairsLiquidityRepository } from './pairs-liquidity.repository';
 import { PairLiquidityChangeEntityToDtoMapper } from './mapper/pair-liquidity-change-entity-to-dto.mapper';
 import { PairLiquidityChangeDto } from './dto/pair-liquidity-change.dto';
@@ -10,11 +7,15 @@ import { PairsPeriodicLiquidityChangeRepository } from './periodic-liquidity-cha
 import { PairPeriodicLiquidityChangeEntityToDtoMapper } from './mapper/pair-periodic-liquidity-change-entity-to-dto';
 import { PairPeriodicLiquidityChangeEntity } from './entity/pair-periodic-liquidity-change.entity';
 import { PairsService } from '../pairs/pairs.service';
-import { Cron } from '@nestjs/schedule';
-import { CronExpression } from 'src/utils/cron-expression.enum';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { PairPeriodicLiquidityChangeDto } from './dto/pair-periodic-liquidity-change.dto';
-import { SoraClient } from '../sora-client/sora-client';
 import { PairLiquidityProviderDto } from './dto/pair-liquidity-provider.dto';
+import {
+  PageDto,
+  PageMetaDto,
+  PageOptionsDto,
+  SoraClient,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Injectable()
 export class PairsLiquidityService {

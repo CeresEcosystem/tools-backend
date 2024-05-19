@@ -1,8 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CoinGeckoClient } from '../coin-gecko-client/coin-gecko-client';
 import { SoraSupplyClient } from '../sora-supply-client/sora-supply-client';
-import { Cron } from '@nestjs/schedule';
-import { CronExpression } from 'src/utils/cron-expression.enum';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { TokenPriceService } from '../token-price/token-price.service';
 import {
   COIN_GECKO_TOKEN_IDS,

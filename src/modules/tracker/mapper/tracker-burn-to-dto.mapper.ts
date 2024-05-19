@@ -1,6 +1,6 @@
-import { BaseDtoMapper } from 'src/utils/mappers/base-dto-mapper';
 import { TrackerBurn } from '../entity/tracker-burn.entity';
 import { TrackerBurningGraphPointDto } from '../dto/tracker.dto';
+import { BaseDtoMapper } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 export class TrackerBurnToDtoMapper extends BaseDtoMapper<
   TrackerBurn,

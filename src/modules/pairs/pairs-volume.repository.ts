@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PairsVolumeChangeEntity } from './entity/pairs-volume-change.entity';
 import { MoreThan, Repository } from 'typeorm';
 import { PairsVolumeTotalDto } from './dto/pairs-volume-total.dto';
-import { subtractDays } from 'src/utils/date-utils';
+import { subtractDays } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Injectable()
 export class PairsVolumeChangeRepository {

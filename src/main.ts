@@ -1,13 +1,33 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { SwaggerModule, DocumentBuilder, OpenAPIObject } from '@nestjs/swagger';
-import { NotFoundExceptionFilter } from './filters/not-found-exception.filter';
-import { TelegramLogger } from './modules/logger/telegram-logger';
-import { LoggingInterceptor } from './interceptors/logging.interceptor';
+import {
+  TelegramLogger,
+  LoggingInterceptor,
+  HttpExceptionFilter,
+  NotFoundExceptionFilter,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 const DEV_ENV = 'dev';
+
+const INTERCEPTOR_URL_THRESHOLDS = [
+  {
+    url: '/api/swaps',
+    warn: 3000,
+    error: 15000,
+  },
+  {
+    url: '/api/reserves',
+    warn: 3000,
+    error: 15000,
+  },
+  {
+    url: '/api/portfolio',
+    warn: 3000,
+    error: 15000,
+  },
+];
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, {
@@ -26,7 +46,7 @@ async function bootstrap(): Promise<void> {
 
   app.enableCors();
 
-  app.useGlobalInterceptors(new LoggingInterceptor());
+  app.useGlobalInterceptors(new LoggingInterceptor(INTERCEPTOR_URL_THRESHOLDS));
 
   // https://docs.nestjs.com/exception-filters#exception-filters-1
   app.useGlobalFilters(

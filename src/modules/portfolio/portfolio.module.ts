@@ -6,8 +6,8 @@ import { ChronoPriceModule } from '../chrono-price/chrono-price.module';
 import { PairsModule } from '../pairs/pairs.module';
 import { DeoClientModule } from '../deo-client/deo-client.module';
 import { SwapsModule } from '../swaps/swaps.module';
-import { SoraClientModule } from '../sora-client/sora-client-module';
 import { TransfersModule } from '../transfers/transfers.module';
+import { SoraClientModule } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Module({
   imports: [

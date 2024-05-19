@@ -7,7 +7,7 @@ import {
 import { FPNumber } from '@sora-substrate/math';
 import { TrackerService } from './tracker.service';
 import { ValTbcTrackerToEntityMapper } from './mapper/val-tbc-tracker-to-entity.mapper';
-import { SoraClient } from '../sora-client/sora-client';
+import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Injectable()
 export class TrackerValTbcBurningsListener {

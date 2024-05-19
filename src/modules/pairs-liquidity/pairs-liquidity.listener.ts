@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PairLiquidityChangeDataDto } from './dto/pair-liquidity-change-data.dto';
 import { PairLiquidityChangeDataDtoToEntityMapper } from './mapper/pair-liquidity-change-data-dto-to-entity.mapper';
 import { PairsLiquidityService } from './pairs-liquidity.service';
-import { SoraClient } from '../sora-client/sora-client';
+import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Injectable()
 export class PairsLiquidityListener {

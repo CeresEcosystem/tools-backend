@@ -1,4 +1,4 @@
-import { BaseEntityMapper } from 'src/utils/mappers/base-entity-mapper';
+import { BaseEntityMapper } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 import { CreateSymbolDto } from '../dto/create-symbol.dto';
 import { TokenSymbol } from '../entity/symbol.entity';
 import Big from 'big.js';

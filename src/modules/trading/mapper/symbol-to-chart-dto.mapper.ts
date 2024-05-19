@@ -1,8 +1,8 @@
 /* eslint-disable camelcase */
 import { TokenSymbol } from 'src/modules/symbols/entity/symbol.entity';
 import { SymbolChartDto } from '../dto/symbol-chart-dto';
-import { BaseDtoMapper } from 'src/utils/mappers/base-dto-mapper';
 import { CHART_SUPPORTED_RESOLUTIONS } from '../trading.const';
+import { BaseDtoMapper } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 export class SymbolChartMapper extends BaseDtoMapper<
   TokenSymbol,

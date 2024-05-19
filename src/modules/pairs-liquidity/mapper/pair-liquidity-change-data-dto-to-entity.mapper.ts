@@ -3,8 +3,8 @@ import {
   TransactionType,
 } from '../entity/pair-liquidity-change.entity';
 import { PairLiquidityChangeDataDto } from '../dto/pair-liquidity-change-data.dto';
-import { BaseEntityMapper } from 'src/utils/mappers/base-entity-mapper';
 import Big from 'big.js';
+import { BaseEntityMapper } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 export class PairLiquidityChangeDataDtoToEntityMapper extends BaseEntityMapper<
   PairLiquidityChangeEntity,

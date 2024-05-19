@@ -4,8 +4,8 @@ import { RelevantPricesService } from '../notification-relevant-prices/relevant-
 import { UserDevicesRepository } from './user-device.repository';
 import { UserDevice } from './entity/user-device.entity';
 import { Cron } from '@nestjs/schedule';
-import { CronExpression } from 'src/utils/cron-expression.enum';
 import { OneSignalClient } from '../one-signal-client/one-signal-client';
+import { CronExpression } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 const DEVIATION_THRESHOLD = 4.5;
 

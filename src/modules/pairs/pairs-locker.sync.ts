@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { CronExpression } from 'src/utils/cron-expression.enum';
 import { CeresClient } from '../ceres-client/ceres-client';
 import { PairsService } from './pairs.service';
+import { CronExpression } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Injectable()
 export class PairsLockerSync {

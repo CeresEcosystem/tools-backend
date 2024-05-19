@@ -8,11 +8,11 @@ import { PairsLiquidityService } from './pairs-liquidity.service';
 import { PairsLiquidityRepository } from './pairs-liquidity.repository';
 import { PairLiquidityChangeEntityToDtoMapper } from './mapper/pair-liquidity-change-entity-to-dto.mapper';
 import { PairLiquidityChangeDataDtoToEntityMapper } from './mapper/pair-liquidity-change-data-dto-to-entity.mapper';
-import { SoraClientModule } from '../sora-client/sora-client-module';
 import { PairsModule } from '../pairs/pairs.module';
 import { PairPeriodicLiquidityChangeEntity } from './entity/pair-periodic-liquidity-change.entity';
 import { PairsPeriodicLiquidityChangeRepository } from './periodic-liquidity-change.repository';
 import { PairPeriodicLiquidityChangeEntityToDtoMapper } from './mapper/pair-periodic-liquidity-change-entity-to-dto';
+import { SoraClientModule } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Module({
   imports: [

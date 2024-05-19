@@ -7,7 +7,7 @@ import { TokenPriceService } from './token-price.service';
 
 import * as whitelist from 'src/utils/files/whitelist.json';
 import * as synthetics from 'src/utils/files/synthetics.json';
-import { SoraClient } from '../sora-client/sora-client';
+import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 const DENOMINATOR = FPNumber.fromNatural(10 ** 18);
 const DAI_ADDRESS =

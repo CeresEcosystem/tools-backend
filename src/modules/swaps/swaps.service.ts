@@ -1,12 +1,14 @@
 import { SwapRepository } from './swaps.repository';
 import { Injectable, Logger } from '@nestjs/common';
 import { SwapDto } from './dto/swap.dto';
-import { PageDto } from 'src/utils/pagination/page.dto';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { SwapOptionsDto } from './dto/swap-options.dto';
-import { PageWithSummaryDto } from 'src/utils/pagination/page-with-summary.dto';
 import { SwapsStatsDto } from './dto/swaps-stats.dto';
+import {
+  PageOptionsDto,
+  PageDto,
+  PageWithSummaryDto,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 const SWAPS_TTL_DAYS = 30;
 

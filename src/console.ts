@@ -3,7 +3,6 @@ import { BootstrapConsole, ConsoleModule } from 'nestjs-console';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TelegramLoggerModule } from './modules/logger/telegram-logger.module';
 import { TrackerModule } from './modules/tracker/tracker.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ReservesModule } from './modules/reserves/reserves.module';
@@ -13,6 +12,7 @@ import { ReservesService } from './modules/reserves/reserves.service';
 import { PortfolioModule } from './modules/portfolio/portfolio.module';
 import { ReserveEntityToDtoMapper } from './modules/reserves/mapper/reserves-entity-to-dto.mapper';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { TelegramLoggerModule } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Module({
   imports: [

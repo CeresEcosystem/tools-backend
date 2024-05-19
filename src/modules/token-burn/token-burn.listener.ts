@@ -2,9 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TokenBurn } from './entity/token-burn.entity';
 import { Repository } from 'typeorm';
-import { SoraClient } from '../sora-client/sora-client';
 import { XOR_ADDRESS } from 'src/constants/constants';
 import { FPNumber } from '@sora-substrate/math';
+import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Injectable()
 export class TokenBurnListener {

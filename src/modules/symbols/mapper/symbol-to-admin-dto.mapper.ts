@@ -1,6 +1,6 @@
+import { BaseDtoMapper } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 import { SymbolAdminDto } from '../dto/symbol-admin-dto';
 import { TokenSymbol } from '../entity/symbol.entity';
-import { BaseDtoMapper } from 'src/utils/mappers/base-dto-mapper';
 
 export class SymbolsAdminMapper extends BaseDtoMapper<
   TokenSymbol,

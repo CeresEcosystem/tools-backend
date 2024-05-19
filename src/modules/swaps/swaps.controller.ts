@@ -1,13 +1,15 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { SwapService } from './swaps.service';
-import { PageDto } from 'src/utils/pagination/page.dto';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { SwapDto } from './dto/swap.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { SwapOptionsDto } from './dto/swap-options.dto';
 import { SwapTokensDto } from './dto/swap-tokens.dto';
-import { PageWithSummaryDto } from 'src/utils/pagination/page-with-summary.dto';
 import { SwapsStatsDto } from './dto/swaps-stats.dto';
+import {
+  PageOptionsDto,
+  PageWithSummaryDto,
+  PageDto,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Controller('swaps')
 @ApiTags('Swaps controller')

@@ -1,6 +1,6 @@
-import { BaseEntityMapper } from 'src/utils/mappers/base-entity-mapper';
 import { PairsVolumeChangeEntity } from '../entity/pairs-volume-change.entity';
 import { PairsVolumeChangeDto } from '../dto/pairs-volume-change.dto';
+import { BaseEntityMapper } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 export class PairsVolumeChangeDtoToEntityMapper extends BaseEntityMapper<
   PairsVolumeChangeEntity,

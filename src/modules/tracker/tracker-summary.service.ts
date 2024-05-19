@@ -4,8 +4,8 @@ import { MoreThan, QueryFailedError, Repository } from 'typeorm';
 import { Tracker } from './entity/tracker.entity';
 import { TrackerBurnDto } from './dto/tracker.dto';
 import { SummaryPeriod, TrackerSummary } from './entity/tracker-summary.entity';
-import { SoraClient } from '../sora-client/sora-client';
 import { TRACKED_TOKENS } from './tracker.constants';
+import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 const SUMMARY_PERIODS = [
   { type: SummaryPeriod.DAY, lookBack: 14_400 }, // Last 24 hours

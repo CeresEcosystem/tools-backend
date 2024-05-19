@@ -1,4 +1,4 @@
-import { BaseEntityMapper } from 'src/utils/mappers/base-entity-mapper';
+import { BaseEntityMapper } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 import { UpsertBannerDto } from '../dto/upsert-banner.dto';
 import { Banner } from '../entity/banner.entity';
 

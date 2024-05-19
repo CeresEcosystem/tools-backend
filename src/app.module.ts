@@ -3,7 +3,6 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { TradingModule } from './modules/trading/trading.module';
-import { TelegramLoggerModule } from './modules/logger/telegram-logger.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { IconsModule } from './modules/icons/icons.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -28,6 +27,7 @@ import { CurrencyRateModule } from './modules/currency-rate/currency-rate.module
 import { MarketCapModule } from './modules/market-cap/market-cap.module';
 import { VolumesModule } from './modules/volumes/volumes.module';
 import { TokenBurnModule } from './modules/token-burn/token-burn.module';
+import { TelegramLoggerModule } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Module({
   imports: [

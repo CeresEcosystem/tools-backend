@@ -1,6 +1,6 @@
-import { BaseDtoMapper } from 'src/utils/mappers/base-dto-mapper';
 import { Reserve } from '../entity/reserves.entity';
 import { ReservesHistoryDto } from '../dto/reserves-history.dto';
+import { BaseDtoMapper } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 export class ReserveEntityToDtoMapper extends BaseDtoMapper<
   Reserve,

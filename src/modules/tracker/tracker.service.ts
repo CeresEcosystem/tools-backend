@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { getTodayFormatted } from 'src/utils/date-utils';
 import { Repository } from 'typeorm';
 import {
   TrackerBlockDto,
@@ -11,10 +10,13 @@ import { BurnType, Tracker } from './entity/tracker.entity';
 import { TrackerToBlockDtoMapper } from './mapper/tracker-to-block-dto.mapper';
 import { TrackerSupplyRepository } from './tracker-supply.repository';
 import { TrackerBurnService } from './tracker-burn.service';
-import { PageDto } from 'src/utils/pagination/page.dto';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
-import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
 import { TrackerSummaryService } from './tracker-summary.service';
+import {
+  PageOptionsDto,
+  PageDto,
+  PageMetaDto,
+  getTodayFormatted,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Injectable()
 export class TrackerService {

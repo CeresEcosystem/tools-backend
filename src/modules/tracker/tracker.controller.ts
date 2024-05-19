@@ -16,9 +16,11 @@ import {
 } from './dto/tracker.dto';
 import { CACHE_KEYS, CACHE_TTL } from './tracker.constants';
 import { TrackerService } from './tracker.service';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
-import { PageDto } from 'src/utils/pagination/page.dto';
 import { BurnType } from './entity/tracker.entity';
+import {
+  PageOptionsDto,
+  PageDto,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Controller('tracker')
 @ApiTags('Tracker Controller')

@@ -9,11 +9,13 @@ import * as crypto from 'crypto';
 import { UpsertBannerDto } from './dto/upsert-banner.dto';
 import { S3Client } from '../s3-client/s3-client';
 import { BANNERS_PATH } from './banner.constants';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
-import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
-import { PageDto } from 'src/utils/pagination/page.dto';
 import { BannerDto } from './dto/banner.dto';
 import { BannerToDtoMapper } from './mapper/banner-to-dto.mapper';
+import {
+  PageOptionsDto,
+  PageDto,
+  PageMetaDto,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Injectable()
 export class BannerService {

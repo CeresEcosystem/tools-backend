@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { KeyValueData } from './key-value-data.entity';
 import { FARMING_APR_KEY, FARMING_REWARDS_KEY } from './rewards.constants';
 import { RewardsDto } from './rewards.dto';
-import { twoNonZeroDecimals } from 'src/utils/number-utils';
+import { twoNonZeroDecimals } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Injectable()
 export class RewardsService {

@@ -10,10 +10,10 @@ import { TokenPriceModule } from '../token-price/token-price.module';
 import { PairsController } from './pairs.controller';
 import { CeresClientModule } from '../ceres-client/ceres-client.module';
 import { PairsLockerSync } from './pairs-locker.sync';
-import { SoraClientModule } from '../sora-client/sora-client-module';
 import { PairsVolumeChangeEntity } from './entity/pairs-volume-change.entity';
 import { PairsVolumeChangeRepository } from './pairs-volume.repository';
 import { PairsVolumeChangeDtoToEntityMapper } from './mapper/pairs-volume-change-dto-to-entity.mapper';
+import { SoraClientModule } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Module({
   imports: [

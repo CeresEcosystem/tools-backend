@@ -1,6 +1,6 @@
-import { PageDto } from 'src/utils/pagination/page.dto';
 import { BurnType } from '../entity/tracker.entity';
 import { SummaryPeriod } from '../entity/tracker-summary.entity';
+import { PageDto } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 export interface TrackerV2Dto {
   blocksFees: PageDto<TrackerBlockDto>;

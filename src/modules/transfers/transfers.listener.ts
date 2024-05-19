@@ -2,7 +2,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TransfersRepository } from './transfers.repository';
 import { Transfer } from './entity/transfer.entity';
-import { SoraClient } from '../sora-client/sora-client';
 import { FPNumber } from '@sora-substrate/math';
 import { ethers } from 'ethers';
 import {
@@ -15,6 +14,7 @@ import * as hashiBridgeABI from '../../utils/files/hashi-bridge-abi.json';
 import * as tokenSymbolABI from '../../utils/files/token-symbol-abi.json';
 import { Keyring } from '@polkadot/api';
 import { TokenPriceService } from '../token-price/token-price.service';
+import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Injectable()
 export class TransfersListener {

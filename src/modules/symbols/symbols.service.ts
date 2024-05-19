@@ -3,13 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TokenSymbol } from './entity/symbol.entity';
 import { CreateSymbolDto } from './dto/create-symbol.dto';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
-import { PageDto } from 'src/utils/pagination/page.dto';
 import { SymbolAdminDto } from './dto/symbol-admin-dto';
-import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
 import { SymbolsAdminMapper } from './mapper/symbol-to-admin-dto.mapper';
 import { SymbolsMapper } from './mapper/create-symbol-to-entity.mapper';
 import { UpdateSymbolDto } from './dto/update-symbol-dto';
+import {
+  PageOptionsDto,
+  PageDto,
+  PageMetaDto,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Injectable()
 export class SymbolsService {
@@ -44,7 +46,9 @@ export class SymbolsService {
     return this.symbolsRepo.findOneByOrFail({ id });
   }
 
-  public async createSymbolIfMissing(newSymbol: CreateSymbolDto): Promise<void> {
+  public async createSymbolIfMissing(
+    newSymbol: CreateSymbolDto,
+  ): Promise<void> {
     const symbolExists = await this.symbolsRepo.exist({
       where: { id: newSymbol.token },
     });

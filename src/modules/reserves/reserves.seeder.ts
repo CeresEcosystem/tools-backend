@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import { Console, Command, createSpinner } from 'nestjs-console';
+import { Console, Command } from 'nestjs-console';
 import * as Papa from 'papaparse';
 import * as fs from 'fs';
 import Big from 'big.js';
@@ -22,15 +22,15 @@ export class ReserveSeeder {
     command: 'setReservesDataValue',
   })
   public async setReservesDataValue(): Promise<void> {
-    const spin = createSpinner();
-    spin.start('Preparing the file');
+    // const spin = createSpinner();
+    // spin.start('Preparing the file');
 
     const reservesFile = fs.readFileSync(
       `${CSV_STORAGE_PATH}/reservesMissingData.csv`,
       'utf8',
     );
 
-    spin.info('Loaded CSV');
+    // spin.info('Loaded CSV');
 
     const reservesData = Papa.parse<{
       balance: string;
@@ -41,20 +41,20 @@ export class ReserveSeeder {
     for (let i = 0; i < reservesData.data.length; i += 1) {
       const row = reservesData.data[i];
       const price = await this.getPriceAtMoment(new Date(row.updatedAt));
-      spin.info(
-        `Date: ${row.updatedAt} - Price: ${price} * Balance: ${row.balance}`,
-      );
+      // spin.info(
+      //   `Date: ${row.updatedAt} - Price: ${price} * Balance: ${row.balance}`,
+      // );
       row.value = new Big(row.balance).mul(price).toString();
     }
 
-    spin.info('Writing to file');
+    // spin.info('Writing to file');
 
     fs.writeFileSync(
       `${CSV_STORAGE_PATH}/reserves-missing-data-complete.csv`,
       Papa.unparse(reservesData.data, { header: true }),
     );
 
-    spin.succeed('Preparing the file done');
+    // spin.succeed('Preparing the file done');
   }
 
   private getPriceAtMoment(date: Date): Promise<number> {
@@ -66,12 +66,12 @@ export class ReserveSeeder {
     description: 'Seed Reserves Data',
   })
   public async seed(): Promise<void> {
-    const spin = createSpinner();
-    spin.start('Seeding the DB');
+    // const spin = createSpinner();
+    // spin.start('Seeding the DB');
 
     await this.seedReservesData();
 
-    spin.succeed('Seeding done');
+    // spin.succeed('Seeding done');
   }
 
   private async seedReservesData(): Promise<void> {

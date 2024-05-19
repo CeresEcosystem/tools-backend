@@ -10,12 +10,10 @@ import { PortfolioDto } from './dto/portfolio.dto';
 import { StakingDto } from './dto/staking.dto';
 import { LiquidityDto } from './dto/liquidity.dto';
 import { PortfolioValueDifferenceDto } from './dto/portfolio-value-difference.dto';
-import { PageDto } from 'src/utils/pagination/page.dto';
 import { SwapDto } from '../swaps/dto/swap.dto';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { PriceChangeDto } from '../chrono-price/dto/price-change.dto';
-import { SoraClient } from '../sora-client/sora-client';
 import { Pair } from '../pairs/entity/pairs.entity';
+import { PageDto, PageOptionsDto, SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 const DENOMINATOR = FPNumber.fromNatural(10 ** 18);
 const HOUR_INTERVALS = [1, 24, 24 * 7, 24 * 30];

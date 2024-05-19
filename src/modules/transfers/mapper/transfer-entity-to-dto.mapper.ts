@@ -1,6 +1,6 @@
-import { BaseDtoMapper } from 'src/utils/mappers/base-dto-mapper';
 import { Transfer } from '../entity/transfer.entity';
 import { TransferDto } from '../dto/transfer.dto';
+import { BaseDtoMapper } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 export class TransferEntityToDto extends BaseDtoMapper<Transfer, TransferDto> {
   override toDto(entity: Transfer): TransferDto {

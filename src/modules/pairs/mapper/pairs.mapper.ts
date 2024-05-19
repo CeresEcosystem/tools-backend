@@ -1,4 +1,4 @@
-import { BaseEntityMapper } from 'src/utils/mappers/base-entity-mapper';
+import { BaseEntityMapper } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 import { PairBcDto } from '../dto/pair-bc.dto';
 import { Pair } from '../entity/pairs.entity';
 

@@ -10,9 +10,7 @@ import { PortfolioService } from './portfolio.service';
 import { PortfolioDto } from './dto/portfolio.dto';
 import { StakingDto } from './dto/staking.dto';
 import { LiquidityDto } from './dto/liquidity.dto';
-import { PageDto } from 'src/utils/pagination/page.dto';
 import { SwapDto } from '../swaps/dto/swap.dto';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { ThrottlerBehindProxyGuard } from 'src/guards/throttler-behind-proxy.guard';
 import { TransferDto } from '../transfers/dto/transfer.dto';
@@ -21,6 +19,10 @@ import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { CACHE_KEYS, CACHE_TTL } from './portfolio.const';
 import { AccountIdValidator } from 'src/utils/validators/account-id.validator';
+import {
+  PageOptionsDto,
+  PageDto,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Controller('portfolio')
 @ApiTags('Portfolio Controller')

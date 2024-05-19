@@ -2,11 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Holder } from './entity/holders.entity';
 import { LessThan, Repository } from 'typeorm';
-import { PageDto } from 'src/utils/pagination/page.dto';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
 import { HolderDto } from './dto/holder.dto';
-import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
 import { HolderEntityToDto } from './mapper/holder-entity-to-dto.mapper';
+import {
+  PageOptionsDto,
+  PageDto,
+  PageMetaDto,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Injectable()
 export class HoldersRepository {

@@ -1,6 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
-import { CronExpression } from 'src/utils/cron-expression.enum';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { ReservesRepository } from './reserves.repository';
 import { Reserve } from './entity/reserves.entity';
 import { RESERVE_ADDRESS } from 'src/constants/constants';

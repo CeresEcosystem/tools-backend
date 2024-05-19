@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
-import { PageDto } from 'src/utils/pagination/page.dto';
 import { TransferDto } from './dto/transfer.dto';
 import { TransfersRepository } from './transfers.repository';
+import {
+  PageDto,
+  PageOptionsDto,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Injectable()
 export class TransfersService {

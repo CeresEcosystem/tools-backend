@@ -7,7 +7,7 @@ import { SwapListener } from './swaps.listener';
 import { SwapGateway } from './swaps.gateway';
 import { SwapEntityToDto } from './mapper/swap-entity-to-dto.mapper';
 import { SwapService } from './swaps.service';
-import { SoraClientModule } from '../sora-client/sora-client-module';
+import { SoraClientModule } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Module({
   imports: [SoraClientModule, TypeOrmModule.forFeature([Swap])],

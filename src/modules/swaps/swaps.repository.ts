@@ -10,18 +10,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Swap } from './entity/swaps.entity';
 import { SwapDto } from './dto/swap.dto';
 import { SwapEntityToDto } from './mapper/swap-entity-to-dto.mapper';
-import { PageDto } from 'src/utils/pagination/page.dto';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
-import { PageMetaDto } from 'src/utils/pagination/page-meta.dto';
+import { SwapOptionsDto } from './dto/swap-options.dto';
+import { SwapsStatsDto } from './dto/swaps-stats.dto';
 import {
+  PageOptionsDto,
+  PageDto,
+  PageMetaDto,
+  PageWithSummaryDto,
+  subtractDays,
   getDateOneMonthBefore,
   isAfter,
   isBefore,
-  subtractDays,
-} from 'src/utils/date-utils';
-import { SwapOptionsDto } from './dto/swap-options.dto';
-import { SwapsStatsDto } from './dto/swaps-stats.dto';
-import { PageWithSummaryDto } from 'src/utils/pagination/page-with-summary.dto';
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 type WhereClause = {
   where: string;

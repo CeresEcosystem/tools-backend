@@ -1,7 +1,5 @@
 import { Controller, Get, Inject, Param, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { PageOptionsDto } from 'src/utils/pagination/page-options.dto';
-import { PageDto } from 'src/utils/pagination/page.dto';
 import { PairLiquidityChangeDto } from './dto/pair-liquidity-change.dto';
 import { PairsLiquidityService } from './pairs-liquidity.service';
 import { PairPeriodicLiquidityChangeDto } from './dto/pair-periodic-liquidity-change.dto';
@@ -9,6 +7,10 @@ import { PairLiquidityProviderDto } from './dto/pair-liquidity-provider.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { CACHE_KEYS, CACHE_TTL } from './pair-liquidity.constants';
 import { Cache } from 'cache-manager';
+import {
+  PageOptionsDto,
+  PageDto,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Controller('pairs-liquidity')
 @ApiTags('Pairs Liquidity Controller')

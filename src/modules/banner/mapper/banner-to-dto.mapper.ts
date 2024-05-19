@@ -1,4 +1,4 @@
-import { BaseDtoMapper } from '../../../utils/mappers/base-dto-mapper';
+import { BaseDtoMapper } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 import { BannerDto } from '../dto/banner.dto';
 import { Banner } from '../entity/banner.entity';
 
