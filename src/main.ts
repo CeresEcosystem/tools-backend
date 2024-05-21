@@ -14,17 +14,27 @@ const DEV_ENV = 'dev';
 const INTERCEPTOR_URL_THRESHOLDS = [
   {
     url: '/api/swaps',
-    warn: 3000,
+    warn: 5000,
     error: 15000,
   },
   {
     url: '/api/reserves',
-    warn: 3000,
+    warn: 5000,
     error: 15000,
   },
   {
     url: '/api/portfolio',
-    warn: 3000,
+    warn: 10000,
+    error: 20000,
+  },
+  {
+    url: '/api/tracker',
+    warn: 5000,
+    error: 15000,
+  },
+  {
+    url: '/api/trading/history',
+    warn: 5000,
     error: 15000,
   },
 ];
