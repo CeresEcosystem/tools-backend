@@ -12,6 +12,9 @@ $ yarn install
 # Setup .env
 Create .env file and copy .env.example content
 
+# Setup .npmrc
+Create .nprmc file and copy .npmrc.example content
+
 # Start DB
 $ docker-compose up
 
