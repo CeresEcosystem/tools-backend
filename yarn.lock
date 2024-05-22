@@ -581,10 +581,10 @@
   resolved "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@ceresecosystem/ceres-lib@0.0.33":
-  version "0.0.33"
-  resolved "https://npm.pkg.github.com/download/@ceresecosystem/ceres-lib/0.0.33/5e541dabcf866dec8a01d8ee6ebe2e71f129d7fa#5e541dabcf866dec8a01d8ee6ebe2e71f129d7fa"
-  integrity sha512-J8tGcWrG8qF9BzatDrud1lH4FaKqfw8kcY+1T/yBQ2EZo2Rl24gJXJAiY/2zLs1ooAa9xWGfxuQp+KumP29DwA==
+"@ceresecosystem/ceres-lib@0.0.34":
+  version "0.0.34"
+  resolved "https://npm.pkg.github.com/download/@ceresecosystem/ceres-lib/0.0.34/f2b4f343b0b209504335d235d0af12516412cbfa#f2b4f343b0b209504335d235d0af12516412cbfa"
+  integrity sha512-EmpGImy8H92UY21hYKl1dnooWNmts/Zq6breTk5mVwctl0T5VUs35N2sE2J0AZAYHyhB1ug7B7A6MmnzYIBbrg==
   dependencies:
     "@nestjs/axios" "^3.0.2"
     "@nestjs/common" "^10.2.6"
