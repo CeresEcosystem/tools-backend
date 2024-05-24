@@ -10,7 +10,6 @@ import { ReserveSeeder } from './modules/reserves/reserves.seeder';
 import { ChronoPriceModule } from './modules/chrono-price/chrono-price.module';
 import { ReservesService } from './modules/reserves/reserves.service';
 import { PortfolioModule } from './modules/portfolio/portfolio.module';
-import { ReserveEntityToDtoMapper } from './modules/reserves/mapper/reserves-entity-to-dto.mapper';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TelegramLoggerModule } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
@@ -54,7 +53,7 @@ import { TelegramLoggerModule } from '@ceresecosystem/ceres-lib/packages/ceres-b
     ConsoleModule,
   ],
   controllers: [],
-  providers: [ReserveSeeder, ReservesService, ReserveEntityToDtoMapper],
+  providers: [ReserveSeeder, ReservesService],
 })
 class AppConsoleModule {}
 

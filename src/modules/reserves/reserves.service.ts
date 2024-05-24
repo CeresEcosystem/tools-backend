@@ -5,10 +5,11 @@ import { Reserve } from './entity/reserves.entity';
 import { RESERVE_ADDRESS } from 'src/constants/constants';
 import { PortfolioService } from '../portfolio/portfolio.service';
 import { ReservesDto } from './dto/reserves.dto';
-import { ReserveEntityToDtoMapper } from './mapper/reserves-entity-to-dto.mapper';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { CACHE_KEYS } from './reserves.const';
+import { ReservesHistoryDto } from './dto/reserves-history.dto';
+import { plainToInstance } from 'class-transformer';
 
 const RESERVES = ['TBCD', 'ETH', 'DAI', 'VAL', 'PSWAP'];
 
@@ -19,7 +20,6 @@ export class ReservesService {
   constructor(
     private readonly reserveRepo: ReservesRepository,
     private readonly portfolioService: PortfolioService,
-    private readonly reserveMapper: ReserveEntityToDtoMapper,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
   ) {}
@@ -32,7 +32,14 @@ export class ReservesService {
     const dataHistoryEntities = await this.reserveRepo.findTokenReserves(
       tokenSymbol,
     );
-    const dataHistoryDtos = this.reserveMapper.toDtos(dataHistoryEntities);
+    const dataHistoryDtos = plainToInstance(
+      ReservesHistoryDto,
+      dataHistoryEntities,
+      {
+        excludeExtraneousValues: true,
+      },
+    );
+
     const reserveDto: ReservesDto = {
       currentBalance: tokenReserve.balance,
       currentValue: tokenReserve.value,

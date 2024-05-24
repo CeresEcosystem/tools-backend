@@ -14,6 +14,7 @@ Create .env file and copy .env.example content
 
 # Setup .npmrc
 Create .nprmc file and copy .npmrc.example content
+Generate personal classic token with read:packages scope [here](https://github.com/settings/tokens)
 
 # Start DB
 $ docker-compose up

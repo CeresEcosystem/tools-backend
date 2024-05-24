@@ -52,14 +52,11 @@ export class TokenBurnService {
       .take(pageOptions.size);
 
     const [data, count] = await queryBuilder.getManyAndCount();
+    const dtos = plainToInstance(TokenBurnDto, data, {
+      excludeExtraneousValues: true,
+    });
 
     const meta = new PageMetaDto(pageOptions.page, pageOptions.size, count);
-
-    const dtos = data.map((element) =>
-      plainToInstance(TokenBurnDto, element, {
-        excludeExtraneousValues: true,
-      }),
-    );
 
     const amountBurnedTotal = await this.getAmountBurnedTotal(
       searchOptions,
