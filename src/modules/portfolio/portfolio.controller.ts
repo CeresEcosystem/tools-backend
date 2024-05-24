@@ -7,7 +7,7 @@ import {
   Inject,
 } from '@nestjs/common';
 import { PortfolioService } from './portfolio.service';
-import { PortfolioDto } from './dto/portfolio.dto';
+import { PortfolioExtendedDto } from './dto/portfolio.dto';
 import { StakingDto } from './dto/staking.dto';
 import { LiquidityDto } from './dto/liquidity.dto';
 import { SwapDto } from '../swaps/dto/swap.dto';
@@ -38,10 +38,10 @@ export class PortfolioController {
   @Get(':accountId')
   getPortfolio(
     @Param('accountId', AccountIdValidator) accountId: string,
-  ): Promise<PortfolioDto[]> {
+  ): Promise<PortfolioExtendedDto[]> {
     return this.cacheManager.wrap(
       `${CACHE_KEYS.PORTFOLIO}-${accountId}`,
-      () => this.portfolioService.getPortfolio(accountId),
+      () => this.portfolioService.getPortfolioExtended(accountId),
       CACHE_TTL.FIVE_MINUTES,
     );
   }

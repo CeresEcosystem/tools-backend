@@ -17,11 +17,11 @@ const INTERCEPTOR_URL_THRESHOLDS = [
     warn: 5000,
     error: 15000,
   },
-  {
-    url: '/api/reserves',
-    warn: 5000,
-    error: 15000,
-  },
+  // {
+  //   url: '/api/reserves',
+  //   warn: 5000,
+  //   error: 15000,
+  // },
   {
     url: '/api/portfolio',
     warn: 10000,

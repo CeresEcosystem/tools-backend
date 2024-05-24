@@ -59,7 +59,7 @@ export class SwapRepository {
     return new PageDto(this.swapMapper.toDtos(data), meta);
   }
 
-  public findSwapsForPeriod(from: Date, to: Date): Promise<SwapDto[]> {
+  public findSwapsForPeriod(from: Date, to: Date): Promise<Swap[]> {
     return this.swapRepository.findBy({
       swappedAt: Between(from, to),
     });

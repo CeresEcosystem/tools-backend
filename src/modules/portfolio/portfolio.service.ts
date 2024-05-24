@@ -6,14 +6,20 @@ import { ChronoPriceService } from '../chrono-price/chrono-price.service';
 import { SwapService } from '../swaps/swaps.service';
 import { PairsService } from '../pairs/pairs.service';
 import { DeoClient } from '../deo-client/deo-client';
-import { PortfolioDto } from './dto/portfolio.dto';
+import { PortfolioDto, PortfolioExtendedDto } from './dto/portfolio.dto';
 import { StakingDto } from './dto/staking.dto';
 import { LiquidityDto } from './dto/liquidity.dto';
 import { PortfolioValueDifferenceDto } from './dto/portfolio-value-difference.dto';
 import { SwapDto } from '../swaps/dto/swap.dto';
 import { PriceChangeDto } from '../chrono-price/dto/price-change.dto';
 import { Pair } from '../pairs/entity/pairs.entity';
-import { PageDto, PageOptionsDto, SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import {
+  PageDto,
+  PageOptionsDto,
+  SoraClient,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import { PortfolioAssetDto } from './dto/portfolio-asset.dto';
+import { TokenPrice } from '../token-price/entity/token-price.entity';
 
 const DENOMINATOR = FPNumber.fromNatural(10 ** 18);
 const HOUR_INTERVALS = [1, 24, 24 * 7, 24 * 30];
@@ -32,75 +38,56 @@ export class PortfolioService {
   ) {}
 
   public async getPortfolio(accountId: string): Promise<PortfolioDto[]> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const soraApi: any = await this.soraClient.getSoraApi();
-
-    let xor;
-
-    try {
-      xor = await soraApi.rpc.assets.freeBalance(accountId, XOR_ADDRESS);
-    } catch (error) {
-      return [];
-    }
-
-    const value = xor.isNone ? { balance: 0 } : xor.unwrap();
-    const xorBalance = new FPNumber(value.balance).toNumber();
-
     const allTokenEntities = await this.tokenPriceService.findAll();
-
-    let portfolio;
-
-    try {
-      portfolio = await soraApi.query.tokens.accounts.entries(accountId);
-    } catch (error) {
-      return [];
-    }
-
-    this.logger.log(`Start portfolio processing, count: ${portfolio.length}`);
-
-    const relevantPortfolioAssets: {
-      assetId: string;
-      assetAmount: number;
-    }[] = [
-      { assetId: XOR_ADDRESS, assetAmount: xorBalance },
-      ...portfolio
-        .map((portfolioAsset) => {
-          const [assetsId, assetAmount] = portfolioAsset;
-          const [, { code: assetId }] = assetsId.toHuman();
-          const { free: assetBalance } = assetAmount.toHuman();
-
-          return {
-            assetId,
-            assetAmount: new FPNumber(assetBalance).div(DENOMINATOR).toNumber(),
-          };
-        })
-        .filter(({ assetAmount }) => assetAmount > 0)
-        .filter(({ assetId }) =>
-          allTokenEntities.some((token) => token.assetId === assetId),
-        ),
-    ];
-
-    this.logger.log(`Relevant assets count: ${relevantPortfolioAssets.length}`);
-
-    const relevantTokens = allTokenEntities.filter((token) =>
-      relevantPortfolioAssets.some((asset) => asset.assetId === token.assetId),
+    const portfolioAssets = await this.getPortfolioAssets(
+      accountId,
+      allTokenEntities,
     );
 
-    const relevantTokenPriceChanges =
+    const result = portfolioAssets.map(({ assetId, assetAmount }) => {
+      const tokenEntity = allTokenEntities.find(
+        (token) => token.assetId === assetId,
+      );
+
+      return {
+        fullName: tokenEntity.fullName,
+        token: tokenEntity.token,
+        price: Number(tokenEntity.price),
+        balance: assetAmount,
+        value: Number(tokenEntity.price) * assetAmount,
+      };
+    });
+
+    this.logger.log('End portfolio processing');
+
+    return result;
+  }
+
+  public async getPortfolioExtended(
+    accountId: string,
+  ): Promise<PortfolioExtendedDto[]> {
+    const allTokenEntities = await this.tokenPriceService.findAll();
+    const portfolioAssets = await this.getPortfolioAssets(
+      accountId,
+      allTokenEntities,
+    );
+    const relevantTokens = allTokenEntities.filter((token) =>
+      portfolioAssets.some((asset) => asset.assetId === token.assetId),
+    );
+
+    const relevantTokensPriceChanges =
       await this.chronoPriceService.getPriceChangePerIntervals(
         relevantTokens,
         HOUR_INTERVALS,
       );
 
-    const result = relevantPortfolioAssets.map(({ assetId, assetAmount }) => {
+    const result = portfolioAssets.map(({ assetId, assetAmount }) => {
       const tokenEntity = allTokenEntities.find(
         (token) => token.assetId === assetId,
       );
-
-      const priceChanges = relevantTokenPriceChanges
+      const priceChanges = relevantTokensPriceChanges
         .filter((priceChange) => priceChange.token === tokenEntity.token)
         .sort((priceChange) => priceChange.intervalHours);
-
       const [oneHour, oneDay, oneWeek, oneMonth] = this.calculatePriceChanges(
         priceChanges,
         assetAmount,
@@ -122,8 +109,6 @@ export class PortfolioService {
         oneMonthValueDifference: oneMonth.valueDifference,
       };
     });
-
-    this.logger.log('End portfolio processing');
 
     return result;
   }
@@ -243,6 +228,47 @@ export class PortfolioService {
     accountId: string,
   ): Promise<PageDto<SwapDto>> {
     return this.swapsService.findSwapsByAccount(pageOptions, accountId);
+  }
+
+  private async getPortfolioAssets(
+    accountId: string,
+    allTokenEntities: TokenPrice[],
+  ): Promise<PortfolioAssetDto[]> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const soraApi: any = await this.soraClient.getSoraApi();
+
+    const [xor, portfolio] = await Promise.all([
+      soraApi.rpc.assets.freeBalance(accountId, XOR_ADDRESS),
+      soraApi.query.tokens.accounts.entries(accountId),
+    ]);
+
+    const xorValue = xor.isNone ? { balance: 0 } : xor.unwrap();
+    const xorBalance = new FPNumber(xorValue.balance).toNumber();
+
+    this.logger.log(`Start portfolio processing, count: ${portfolio.length}`);
+
+    const portfolioAssets: PortfolioAssetDto[] = [
+      { assetId: XOR_ADDRESS, assetAmount: xorBalance },
+      ...portfolio
+        .map((portfolioAsset) => {
+          const [assetsId, assetAmount] = portfolioAsset;
+          const [, { code: assetId }] = assetsId.toHuman();
+          const { free: assetBalance } = assetAmount.toHuman();
+
+          return {
+            assetId,
+            assetAmount: new FPNumber(assetBalance).div(DENOMINATOR).toNumber(),
+          };
+        })
+        .filter(({ assetAmount }) => assetAmount > 0)
+        .filter(({ assetId }) =>
+          allTokenEntities.some((token) => token.assetId === assetId),
+        ),
+    ];
+
+    this.logger.log(`Relevant assets count: ${portfolioAssets.length}`);
+
+    return portfolioAssets;
   }
 
   private calculatePriceChanges(

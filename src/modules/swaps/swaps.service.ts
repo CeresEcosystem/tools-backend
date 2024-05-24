@@ -9,6 +9,7 @@ import {
   PageDto,
   PageWithSummaryDto,
 } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import { Swap } from './entity/swaps.entity';
 
 const SWAPS_TTL_DAYS = 30;
 
@@ -40,7 +41,7 @@ export class SwapService {
     return this.swapRepo.findSwapsByAccountId(pageOptions, accountId);
   }
 
-  public findSwapsForPeriod(from: Date, to: Date): Promise<SwapDto[]> {
+  public findSwapsForPeriod(from: Date, to: Date): Promise<Swap[]> {
     return this.swapRepo.findSwapsForPeriod(from, to);
   }
 
