@@ -7,7 +7,6 @@ import {
   TrackerV2Dto,
 } from './dto/tracker.dto';
 import { BurnType, Tracker } from './entity/tracker.entity';
-import { TrackerToBlockDtoMapper } from './mapper/tracker-to-block-dto.mapper';
 import { TrackerSupplyRepository } from './tracker-supply.repository';
 import { TrackerBurnService } from './tracker-burn.service';
 import { TrackerSummaryService } from './tracker-summary.service';
@@ -17,6 +16,7 @@ import {
   PageMetaDto,
   getTodayFormatted,
 } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class TrackerService {
@@ -26,7 +26,6 @@ export class TrackerService {
     @InjectRepository(Tracker)
     private readonly trackerRepository: Repository<Tracker>,
     private readonly trackerSupplyRepository: TrackerSupplyRepository,
-    private readonly trackerToBlockMapper: TrackerToBlockDtoMapper,
   ) {}
 
   public async findLastBlockNumber(
@@ -100,6 +99,10 @@ export class TrackerService {
       totalCount,
     );
 
-    return new PageDto(this.trackerToBlockMapper.toDtos(data), pageMeta);
+    const dtos = plainToInstance(TrackerBlockDto, data, {
+      excludeExtraneousValues: true,
+    });
+
+    return new PageDto(dtos, pageMeta);
   }
 }

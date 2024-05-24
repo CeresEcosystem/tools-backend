@@ -4,8 +4,8 @@ import { IsNull, MoreThan, Not, QueryFailedError, Repository } from 'typeorm';
 import { Tracker } from './entity/tracker.entity';
 import { TrackerBurn } from './entity/tracker-burn.entity';
 import { TrackerBurningGraphPointDto } from './dto/tracker.dto';
-import { TrackerBurnToDtoMapper } from './mapper/tracker-burn-to-dto.mapper';
 import { TRACKED_TOKENS } from './tracker.constants';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class TrackerBurnService {
@@ -16,20 +16,21 @@ export class TrackerBurnService {
     private readonly trackerRepository: Repository<Tracker>,
     @InjectRepository(TrackerBurn)
     private readonly trackerBurnRepository: Repository<TrackerBurn>,
-    private readonly toDtoMapper: TrackerBurnToDtoMapper,
   ) {
     TRACKED_TOKENS.forEach((token) => this.cacheBurningChartData(token));
   }
 
-  public getBurningChartData(
+  public async getBurningChartData(
     token: string,
   ): Promise<TrackerBurningGraphPointDto[]> {
-    return this.toDtoMapper.toDtosAsync(
-      this.trackerBurnRepository.find({
-        where: { token },
-        order: { dateRaw: 'ASC' },
-      }),
-    );
+    const burns = await this.trackerBurnRepository.find({
+      where: { token },
+      order: { dateRaw: 'ASC' },
+    });
+
+    return plainToInstance(TrackerBurningGraphPointDto, burns, {
+      excludeExtraneousValues: true,
+    });
   }
 
   public async cacheBurningChartData(token: string): Promise<void> {
