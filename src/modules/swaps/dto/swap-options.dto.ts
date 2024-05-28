@@ -9,9 +9,6 @@ import {
   Min,
 } from 'class-validator';
 
-const DEFAULT_MIN_AMOUNT = 0;
-const DEFAULT_MAX_AMOUNT = Number.MAX_SAFE_INTEGER;
-
 export class SwapOptionsDto {
   @Type(() => Date)
   @IsDate()
@@ -30,7 +27,7 @@ export class SwapOptionsDto {
   @IsNumber()
   @Min(0)
   @IsOptional()
-  minAmount?: number = DEFAULT_MIN_AMOUNT;
+  minAmount?: number;
 
   @ApiPropertyOptional({
     minimum: 0,
@@ -39,7 +36,7 @@ export class SwapOptionsDto {
   @IsNumber()
   @Min(0)
   @IsOptional()
-  maxAmount?: number = DEFAULT_MAX_AMOUNT;
+  maxAmount?: number;
 
   @IsOptional()
   @IsIn(['ASC', 'DESC'], {

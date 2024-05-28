@@ -124,6 +124,7 @@ export class SwapRepository {
     });
   }
 
+  // eslint-disable-next-line complexity
   private getWhereClauses(
     swapOptions: SwapOptionsDto,
     assetIds?: string[],
@@ -150,7 +151,9 @@ export class SwapRepository {
       });
     }
 
-    whereClause.push(this.getAmountWhereClause(swapOptions, assetIds));
+    if (swapOptions.minAmount || swapOptions.maxAmount) {
+      whereClause.push(this.getAmountWhereClause(swapOptions, assetIds));
+    }
 
     return whereClause;
   }
@@ -160,14 +163,16 @@ export class SwapRepository {
     assetIds?: string[],
   ): WhereClause {
     const queryForMultipleTokens = !assetIds || assetIds?.length > 1;
+    const minAmount = swapOptions.minAmount || 0;
+    const maxAmount = swapOptions.maxAmount || Number.MAX_SAFE_INTEGER;
 
     if (queryForMultipleTokens) {
       return {
         where: `((swap.assetInputAmount >= :minAmount AND swap.assetInputAmount <= :maxAmount) 
         OR (swap.assetOutputAmount >= :minAmount AND swap.assetOutputAmount <= :maxAmount))`,
         parameters: {
-          minAmount: swapOptions.minAmount,
-          maxAmount: swapOptions.maxAmount,
+          minAmount,
+          maxAmount,
         },
       };
     }
@@ -179,8 +184,8 @@ export class SwapRepository {
         AND swap.assetOutputAmount >= :minAmount AND swap.assetOutputAmount <= :maxAmount))`,
       parameters: {
         assetId: assetIds[0],
-        minAmount: swapOptions.minAmount,
-        maxAmount: swapOptions.maxAmount,
+        minAmount,
+        maxAmount,
       },
     };
   }
