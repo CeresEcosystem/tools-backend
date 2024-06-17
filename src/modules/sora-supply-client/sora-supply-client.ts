@@ -51,8 +51,8 @@ export class SoraSupplyClient {
 
   private async sendGetRequest<T>(url: string): Promise<T> {
     const { data } = await firstValueFrom(
-      this.httpService.get<T>(url, { timeout: 1000 }).pipe(
-        retry({ count: 2, delay: 1000 }),
+      this.httpService.get<T>(url, { timeout: 3000 }).pipe(
+        retry({ count: 5, delay: 5000 }),
         catchError((error) => {
           throw new BadGatewayException(error);
         }),
