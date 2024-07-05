@@ -6,11 +6,15 @@ import { TransferEntityToDto } from './mapper/transfer-entity-to-dto.mapper';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Transfer } from './entity/transfer.entity';
 import { TokenPriceModule } from '../token-price/token-price.module';
-import { SoraClientModule } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import {
+  SoraClientModule,
+  SoraEventModule,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Module({
   imports: [
     SoraClientModule,
+    SoraEventModule,
     TokenPriceModule,
     TypeOrmModule.forFeature([Transfer]),
   ],

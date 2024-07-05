@@ -1,5 +1,10 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
+export enum TransferDirection {
+  BURNED = 'burned',
+  MINTED = 'minted',
+}
+
 @Entity('transfer')
 export class Transfer {
   @PrimaryGeneratedColumn()
@@ -22,4 +27,10 @@ export class Transfer {
 
   @Column({ name: 'block' })
   block: number;
+
+  @Column({ name: 'type', length: 15 })
+  type: string;
+
+  @Column({ name: 'direction', type: 'enum', enum: TransferDirection })
+  direction: TransferDirection;
 }

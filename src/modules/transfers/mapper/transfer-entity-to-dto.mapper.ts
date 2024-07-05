@@ -11,6 +11,8 @@ export class TransferEntityToDto extends BaseDtoMapper<Transfer, TransferDto> {
       receiverAccountId: receiver,
       transferredAt,
       block,
+      type,
+      direction,
     } = entity;
 
     return {
@@ -20,6 +22,8 @@ export class TransferEntityToDto extends BaseDtoMapper<Transfer, TransferDto> {
       receiver,
       transferredAt,
       block,
+      type,
+      direction,
     };
   }
 }
