@@ -5,7 +5,7 @@ export class AddTypeTransfer1720011653258 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      "ALTER TABLE `transfer` ADD `type` varchar(255) NOT NULL, ADD `direction` enum ('burned', 'minted')",
+      "ALTER TABLE `transfer` ADD `type` varchar(15) NOT NULL, ADD `direction` enum ('burned', 'minted')",
     );
 
     await queryRunner.query(`

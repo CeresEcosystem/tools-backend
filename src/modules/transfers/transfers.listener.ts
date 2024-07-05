@@ -1,4 +1,3 @@
-/* eslint-disable init-declarations */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable, Logger } from '@nestjs/common';
 import { TransfersRepository } from './transfers.repository';
@@ -15,8 +14,46 @@ import * as hashiBridgeABI from '../../utils/files/hashi-bridge-abi.json';
 import * as tokenSymbolABI from '../../utils/files/token-symbol-abi.json';
 import { Keyring } from '@polkadot/api';
 import { TokenPriceService } from '../token-price/token-price.service';
-import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import {
+  SoraClient,
+  SoraEventListener,
+} from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 import { convertAddress } from 'src/utils/address-convertor.helper';
+import { QueryFailedError } from 'typeorm';
+
+const ASSETS_TRANSFER_SECTION = 'assets';
+const PARACHAIN_TRANSFER_SECTION = 'parachainBridgeApp';
+const SUBSTRATE_TRANSFER_SECTION = 'substrateBridgeApp';
+
+type TransferEvent = [string, string, { code: string }, string];
+type TransferParachainBurnedEvent = [
+  string,
+  { code: string },
+  string,
+  unknown,
+  string,
+];
+type TransferParachainMintedEvent = [
+  string,
+  { code: string },
+  unknown,
+  string,
+  string,
+];
+
+interface TransferSubstrateBurnedEvent {
+  networkId: string;
+  assetId: { code: string };
+  sender: string;
+  amount: string;
+}
+
+interface TransferSubstrateMintedEvent {
+  networkId: string;
+  assetId: { code: string };
+  recipient: string;
+  amount: string;
+}
 
 interface TransferData {
   type: string;
@@ -28,6 +65,12 @@ interface TransferData {
   direction?: TransferDirection;
 }
 
+enum TRANSFER_METHODS {
+  Burned = 'Burned',
+  Minted = 'Minted',
+  Transfer = 'Transfer',
+}
+
 @Injectable()
 export class TransfersListener {
   private readonly logger = new Logger(TransfersListener.name);
@@ -36,93 +79,48 @@ export class TransfersListener {
   constructor(
     private readonly transferRepo: TransfersRepository,
     private readonly soraClient: SoraClient,
+    private readonly soraEventListener: SoraEventListener,
     private readonly tokenPriceService: TokenPriceService,
   ) {
     this.runListeners();
+
+    this.soraEventListener.subscribe(
+      ASSETS_TRANSFER_SECTION,
+      this.processAssetsTransferEvent.bind(this),
+    );
+    this.soraEventListener.subscribe(
+      PARACHAIN_TRANSFER_SECTION,
+      this.processParachainTransferEvent.bind(this),
+    );
+    this.soraEventListener.subscribe(
+      SUBSTRATE_TRANSFER_SECTION,
+      this.processSubstrateTransferEvent.bind(this),
+    );
   }
 
-  private async runListeners(): Promise<void> {
-    const soraApi: any = await this.soraClient.getSoraApi();
-    this.trackTransfers(soraApi);
-    this.trackBrigdeTransfersFromSoraToEthereum(soraApi);
+  private runListeners(): void {
+    this.trackBrigdeTransfersFromSoraToEthereum();
     this.trackBrigdeTransfersFromEthereum();
   }
 
-  private isAssetsEvent(event: any): boolean {
-    return event?.section === 'assets' && event?.method === 'Transfer';
-  }
+  private async processAssetsTransferEvent(
+    blockNum: string,
+    method: string,
+    data: unknown,
+  ): Promise<void> {
+    this.logger.debug(`Asset transfer event received '${method}'.`, data);
 
-  private isParachainBridgeEvent(event: any): boolean {
-    return (
-      event?.section === 'parachainBridgeApp' &&
-      (event?.method === 'Burned' || event?.method === 'Minted')
-    );
-  }
-
-  private isSubstrateBridgeEvent(event: any): boolean {
-    return (
-      event?.section === 'substrateBridgeApp' &&
-      (event?.method === 'Burned' || event?.method === 'Minted')
-    );
-  }
-
-  private trackTransfers(soraApi: any): void {
-    soraApi.query.system.events(async (events) => {
-      const { block } = await soraApi.rpc.chain.getBlock();
-      const blockNum = block.header.toHuman().number;
-      const blockNumStr = blockNum.toString().replaceAll(',', '');
-
-      for (const record of events) {
-        const { event } = record;
-
-        const eventData = event.data.toHuman();
-
-        if (this.isAssetsEvent(event)) {
-          this.saveSoraTransfer(eventData, blockNumStr);
-        } else if (this.isParachainBridgeEvent(event)) {
-          this.saveParachainBridgeTransfer(
-            eventData,
-            blockNumStr,
-            event?.method === 'Burned',
-          );
-        } else if (this.isSubstrateBridgeEvent(event)) {
-          this.saveSubstrateBridgeTransfer(
-            eventData,
-            blockNumStr,
-            event?.method === 'Burned',
-          );
-        }
+    try {
+      if (method === TRANSFER_METHODS.Transfer) {
+        await this.saveSoraTransfer(data as TransferEvent, blockNum);
       }
-    });
-  }
-
-  private async saveTransfer(transferData: TransferData): Promise<void> {
-    this.logger.debug('Start storing transfer.');
-
-    const transfer = new Transfer();
-
-    transfer.senderAccountId = transferData.senderAccountId;
-    transfer.asset = transferData.asset;
-    transfer.amount =
-      typeof transferData.amount === 'number'
-        ? transferData.amount
-        : FPNumber.fromCodecValue(transferData.amount).toNumber();
-    transfer.receiverAccountId = transferData.receiverAccountId;
-    transfer.transferredAt = new Date();
-    transfer.block =
-      typeof transferData.block === 'number'
-        ? transferData.block
-        : parseInt(transferData.block);
-    transfer.type = transferData.type;
-    transfer.direction = transferData.direction;
-
-    await this.transferRepo.saveTransfer(transfer);
-
-    this.logger.debug('Storing transfer was successful.');
+    } catch (exception) {
+      this.logErrorMessage(exception, 'assets');
+    }
   }
 
   private async saveSoraTransfer(
-    eventData: any,
+    eventData: TransferEvent,
     blockNumStr: string,
   ): Promise<void> {
     const [senderAccountId, receiverAccountId, { code: assetId }, amount] =
@@ -145,103 +143,158 @@ export class TransfersListener {
     });
   }
 
-  private async saveParachainBridgeTransfer(
-    eventData: any,
-    blockNumStr: string,
-    burned: boolean,
+  private async processParachainTransferEvent(
+    blockNum: string,
+    method: string,
+    data: unknown,
   ): Promise<void> {
-    let transferData;
-    let senderAccountId;
-    let receiverAccountId;
+    this.logger.debug(`Parachain transfer event received '${method}'.`, data);
 
-    if (burned) {
-      const [type, { code: assetId }, accountId, , amount] = eventData;
-      transferData = { type, assetId, amount };
-      senderAccountId = accountId;
-      receiverAccountId = convertAddress(
-        this.keyring,
-        type,
-        accountId,
-        assetId,
-      );
-    } else {
-      const [type, { code: assetId }, , accountId, amount] = eventData;
-      transferData = { type, assetId, amount };
-      receiverAccountId = accountId;
-      senderAccountId = convertAddress(this.keyring, type, accountId, assetId);
+    try {
+      if (method === TRANSFER_METHODS.Burned) {
+        await this.saveParachainTransferBurnedEvent(
+          data as TransferParachainBurnedEvent,
+          blockNum,
+        );
+      } else if (method === TRANSFER_METHODS.Minted) {
+        await this.saveParachainTransferMintedEvent(
+          data as TransferParachainMintedEvent,
+          blockNum,
+        );
+      }
+    } catch (exception) {
+      this.logErrorMessage(exception, 'parachain');
     }
+  }
+
+  private async saveParachainTransferBurnedEvent(
+    eventData: TransferParachainBurnedEvent,
+    blockNumStr: string,
+  ): Promise<void> {
+    const [type, { code: assetId }, accountId, , amount] = eventData;
+
+    const receiverAccountId = convertAddress(
+      this.keyring,
+      type,
+      accountId,
+      assetId,
+    );
 
     await this.saveTransfer({
-      type: transferData.type,
-      senderAccountId,
+      type,
+      senderAccountId: accountId,
       receiverAccountId,
-      asset: transferData.assetId,
-      amount: transferData.amount,
+      asset: assetId,
+      amount,
       block: blockNumStr,
-      direction: burned ? TransferDirection.BURNED : TransferDirection.MINTED,
+      direction: TransferDirection.BURNED,
     });
   }
 
-  private async saveSubstrateBridgeTransfer(
-    eventData: any,
+  private async saveParachainTransferMintedEvent(
+    eventData: TransferParachainMintedEvent,
     blockNumStr: string,
-    burned: boolean,
   ): Promise<void> {
-    let transferData;
-    let senderAccountId;
-    let receiverAccountId;
+    const [type, { code: assetId }, , accountId, amount] = eventData;
 
-    if (burned) {
-      const { networkId, assetId, sender, amount } = eventData;
-      transferData = {
-        type: networkId,
-        assetId: assetId.code,
-        amount,
-      };
-      senderAccountId = sender;
-      receiverAccountId = convertAddress(
-        this.keyring,
-        networkId,
-        sender,
-        assetId,
-      );
-    } else {
-      const { networkId, assetId, recipient, amount } = eventData;
-      transferData = {
-        type: networkId,
-        assetId: assetId.code,
-        amount,
-      };
-      receiverAccountId = recipient;
-      senderAccountId = convertAddress(
-        this.keyring,
-        networkId,
-        recipient,
-        assetId,
-      );
-    }
+    const senderAccountId = convertAddress(
+      this.keyring,
+      type,
+      accountId,
+      assetId,
+    );
 
     await this.saveTransfer({
-      type: transferData.type,
+      type,
       senderAccountId,
-      receiverAccountId,
-      asset: transferData.assetId,
-      amount: transferData.amount,
+      receiverAccountId: accountId,
+      asset: assetId,
+      amount,
       block: blockNumStr,
-      direction: burned ? TransferDirection.BURNED : TransferDirection.MINTED,
+      direction: TransferDirection.MINTED,
     });
   }
 
-  private trackBrigdeTransfersFromSoraToEthereum(soraApi: any): void {
+  private async processSubstrateTransferEvent(
+    blockNum: string,
+    method: string,
+    data: unknown,
+  ): Promise<void> {
+    this.logger.debug(`Substrate transfer event received '${method}'.`, data);
+
+    try {
+      if (method === TRANSFER_METHODS.Burned) {
+        await this.saveSubstrateTransferBurnedEvent(
+          data as TransferSubstrateBurnedEvent,
+          blockNum,
+        );
+      } else if (method === TRANSFER_METHODS.Minted) {
+        this.saveSubstrateTransferMintedEvent(
+          data as TransferSubstrateMintedEvent,
+          blockNum,
+        );
+      }
+    } catch (exception) {
+      this.logErrorMessage(exception, 'substrate');
+    }
+  }
+
+  private async saveSubstrateTransferBurnedEvent(
+    eventData: TransferSubstrateBurnedEvent,
+    blockNumStr: string,
+  ): Promise<void> {
+    const { networkId, assetId, sender, amount } = eventData;
+
+    const receiverAccountId = convertAddress(
+      this.keyring,
+      networkId,
+      sender,
+      assetId.code,
+    );
+
+    await this.saveTransfer({
+      type: networkId,
+      senderAccountId: sender,
+      receiverAccountId,
+      asset: assetId.code,
+      amount,
+      block: blockNumStr,
+      direction: TransferDirection.BURNED,
+    });
+  }
+
+  private async saveSubstrateTransferMintedEvent(
+    eventData: TransferSubstrateMintedEvent,
+    blockNumStr: string,
+  ): Promise<void> {
+    const { networkId, assetId, recipient, amount } = eventData;
+
+    const senderAccountId = convertAddress(
+      this.keyring,
+      networkId,
+      recipient,
+      assetId.code,
+    );
+
+    await this.saveTransfer({
+      type: networkId,
+      senderAccountId,
+      receiverAccountId: recipient,
+      asset: assetId.code,
+      amount,
+      block: blockNumStr,
+      direction: TransferDirection.MINTED,
+    });
+  }
+
+  private async trackBrigdeTransfersFromSoraToEthereum(): Promise<void> {
+    const soraApi: any = await this.soraClient.getSoraApi();
+
     soraApi.rpc.chain.subscribeNewHeads(async (header) => {
       const blockHash = await soraApi.rpc.chain.getBlockHash(header.number);
       const { block } = await soraApi.rpc.chain.getBlock(blockHash);
       const specificAPI = await soraApi.at(blockHash);
       const records = await specificAPI.query.system.events();
-
-      this.logger.debug(
-        `Checking for any bridge transfers from SORA changes at block #${header.number.toNumber()}`,
-      );
 
       block.extrinsics.forEach(
         ({ signer, method: { method, section, args } }, index) => {
@@ -280,11 +333,7 @@ export class TransfersListener {
       ethProvider,
     );
 
-    this.logger.debug('Checking for any bridge transfers from Ethereum');
-
     ethContract.on('Deposit', async (destination, amount, token, _, event) => {
-      this.logger.debug('Start storing bridge transfers from Ethereum.');
-
       const tx = await ethProvider.getTransaction(event.transactionHash);
 
       const block = await ethProvider.getBlockNumber();
@@ -313,5 +362,37 @@ export class TransfersListener {
         direction: TransferDirection.MINTED,
       });
     });
+  }
+
+  private async saveTransfer(transferData: TransferData): Promise<void> {
+    const transfer = new Transfer();
+
+    transfer.senderAccountId = transferData.senderAccountId;
+    transfer.asset = transferData.asset;
+    transfer.amount =
+      typeof transferData.amount === 'number'
+        ? transferData.amount
+        : FPNumber.fromCodecValue(transferData.amount).toNumber();
+    transfer.receiverAccountId = transferData.receiverAccountId;
+    transfer.transferredAt = new Date();
+    transfer.block =
+      typeof transferData.block === 'number'
+        ? transferData.block
+        : parseInt(transferData.block);
+    transfer.type = transferData.type;
+    transfer.direction = transferData.direction;
+
+    await this.transferRepo.saveTransfer(transfer);
+  }
+
+  private logErrorMessage(exception: unknown, type: string): void {
+    if (exception instanceof QueryFailedError) {
+      this.logger.error(exception.message, exception.stack, exception.cause);
+    } else {
+      this.logger.error(
+        `An error happened during ${type} transfer event processing`,
+        exception,
+      );
+    }
   }
 }

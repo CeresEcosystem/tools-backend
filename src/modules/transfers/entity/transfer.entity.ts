@@ -28,7 +28,7 @@ export class Transfer {
   @Column({ name: 'block' })
   block: number;
 
-  @Column({ name: 'type' })
+  @Column({ name: 'type', length: 15 })
   type: string;
 
   @Column({ name: 'direction', type: 'enum', enum: TransferDirection })
