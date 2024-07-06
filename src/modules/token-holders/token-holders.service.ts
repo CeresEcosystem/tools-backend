@@ -13,6 +13,7 @@ import {
   PageOptionsDto,
   SoraClient,
 } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import { PortfolioRegisteredAccountService } from '../portfolio/portfolio.reg-acc.service';
 
 const KEY =
   '0x99971b5749ac43e0235e41b0d37869188ee7418a6531173d60d1f6a82d8f4d51';
@@ -27,7 +28,12 @@ export class TokenHoldersService {
     private readonly soraClient: SoraClient,
     private readonly relevantPricesService: RelevantPricesService,
     private readonly holderRepo: HoldersRepository,
+    private readonly portfolioRegAccService: PortfolioRegisteredAccountService,
   ) {}
+
+  public getUniqueHolders(): Promise<string[]> {
+    return this.holderRepo.findUniqueHolders();
+  }
 
   public getHoldersAndBalances(
     pageOptions: PageOptionsDto,
@@ -102,6 +108,7 @@ export class TokenHoldersService {
 
     this.logger.log(`Updating ${holderAssets.length} holder assets.`);
 
+    this.portfolioRegAccService.registerAccountsIfNeeded(Array.from(holders));
     await this.holderRepo.upsertHolders(holderAssets);
   }
 

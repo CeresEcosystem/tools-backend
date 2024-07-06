@@ -20,6 +20,7 @@ import {
 } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 import { PortfolioAssetDto } from './dto/portfolio-asset.dto';
 import { TokenPrice } from '../token-price/entity/token-price.entity';
+import { PortfolioRegisteredAccountService } from './portfolio.reg-acc.service';
 
 const DENOMINATOR = FPNumber.fromNatural(10 ** 18);
 const HOUR_INTERVALS = [1, 24, 24 * 7, 24 * 30];
@@ -35,6 +36,7 @@ export class PortfolioService {
     private readonly deoClient: DeoClient,
     private readonly swapsService: SwapService,
     private readonly soraClient: SoraClient,
+    private readonly registeredAccountService: PortfolioRegisteredAccountService,
   ) {}
 
   public async getPortfolio(accountId: string): Promise<PortfolioDto[]> {
@@ -58,14 +60,14 @@ export class PortfolioService {
       };
     });
 
-    this.logger.log('End portfolio processing');
-
     return result;
   }
 
   public async getPortfolioExtended(
     accountId: string,
   ): Promise<PortfolioExtendedDto[]> {
+    this.registeredAccountService.registerAccountIfNeeded(accountId);
+
     const allTokenEntities = await this.tokenPriceService.findAll();
     const portfolioAssets = await this.getPortfolioAssets(
       accountId,
@@ -93,27 +95,22 @@ export class PortfolioService {
         assetAmount,
       );
 
-      return {
-        fullName: tokenEntity.fullName,
-        token: tokenEntity.token,
-        price: Number(tokenEntity.price),
-        balance: assetAmount,
-        value: Number(tokenEntity.price) * assetAmount,
-        oneHour: oneHour.percentageDifference,
-        oneHourValueDifference: oneHour.valueDifference,
-        oneDay: oneDay.percentageDifference,
-        oneDayValueDifference: oneDay.valueDifference,
-        oneWeek: oneWeek.percentageDifference,
-        oneWeekValueDifference: oneWeek.valueDifference,
-        oneMonth: oneMonth.percentageDifference,
-        oneMonthValueDifference: oneMonth.valueDifference,
-      };
+      return this.buildExtendedPortfolioDto(
+        tokenEntity,
+        assetAmount,
+        oneHour,
+        oneDay,
+        oneWeek,
+        oneMonth,
+      );
     });
 
     return result;
   }
 
   public async getStakingPortfolio(accountId: string): Promise<StakingDto[]> {
+    this.registeredAccountService.registerAccountIfNeeded(accountId);
+
     const pools = await this.deoClient.fetchStakingData(accountId);
     const allTokenEntities = await this.tokenPriceService.findAll();
 
@@ -144,6 +141,8 @@ export class PortfolioService {
   }
 
   public async getRewardsPortfolio(accountId: string): Promise<StakingDto[]> {
+    this.registeredAccountService.registerAccountIfNeeded(accountId);
+
     const stakingPools = await this.deoClient.fetchStakingData(accountId);
     const farmingPools = await this.deoClient.fetchFarmingData(accountId);
     const allTokenEntities = await this.tokenPriceService.findAll();
@@ -190,6 +189,8 @@ export class PortfolioService {
   public async getLiquidityPortfolio(
     accountId: string,
   ): Promise<LiquidityDto[]> {
+    this.registeredAccountService.registerAccountIfNeeded(accountId);
+
     const soraApi = await this.soraClient.getSoraApi();
 
     let poolSetXOR;
@@ -227,6 +228,8 @@ export class PortfolioService {
     pageOptions: PageOptionsDto,
     accountId: string,
   ): Promise<PageDto<SwapDto>> {
+    this.registeredAccountService.registerAccountIfNeeded(accountId);
+
     return this.swapsService.findSwapsByAccount(pageOptions, accountId);
   }
 
@@ -245,7 +248,7 @@ export class PortfolioService {
     const xorValue = xor.isNone ? { balance: 0 } : xor.unwrap();
     const xorBalance = new FPNumber(xorValue.balance).toNumber();
 
-    this.logger.log(`Start portfolio processing, count: ${portfolio.length}`);
+    this.logger.debug(`Start portfolio processing, count: ${portfolio.length}`);
 
     const portfolioAssets: PortfolioAssetDto[] = [
       { assetId: XOR_ADDRESS, assetAmount: xorBalance },
@@ -266,7 +269,7 @@ export class PortfolioService {
         ),
     ];
 
-    this.logger.log(`Relevant assets count: ${portfolioAssets.length}`);
+    this.logger.debug(`Relevant assets count: ${portfolioAssets.length}`);
 
     return portfolioAssets;
   }
@@ -336,5 +339,30 @@ export class PortfolioService {
     }
 
     return liquidityData;
+  }
+
+  private buildExtendedPortfolioDto(
+    tokenEntity: TokenPrice,
+    assetAmount: number,
+    oneHour: PortfolioValueDifferenceDto,
+    oneDay: PortfolioValueDifferenceDto,
+    oneWeek: PortfolioValueDifferenceDto,
+    oneMonth: PortfolioValueDifferenceDto,
+  ): PortfolioExtendedDto {
+    return {
+      fullName: tokenEntity.fullName,
+      token: tokenEntity.token,
+      price: Number(tokenEntity.price),
+      balance: assetAmount,
+      value: Number(tokenEntity.price) * assetAmount,
+      oneHour: oneHour.percentageDifference,
+      oneHourValueDifference: oneHour.valueDifference,
+      oneDay: oneDay.percentageDifference,
+      oneDayValueDifference: oneDay.valueDifference,
+      oneWeek: oneWeek.percentageDifference,
+      oneWeekValueDifference: oneWeek.valueDifference,
+      oneMonth: oneMonth.percentageDifference,
+      oneMonthValueDifference: oneMonth.valueDifference,
+    };
   }
 }

@@ -16,6 +16,7 @@ export default new DataSource({
   entities: [
     'src/modules/volumes/entity/volumes.entity.ts',
     'src/modules/chrono-price/entity/chrono-price-agg.entity.ts',
+    'src/modules/portfolio/entity/portfolio-value.entity.ts',
   ],
   migrations: ['src/database/pg/migrations/*'],
   migrationsTableName: 'migrations',

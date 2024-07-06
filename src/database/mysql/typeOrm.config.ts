@@ -27,6 +27,7 @@ export default new DataSource({
     'src/modules/tracker/entity/tracker-summary.entity.ts',
     'src/modules/token-burn/entity/token-burn.entity.ts',
     'src/modules/pairs/entity/pairs-volume-change.entity.ts',
+    'src/modules/portfolio/entity/registered-account.entity.ts',
   ],
   migrations: ['src/database/mysql/migrations/*'],
   migrationsTableName: 'migrations_tools',

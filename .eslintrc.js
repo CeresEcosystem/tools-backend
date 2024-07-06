@@ -58,7 +58,7 @@ module.exports = {
     'max-lines': ['warn', { max: 400 }],
     'max-lines-per-function': ['warn', 50], //Ideally it should be error
     'max-nested-callbacks': ['error', 3],
-    'max-params': ['error', 6],
+    'max-params': ['error', 7],
     'no-array-constructor': 'error',
     'no-bitwise': 'error',
     'no-caller': 'error',

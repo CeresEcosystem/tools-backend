@@ -18,16 +18,21 @@ export class HoldersRepository {
     private holderMapper: HolderEntityToDto,
   ) {}
 
+  public async findUniqueHolders(): Promise<string[]> {
+    const uniqueHolders = await this.holderRepo
+      .createQueryBuilder()
+      .distinct()
+      .select(['holder'])
+      .getRawMany<{ holder: string }>();
+
+    return uniqueHolders.map((r) => r.holder);
+  }
   public async upsertHolders(holders: Holder[]): Promise<void> {
     await this.holderRepo.upsert(holders, ['holder', 'assetId']);
   }
 
   public async deleteHoldersUpdatedBefore(updatedAt: Date): Promise<void> {
     await this.holderRepo.delete({ updatedAt: LessThan(updatedAt) });
-  }
-
-  public findAllHolders(): Promise<Holder[]> {
-    return this.holderRepo.find();
   }
 
   public async findHoldersAndBalances(
