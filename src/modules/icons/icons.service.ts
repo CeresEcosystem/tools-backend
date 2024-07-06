@@ -1,13 +1,20 @@
 import { HttpService } from '@nestjs/axios';
-import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadGatewayException,
+  Injectable,
+  Logger,
+  NotImplementedException,
+} from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { catchError, firstValueFrom, retry } from 'rxjs';
 import { createFile } from 'src/utils/storage.helper';
 import {
-  ALLOWED_ICON_TYPE,
   ICONS_URL,
   ICONS_STORAGE_PATH,
-  SVG_EXTENSION,
+  IMAGE_EXTENSIONS,
+  SVG_IMAGE_TYPE,
+  PNG_IMAGE_TYPE,
+  SVG_IMAGE_TYPE_UTF8,
 } from './icons.const';
 import { TokenIconDto } from './icons.dto';
 import { AxiosError } from 'axios';
@@ -16,7 +23,9 @@ import { AxiosError } from 'axios';
 export class IconsService {
   private readonly logger = new Logger(IconsService.name);
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(private readonly httpService: HttpService) {
+    this.fetchIcons();
+  }
 
   @Cron(CronExpression.EVERY_3_HOURS)
   async fetchIcons(): Promise<void> {
@@ -32,9 +41,7 @@ export class IconsService {
       ),
     );
 
-    data.forEach((tokenIcon) => {
-      this.saveTokenIcon(tokenIcon);
-    });
+    await Promise.all(data.map(this.saveTokenIcon.bind(this)));
 
     this.logger.log('Downloading of icons was successful!');
   }
@@ -42,14 +49,15 @@ export class IconsService {
   private saveTokenIcon(tokenIcon: TokenIconDto): void {
     const { symbol, icon } = tokenIcon;
     const { iconType, iconContent } = this.parseIcon(icon);
+    const extension = IMAGE_EXTENSIONS.get(iconType);
 
-    if (!iconType.startsWith(ALLOWED_ICON_TYPE)) {
-      return;
+    if (!extension) {
+      throw new NotImplementedException(
+        `Image extension not available for icon type: ${iconType}`,
+      );
     }
 
-    const iconFile = this.decodeIconContent(iconContent);
-
-    createFile(ICONS_STORAGE_PATH, symbol + SVG_EXTENSION, iconFile);
+    this.createFile(symbol + extension, iconType, iconContent);
   }
 
   private parseIcon(icon: string): { iconType: string; iconContent: string } {
@@ -62,8 +70,30 @@ export class IconsService {
     };
   }
 
-  private decodeIconContent(iconContent: string): string {
-    return decodeURIComponent(iconContent);
+  private createFile(
+    fileName: string,
+    iconType: string,
+    iconContent: string,
+  ): Promise<void> {
+    if (iconType === SVG_IMAGE_TYPE || iconType === SVG_IMAGE_TYPE_UTF8) {
+      return createFile(
+        ICONS_STORAGE_PATH,
+        fileName,
+        decodeURIComponent(iconContent),
+      );
+    }
+
+    if (iconType === PNG_IMAGE_TYPE) {
+      return createFile(
+        ICONS_STORAGE_PATH,
+        fileName,
+        Buffer.from(iconContent, 'base64'),
+      );
+    }
+
+    throw new NotImplementedException(
+      `Image decoding not implemented for icon type: ${iconType}`,
+    );
   }
 
   private logWarning(error: AxiosError): void {

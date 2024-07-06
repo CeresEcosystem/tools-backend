@@ -4,7 +4,7 @@ import { writeFile } from 'fs/promises';
 export const createFile = (
   path: string,
   fileName: string,
-  data: string,
+  data: string | Buffer,
 ): Promise<void> => {
   if (!existsSync(path)) {
     mkdirSync(path, { recursive: true });
