@@ -9,7 +9,7 @@ import { PortfolioRegisteredAccountService } from './portfolio.reg-acc.service';
 import { PortfolioValue } from './entity/portfolio-value.entity';
 import { RegisteredAccount } from './entity/registered-account.entity';
 
-const BATCH_SIZE = 1000;
+const BATCH_SIZE = 200;
 
 @Injectable()
 export class PortfolioTotalValueService {
