@@ -3,24 +3,52 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { CronExpression } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 import { PortfolioService } from './portfolio.service';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { PortfolioRegisteredAccountService } from './portfolio.reg-acc.service';
 import { PortfolioValue } from './entity/portfolio-value.entity';
 import { RegisteredAccount } from './entity/registered-account.entity';
+import { PortfolioChartQuery } from './dto/portfolio-chart-query.dto';
+import { PortfolioChartDto } from './dto/portfolio-chart.dto';
+import { isNumberString } from 'class-validator';
+import { PORTFOLIO_VALUE_HISTORY_QUERY } from './portfolio.const';
 
 const BATCH_SIZE = 200;
 
 @Injectable()
-export class PortfolioTotalValueService {
-  private readonly logger = new Logger(PortfolioTotalValueService.name);
+export class PortfolioHistoryService {
+  private readonly logger = new Logger(PortfolioHistoryService.name);
 
   constructor(
     private portfolioService: PortfolioService,
     private registeredAccountService: PortfolioRegisteredAccountService,
     @InjectRepository(PortfolioValue, 'pg')
     private portfolioValueRepo: Repository<PortfolioValue>,
+    @InjectDataSource('pg')
+    private readonly dataSource: DataSource,
   ) {}
+
+  public async getChartData(
+    accountId: string,
+    queryParams: PortfolioChartQuery,
+  ): Promise<PortfolioChartDto> {
+    const params = this.buildQueryParams(
+      accountId,
+      queryParams.resolution,
+      queryParams.from,
+      queryParams.to,
+    );
+
+    const [tokenPrices] = await this.dataSource.query(
+      PORTFOLIO_VALUE_HISTORY_QUERY,
+      params,
+    );
+
+    return {
+      timestamp: tokenPrices.timestamp,
+      value: tokenPrices.value,
+    };
+  }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   public async storePortfolioTotalValues(): Promise<void> {
@@ -65,5 +93,27 @@ export class PortfolioTotalValueService {
     );
 
     return { accountId, value } as PortfolioValue;
+  }
+
+  private buildQueryParams(
+    accountId: string,
+    resolution: string,
+    from: number,
+    to: number,
+  ): string[] {
+    return [
+      this.resolveResolution(resolution),
+      accountId,
+      from.toString(),
+      to.toString(),
+    ];
+  }
+
+  private resolveResolution(resolution: string): string {
+    if (isNumberString(resolution)) {
+      return `${resolution}m`;
+    }
+
+    return resolution;
   }
 }

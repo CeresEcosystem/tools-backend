@@ -23,6 +23,9 @@ import {
   PageOptionsDto,
   PageDto,
 } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import { PortfolioChartQuery } from './dto/portfolio-chart-query.dto';
+import { PortfolioHistoryService } from './portfolio.history.service';
+import { PortfolioChartDto } from './dto/portfolio-chart.dto';
 
 @Controller('portfolio')
 @ApiTags('Portfolio Controller')
@@ -30,10 +33,19 @@ import {
 export class PortfolioController {
   constructor(
     private portfolioService: PortfolioService,
+    private portfolioHistoryService: PortfolioHistoryService,
     private transfersService: TransfersService,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
   ) {}
+
+  @Get(':accountId/history')
+  public getPortfolioValueHistory(
+    @Param('accountId', AccountIdValidator) accountId: string,
+    @Query() queryParams: PortfolioChartQuery,
+  ): Promise<PortfolioChartDto> {
+    return this.portfolioHistoryService.getChartData(accountId, queryParams);
+  }
 
   @Get(':accountId')
   getPortfolio(

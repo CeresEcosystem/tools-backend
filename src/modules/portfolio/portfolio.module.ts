@@ -10,7 +10,7 @@ import { TransfersModule } from '../transfers/transfers.module';
 import { SoraClientModule } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RegisteredAccount } from './entity/registered-account.entity';
-import { PortfolioTotalValueService } from './portfolio.total-value.service';
+import { PortfolioHistoryService } from './portfolio.history.service';
 import { PortfolioValue } from './entity/portfolio-value.entity';
 import { PortfolioRegisteredAccountService } from './portfolio.reg-acc.service';
 
@@ -29,7 +29,7 @@ import { PortfolioRegisteredAccountService } from './portfolio.reg-acc.service';
   controllers: [PortfolioController],
   providers: [
     PortfolioService,
-    PortfolioTotalValueService,
+    PortfolioHistoryService,
     PortfolioRegisteredAccountService,
   ],
   exports: [PortfolioService, PortfolioRegisteredAccountService],
