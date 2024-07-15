@@ -113,9 +113,8 @@ export class PortfolioController {
 
   @Get(':accountId/kensetsu')
   getKensetsu(
-    @Query() pageOptions: PageOptionsDto,
     @Param('accountId', AccountIdValidator) accountId: string,
-  ): Promise<PageDto<KensetsuPositionDto>> {
-    return this.portfolioService.getKensetsuPortfolio(pageOptions, accountId);
+  ): Promise<KensetsuPositionDto[]> {
+    return this.portfolioService.getKensetsuPortfolio(accountId);
   }
 }

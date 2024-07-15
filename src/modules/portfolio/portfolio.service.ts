@@ -15,7 +15,6 @@ import { PriceChangeDto } from '../chrono-price/dto/price-change.dto';
 import { Pair } from '../pairs/entity/pairs.entity';
 import {
   PageDto,
-  PageMetaDto,
   PageOptionsDto,
   SoraClient,
 } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
@@ -237,9 +236,8 @@ export class PortfolioService {
   }
 
   public async getKensetsuPortfolio(
-    pageOptions: PageOptionsDto,
     accountId: string,
-  ): Promise<PageDto<KensetsuPositionDto>> {
+  ): Promise<KensetsuPositionDto[]> {
     this.registeredAccountService.registerAccountIfNeeded(accountId);
 
     const soraApi = await this.soraClient.getSoraApi();
@@ -272,13 +270,7 @@ export class PortfolioService {
       }
     }
 
-    const meta = new PageMetaDto(
-      pageOptions.page,
-      pageOptions.size,
-      kensetsuPositions.length,
-    );
-
-    return new PageDto(kensetsuPositions, meta);
+    return kensetsuPositions;
   }
 
   private async getPortfolioAssets(
