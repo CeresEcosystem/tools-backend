@@ -26,6 +26,7 @@ import {
 import { PortfolioChartQuery } from './dto/portfolio-chart-query.dto';
 import { PortfolioHistoryService } from './portfolio.history.service';
 import { PortfolioChartDto } from './dto/portfolio-chart.dto';
+import { KensetsuPositionDto } from './dto/kensetsu-position.dto';
 
 @Controller('portfolio')
 @ApiTags('Portfolio Controller')
@@ -108,5 +109,12 @@ export class PortfolioController {
       pageOptions,
       accountId,
     );
+  }
+
+  @Get(':accountId/kensetsu')
+  getKensetsu(
+    @Param('accountId', AccountIdValidator) accountId: string,
+  ): Promise<KensetsuPositionDto[]> {
+    return this.portfolioService.getKensetsuPortfolio(accountId);
   }
 }
