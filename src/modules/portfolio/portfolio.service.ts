@@ -15,15 +15,25 @@ import { PriceChangeDto } from '../chrono-price/dto/price-change.dto';
 import { Pair } from '../pairs/entity/pairs.entity';
 import {
   PageDto,
+  PageMetaDto,
   PageOptionsDto,
   SoraClient,
 } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 import { PortfolioAssetDto } from './dto/portfolio-asset.dto';
 import { TokenPrice } from '../token-price/entity/token-price.entity';
 import { PortfolioRegisteredAccountService } from './portfolio.reg-acc.service';
+import { KensetsuPositionDto } from './dto/kensetsu-position.dto';
 
 const DENOMINATOR = FPNumber.fromNatural(10 ** 18);
 const HOUR_INTERVALS = [1, 24, 24 * 7, 24 * 30];
+
+interface KensetsuPosition {
+  collateralAssetId: { code: string };
+  collateralAmount: string;
+  stablecoinAssetId: { code: string };
+  debt: string;
+  interestCoefficient: string;
+}
 
 @Injectable()
 export class PortfolioService {
@@ -231,6 +241,50 @@ export class PortfolioService {
     this.registeredAccountService.registerAccountIfNeeded(accountId);
 
     return this.swapsService.findSwapsByAccount(pageOptions, accountId);
+  }
+
+  public async getKensetsuPortfolio(
+    pageOptions: PageOptionsDto,
+    accountId: string,
+  ): Promise<PageDto<KensetsuPositionDto>> {
+    this.registeredAccountService.registerAccountIfNeeded(accountId);
+
+    const soraApi = await this.soraClient.getSoraApi();
+
+    const kensetsuPositions: KensetsuPositionDto[] = [];
+
+    const cdpOwnerIndexes = (
+      await soraApi.query.kensetsu.cdpOwnerIndex(accountId)
+    ).toHuman();
+
+    if (cdpOwnerIndexes !== null) {
+      const kensetsuCollateralizedDebtPositions =
+        await soraApi.query.kensetsu.cdpDepository.multi(
+          cdpOwnerIndexes as string[],
+        );
+
+      for (const kensetsuPosition of kensetsuCollateralizedDebtPositions) {
+        const kp = kensetsuPosition.toHuman() as unknown as KensetsuPosition;
+
+        kensetsuPositions.push({
+          collateralAssetId: kp.collateralAssetId.code,
+          stablecoinAssetId: kp.stablecoinAssetId.code,
+          interest: FPNumber.fromCodecValue(kp.interestCoefficient).toNumber(),
+          collateralAmount: FPNumber.fromCodecValue(
+            kp.collateralAmount,
+          ).toNumber(),
+          debt: FPNumber.fromCodecValue(kp.debt).toNumber(),
+        });
+      }
+    }
+
+    const meta = new PageMetaDto(
+      pageOptions.page,
+      pageOptions.size,
+      kensetsuPositions.length,
+    );
+
+    return new PageDto(kensetsuPositions, meta);
   }
 
   private async getPortfolioAssets(
