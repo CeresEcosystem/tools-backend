@@ -9,18 +9,16 @@ import {
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ApiTags } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
-import {
-  TrackerBlockDto,
-  TrackerSupplyGraphPointDto,
-  TrackerV2Dto,
-} from './dto/tracker.dto';
+import { TrackerDto } from './tracker.dto';
 import { CACHE_KEYS, CACHE_TTL } from './tracker.constants';
 import { TrackerService } from './tracker.service';
-import { BurnType } from './entity/tracker.entity';
+import { BurnType } from './burn/entity/tracker.entity';
 import {
   PageOptionsDto,
   PageDto,
 } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import { TrackerBlockDto } from './burn/dto/tracker-block.dto';
+import { TrackerSupplyGraphPointDto } from './supply/dto/tracker-supply.dto';
 
 @Controller('tracker')
 @ApiTags('Tracker Controller')
@@ -32,12 +30,10 @@ export class TrackerController {
   ) {}
 
   @Get('/v2/:token')
-  public getTrackerDataV2(
-    @Param('token') token: string,
-  ): Promise<TrackerV2Dto> {
+  public getTrackerData(@Param('token') token: string): Promise<TrackerDto> {
     return this.cacheManager.wrap(
-      `${CACHE_KEYS.TRACKER_V2}-${token}`,
-      () => this.trackerService.getTrackerDataV2(token),
+      `${CACHE_KEYS.TRACKER}-${token}`,
+      () => this.trackerService.getTrackerData(token),
       CACHE_TTL.FIVE_MINUTES,
     );
   }

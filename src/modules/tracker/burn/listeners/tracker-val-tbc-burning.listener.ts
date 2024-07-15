@@ -3,10 +3,10 @@ import {
   DENOMINATOR,
   VAL_BURN_ADDRESS,
   VAL_TOKEN_ID,
-} from './tracker.constants';
+} from '../../tracker.constants';
 import { FPNumber } from '@sora-substrate/math';
-import { TrackerService } from './tracker.service';
-import { ValTbcTrackerToEntityMapper } from './mapper/val-tbc-tracker-to-entity.mapper';
+import { TrackerService } from '../../tracker.service';
+import { ValTbcTrackerToEntityMapper } from '../mapper/val-tbc-tracker-to-entity.mapper';
 import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 @Injectable()

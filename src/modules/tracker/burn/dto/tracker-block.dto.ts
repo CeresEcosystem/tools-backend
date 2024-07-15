@@ -1,16 +1,5 @@
-import { BurnType } from '../entity/tracker.entity';
-import { SummaryPeriod } from '../entity/tracker-summary.entity';
-import { PageDto } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 import { Expose } from 'class-transformer';
-
-export interface TrackerV2Dto {
-  blocksFees: PageDto<TrackerBlockDto>;
-  blocksTbc: PageDto<TrackerBlockDto>;
-  burn: Map<SummaryPeriod, TrackerBurnDto>;
-  graphBurning: TrackerBurningGraphPointDto[];
-  graphSupply: TrackerSupplyGraphPointDto[];
-  last: number;
-}
+import { BurnType } from '../entity/tracker.entity';
 
 export class TrackerBlockDto {
   @Expose()
@@ -64,9 +53,4 @@ export class TrackerBurningGraphPointDto {
 
   @Expose({ name: 'grossBurn' })
   y: number;
-}
-
-export interface TrackerSupplyGraphPointDto {
-  x: string;
-  y: string;
 }

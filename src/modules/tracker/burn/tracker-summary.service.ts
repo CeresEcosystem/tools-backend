@@ -2,10 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, QueryFailedError, Repository } from 'typeorm';
 import { Tracker } from './entity/tracker.entity';
-import { TrackerBurnDto } from './dto/tracker.dto';
 import { SummaryPeriod, TrackerSummary } from './entity/tracker-summary.entity';
-import { TRACKED_TOKENS } from './tracker.constants';
+import { TRACKED_TOKENS } from '../tracker.constants';
 import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import { TrackerBurnDto } from './dto/tracker-block.dto';
 
 const SUMMARY_PERIODS = [
   { type: SummaryPeriod.DAY, lookBack: 14_400 }, // Last 24 hours

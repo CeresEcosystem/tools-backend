@@ -4,8 +4,8 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { AxiosError } from 'axios';
 import { catchError, firstValueFrom, retry } from 'rxjs';
 import { TrackerSupplyRepository } from './tracker-supply.repository';
-import { TokenPrice } from '../token-price/entity/token-price.entity';
-import { TokenPriceService } from '../token-price/token-price.service';
+import { TokenPrice } from '../../token-price/entity/token-price.entity';
+import { TokenPriceService } from '../../token-price/token-price.service';
 
 const SORA_SUPPLY_URL = 'https://mof.sora.org/qty/';
 

@@ -1,15 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import {
-  TrackerBlockDto,
-  TrackerSupplyGraphPointDto,
-  TrackerV2Dto,
-} from './dto/tracker.dto';
-import { BurnType, Tracker } from './entity/tracker.entity';
-import { TrackerSupplyRepository } from './tracker-supply.repository';
-import { TrackerBurnService } from './tracker-burn.service';
-import { TrackerSummaryService } from './tracker-summary.service';
+import { TrackerDto } from './tracker.dto';
+import { BurnType, Tracker } from './burn/entity/tracker.entity';
+import { TrackerSupplyRepository } from './supply/tracker-supply.repository';
+import { TrackerBurnService } from './burn/tracker-burn.service';
+import { TrackerSummaryService } from './burn/tracker-summary.service';
 import {
   PageOptionsDto,
   PageDto,
@@ -17,6 +13,8 @@ import {
   getTodayFormatted,
 } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 import { plainToInstance } from 'class-transformer';
+import { TrackerSupplyGraphPointDto } from './supply/dto/tracker-supply.dto';
+import { TrackerBlockDto } from './burn/dto/tracker-block.dto';
 
 @Injectable()
 export class TrackerService {
@@ -48,7 +46,7 @@ export class TrackerService {
     return Number(lastBlock);
   }
 
-  public async getTrackerDataV2(token: string): Promise<TrackerV2Dto> {
+  public async getTrackerData(token: string): Promise<TrackerDto> {
     const firstPage = new PageOptionsDto(1, 5);
 
     return {

@@ -3,9 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, MoreThan, Not, QueryFailedError, Repository } from 'typeorm';
 import { Tracker } from './entity/tracker.entity';
 import { TrackerBurn } from './entity/tracker-burn.entity';
-import { TrackerBurningGraphPointDto } from './dto/tracker.dto';
-import { TRACKED_TOKENS } from './tracker.constants';
+import { TRACKED_TOKENS } from '../tracker.constants';
 import { plainToInstance } from 'class-transformer';
+import { TrackerBurningGraphPointDto } from './dto/tracker-block.dto';
 
 @Injectable()
 export class TrackerBurnService {

@@ -1,13 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { TrackerService } from './tracker.service';
+import { TrackerService } from '../../tracker.service';
 import { FPNumber } from '@sora-substrate/math';
-import { DENOMINATOR } from './tracker.constants';
-import { ValFeesTrackerBlockBcToEntityMapper } from './mapper/val-fees-tracker-to-entity.mapper';
-import { ValFeesTrackerBlockDto } from './dto/val-fees-tracker-bc-block';
-import { TrackerBurnService } from './tracker-burn.service';
-import { BurnType } from './entity/tracker.entity';
-import { TrackerSummaryService } from './tracker-summary.service';
+import { DENOMINATOR } from '../../tracker.constants';
+import { ValFeesTrackerBlockBcToEntityMapper } from '../mapper/val-fees-tracker-to-entity.mapper';
+import { ValFeesTrackerBlockDto } from '../dto/val-fees-tracker-bc-block';
+import { TrackerBurnService } from '../tracker-burn.service';
+import { BurnType } from '../entity/tracker.entity';
+import { TrackerSummaryService } from '../tracker-summary.service';
 import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 const techAccount = 'cnTQ1kbv7PBNNQrEb1tZpmK7hhnohXfYrx5GuD1H9ShjdGoBh';

@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TrackerSupply } from './entity/tracker-supply.entity';
-import { TrackerSupplyGraphPointDto } from './dto/tracker.dto';
 import { getTodayFormatted } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import { TrackerSupplyGraphPointDto } from './dto/tracker-supply.dto';
 
 @Injectable()
 export class TrackerSupplyRepository {
