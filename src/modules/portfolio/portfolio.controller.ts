@@ -111,7 +111,7 @@ export class PortfolioController {
     );
   }
 
-  @Get('kensetsu/:accountId')
+  @Get(':accountId/kensetsu')
   getKensetsu(
     @Query() pageOptions: PageOptionsDto,
     @Param('accountId', AccountIdValidator) accountId: string,

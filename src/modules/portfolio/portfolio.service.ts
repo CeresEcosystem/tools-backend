@@ -23,17 +23,10 @@ import { PortfolioAssetDto } from './dto/portfolio-asset.dto';
 import { TokenPrice } from '../token-price/entity/token-price.entity';
 import { PortfolioRegisteredAccountService } from './portfolio.reg-acc.service';
 import { KensetsuPositionDto } from './dto/kensetsu-position.dto';
+import { KensetsuCollateralPositionDto } from './dto/kensetsu-collateral-position.dto';
 
 const DENOMINATOR = FPNumber.fromNatural(10 ** 18);
 const HOUR_INTERVALS = [1, 24, 24 * 7, 24 * 30];
-
-interface KensetsuPosition {
-  collateralAssetId: { code: string };
-  collateralAmount: string;
-  stablecoinAssetId: { code: string };
-  debt: string;
-  interestCoefficient: string;
-}
 
 @Injectable()
 export class PortfolioService {
@@ -264,7 +257,8 @@ export class PortfolioService {
         );
 
       for (const kensetsuPosition of kensetsuCollateralizedDebtPositions) {
-        const kp = kensetsuPosition.toHuman() as unknown as KensetsuPosition;
+        const kp =
+          kensetsuPosition.toHuman() as unknown as KensetsuCollateralPositionDto;
 
         kensetsuPositions.push({
           collateralAssetId: kp.collateralAssetId.code,
