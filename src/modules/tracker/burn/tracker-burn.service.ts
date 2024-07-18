@@ -66,7 +66,11 @@ export class TrackerBurnService {
       .addSelect('SUM(reminted_parliament)', 'remintedParliament')
       .addSelect('SUM(net_burn)', 'netBurn')
       .addSelect('SUM(xor_dedicated_for_buy_back)', 'xorDedicatedForBuyBack')
-      .where({ token, dateRaw: Not(IsNull()), blockNum: MoreThan(initBlock) })
+      .where({
+        token,
+        dateRaw: Not(IsNull()),
+        blockNum: MoreThan(initBlock),
+      })
       .groupBy('date_raw')
       .orderBy('date_raw')
       .printSql()

@@ -59,14 +59,15 @@ export class TrackerXorSync {
       }
 
       const burn = new Big(lastBlock.supply).sub(currentSupply);
+      const totalBurn = burn.gt(0) ? burn.toNumber() : 0;
 
       const blockToSave = {
         token: XOR_TOKEN,
         blockNum: currentBlockNum,
         burnType: BurnType.FEES,
         dateRaw: getTodayFormatted(),
-        grossBurn: burn.toNumber(),
-        netBurn: burn.toNumber(),
+        grossBurn: totalBurn,
+        netBurn: totalBurn,
         supply: currentSupply,
       } as Tracker;
 
