@@ -19,6 +19,8 @@ import { TrackerBurnService } from './burn/tracker-burn.service';
 import { TrackerSummaryService } from './burn/tracker-summary.service';
 import { TrackerSummary } from './burn/entity/tracker-summary.entity';
 import { SoraClientModule } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import { TrackerXorSync } from './burn/listeners/tracker-xor.listener';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -31,6 +33,7 @@ import { SoraClientModule } from '@ceresecosystem/ceres-lib/packages/ceres-backe
       TrackerSummary,
     ]),
     TokenPriceModule,
+    ConfigModule,
   ],
   controllers: [TrackerController],
   providers: [
@@ -45,6 +48,7 @@ import { SoraClientModule } from '@ceresecosystem/ceres-lib/packages/ceres-backe
     ValFeesTrackerBlockBcToEntityMapper,
     TrackerValTbcBurningsListener,
     ValTbcTrackerToEntityMapper,
+    TrackerXorSync,
   ],
   exports: [
     TrackerService,

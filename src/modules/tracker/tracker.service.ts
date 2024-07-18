@@ -46,6 +46,19 @@ export class TrackerService {
     return Number(lastBlock);
   }
 
+  public async findLastBlock(
+    token: string,
+    burnType: BurnType,
+  ): Promise<Tracker> {
+    const blockNum = await this.findLastBlockNumber(token, burnType);
+
+    return this.trackerRepository.findOneBy({
+      token,
+      blockNum,
+      burnType,
+    });
+  }
+
   public async getTrackerData(token: string): Promise<TrackerDto> {
     const firstPage = new PageOptionsDto(1, 5);
 

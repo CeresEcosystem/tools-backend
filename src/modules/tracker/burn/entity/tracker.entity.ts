@@ -40,6 +40,9 @@ export class Tracker {
   @Column('float', { name: 'xor_dedicated_for_buy_back' })
   xorDedicatedForBuyBack: number;
 
+  @Column()
+  supply: string;
+
   @Column('timestamp', { name: 'created_at' })
   createdAt: Date;
 
