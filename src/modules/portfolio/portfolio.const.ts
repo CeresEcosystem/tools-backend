@@ -11,8 +11,7 @@ export const CACHE_TTL = {
 
 export const PORTFOLIO_VALUE_HISTORY_QUERY = `
     SELECT
-        COALESCE(array_agg(ts), '{}') AS timestamp,
-        COALESCE(array_agg(value), '{}') AS value
+       COALESCE(jsonb_agg(jsonb_build_object('time', ts, 'value', value)), '[]'::jsonb) AS data
     FROM (
         SELECT
             extract(epoch from period) AS ts, value

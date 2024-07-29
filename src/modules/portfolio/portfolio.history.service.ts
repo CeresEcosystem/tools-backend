@@ -31,7 +31,7 @@ export class PortfolioHistoryService {
   public async getChartData(
     accountId: string,
     queryParams: PortfolioChartQuery,
-  ): Promise<PortfolioChartDto> {
+  ): Promise<PortfolioChartDto[]> {
     const params = this.buildQueryParams(
       accountId,
       queryParams.resolution,
@@ -44,10 +44,7 @@ export class PortfolioHistoryService {
       params,
     );
 
-    return {
-      timestamp: tokenPrices.timestamp,
-      value: tokenPrices.value,
-    };
+    return tokenPrices;
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
