@@ -10,11 +10,8 @@ export const CACHE_TTL = {
 };
 
 export const PORTFOLIO_VALUE_HISTORY_QUERY = `
-    SELECT
-       COALESCE(jsonb_agg(jsonb_build_object('time', ts, 'value', value)), '[]'::jsonb) AS data
-    FROM (
         SELECT
-            extract(epoch from period) AS ts, value
+            extract(epoch from period) AS time, value
         FROM (
             SELECT
                 time_bucket(cast($1 as interval), created_at) AS period,
@@ -26,5 +23,4 @@ export const PORTFOLIO_VALUE_HISTORY_QUERY = `
                 AND created_at < TO_TIMESTAMP($4)
             GROUP BY period
             ORDER BY period ASC
-        ) AS t1
-    ) AS t2;`;
+        ) AS t1;`;
