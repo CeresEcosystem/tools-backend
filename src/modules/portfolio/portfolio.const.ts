@@ -15,7 +15,7 @@ export const PORTFOLIO_VALUE_HISTORY_QUERY = `
         FROM (
             SELECT
                 time_bucket(cast($1 as interval), created_at) AS period,
-                first(value, created_at) AS value
+                last(value, created_at) AS value
             FROM portfolio_value
             WHERE
                 account_id = $2
