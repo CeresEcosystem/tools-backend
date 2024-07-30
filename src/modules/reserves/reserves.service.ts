@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ReservesRepository } from './reserves.repository';
 import { Reserve } from './entity/reserves.entity';
-import { RESERVE_ADDRESS } from 'src/constants/constants';
+import { CRON_DISABLED, RESERVE_ADDRESS } from 'src/constants/constants';
 import { PortfolioService } from '../portfolio/portfolio.service';
 import { ReservesDto } from './dto/reserves.dto';
 import { Cache } from 'cache-manager';
@@ -49,7 +49,7 @@ export class ReservesService {
     return reserveDto;
   }
 
-  @Cron(CronExpression.EVERY_6_HOURS)
+  @Cron(CronExpression.EVERY_6_HOURS, { disabled: CRON_DISABLED })
   private async updateReserves(): Promise<void> {
     this.logger.log('Start updating token reserves');
     const portfolio = await this.portfolioService.getPortfolio(RESERVE_ADDRESS);

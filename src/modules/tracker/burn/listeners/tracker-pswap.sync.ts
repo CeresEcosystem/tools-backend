@@ -9,6 +9,7 @@ import { TrackerBurnService } from '../tracker-burn.service';
 import { BurnType } from '../entity/tracker.entity';
 import { TrackerSummaryService } from '../tracker-summary.service';
 import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import { CRON_DISABLED } from 'src/constants/constants';
 
 const DAY = 14400;
 const PSWAP_TOKEN = 'PSWAP';
@@ -25,7 +26,7 @@ export class TrackerPswapSync {
     private readonly soraClient: SoraClient,
   ) {}
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_10_MINUTES, { disabled: CRON_DISABLED })
   async fetchTrackerData(): Promise<void> {
     this.logger.log('Start fetching PSWAP burning data.');
     const soraApi: any = await this.soraClient.getSoraApi();

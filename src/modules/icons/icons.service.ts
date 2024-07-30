@@ -18,16 +18,19 @@ import {
 } from './icons.const';
 import { TokenIconDto } from './icons.dto';
 import { AxiosError } from 'axios';
+import { CRON_DISABLED, IS_WORKER_INSTANCE } from 'src/constants/constants';
 
 @Injectable()
 export class IconsService {
   private readonly logger = new Logger(IconsService.name);
 
   constructor(private readonly httpService: HttpService) {
-    this.fetchIcons();
+    if (IS_WORKER_INSTANCE) {
+      this.fetchIcons();
+    }
   }
 
-  @Cron(CronExpression.EVERY_3_HOURS)
+  @Cron(CronExpression.EVERY_3_HOURS, { disabled: CRON_DISABLED })
   async fetchIcons(): Promise<void> {
     this.logger.log('Start downloading token icons.');
 

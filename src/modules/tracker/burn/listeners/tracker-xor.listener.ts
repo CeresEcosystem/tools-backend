@@ -14,6 +14,7 @@ import Big from 'big.js';
 import { Cron } from '@nestjs/schedule';
 import { TrackerBurnService } from '../tracker-burn.service';
 import { TrackerSummaryService } from '../tracker-summary.service';
+import { CRON_DISABLED } from 'src/constants/constants';
 
 const XOR_TOKEN = 'XOR';
 const SORA_API = 'SORA_API';
@@ -93,7 +94,7 @@ export class TrackerXorSync {
     return trackerSupply;
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_10_MINUTES, { disabled: CRON_DISABLED })
   private async cacheData(): Promise<void> {
     await this.trackerBurnService.cacheBurningChartData(XOR_TOKEN);
     await this.trackerSummaryService.cacheBurningSummaryData(XOR_TOKEN);

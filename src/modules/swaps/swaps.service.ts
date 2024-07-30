@@ -10,6 +10,7 @@ import {
   PageWithSummaryDto,
 } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 import { Swap } from './entity/swaps.entity';
+import { CRON_DISABLED } from 'src/constants/constants';
 
 const SWAPS_TTL_DAYS = 30;
 
@@ -45,7 +46,7 @@ export class SwapService {
     return this.swapRepo.findSwapsForPeriod(from, to);
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, { disabled: CRON_DISABLED })
   public async cleanUpSwaps(): Promise<void> {
     this.logger.log('Start cleaning up old token swaps.');
 

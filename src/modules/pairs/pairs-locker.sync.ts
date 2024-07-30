@@ -3,6 +3,7 @@ import { Cron } from '@nestjs/schedule';
 import { CeresClient } from '../ceres-client/ceres-client';
 import { PairsService } from './pairs.service';
 import { CronExpression } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import { CRON_DISABLED } from 'src/constants/constants';
 
 @Injectable()
 export class PairsLockerSync {
@@ -13,7 +14,7 @@ export class PairsLockerSync {
     private readonly pairsService: PairsService,
   ) {}
 
-  @Cron(CronExpression.EVERY_2_MINUTES)
+  @Cron(CronExpression.EVERY_2_MINUTES, { disabled: CRON_DISABLED })
   async fetchLiquidityLocks(): Promise<void> {
     this.logger.log('Start fetching liquidity locks.');
 

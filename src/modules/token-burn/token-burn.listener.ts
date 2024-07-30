@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TokenBurn } from './entity/token-burn.entity';
 import { Repository } from 'typeorm';
-import { XOR_ADDRESS } from 'src/constants/constants';
+import { IS_WORKER_INSTANCE, XOR_ADDRESS } from 'src/constants/constants';
 import { FPNumber } from '@sora-substrate/math';
 import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
@@ -15,7 +15,9 @@ export class TokenBurnListener {
     private readonly tokenBurnRepo: Repository<TokenBurn>,
     private readonly soraClient: SoraClient,
   ) {
-    this.trackBurns();
+    if (IS_WORKER_INSTANCE) {
+      this.trackBurns();
+    }
   }
 
   private async trackBurns(): Promise<void> {

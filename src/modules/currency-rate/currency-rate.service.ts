@@ -8,6 +8,7 @@ import { CURRENCY_RATES_API_URL } from './currency-rate.const';
 import { CurrencyRateDto } from './dto/currency-rate.dto';
 import { CurrencyRateToEntityMapper } from './mapper/currency-rate-to-entity.mapper';
 import { CurrencyRate } from './entity/currency-rate.entity';
+import { CRON_DISABLED } from 'src/constants/constants';
 
 @Injectable()
 export class CurrencyRateService {
@@ -23,7 +24,7 @@ export class CurrencyRateService {
     return this.currencyRateRepo.findCurrencyRate(currency);
   }
 
-  @Cron(CronExpression.EVERY_4_HOURS)
+  @Cron(CronExpression.EVERY_4_HOURS, { disabled: CRON_DISABLED })
   async fetchCurrencyRates(): Promise<void> {
     this.logger.log('Start fetching currency rates.');
 

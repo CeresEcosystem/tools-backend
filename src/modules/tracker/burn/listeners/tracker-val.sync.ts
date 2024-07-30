@@ -9,6 +9,7 @@ import { TrackerBurnService } from '../tracker-burn.service';
 import { BurnType } from '../entity/tracker.entity';
 import { TrackerSummaryService } from '../tracker-summary.service';
 import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import { CRON_DISABLED } from 'src/constants/constants';
 
 const techAccount = 'cnTQ1kbv7PBNNQrEb1tZpmK7hhnohXfYrx5GuD1H9ShjdGoBh';
 const VAL_TOKEN = 'VAL';
@@ -25,7 +26,7 @@ export class TrackerValSync {
     private readonly soraClient: SoraClient,
   ) {}
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_HOUR, { disabled: CRON_DISABLED })
   async fetchTrackerData(): Promise<void> {
     this.logger.log('Start fetching VAL burning data.');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

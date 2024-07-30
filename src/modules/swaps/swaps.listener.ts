@@ -6,6 +6,7 @@ import { Swap } from './entity/swaps.entity';
 import { SwapGateway } from './swaps.gateway';
 import { SwapEntityToDto } from './mapper/swap-entity-to-dto.mapper';
 import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import { IS_WORKER_INSTANCE } from 'src/constants/constants';
 
 @Injectable()
 export class SwapListener {
@@ -18,7 +19,9 @@ export class SwapListener {
     private readonly swapMapper: SwapEntityToDto,
     private readonly soraClient: SoraClient,
   ) {
-    this.trackSwaps();
+    if (IS_WORKER_INSTANCE) {
+      this.trackSwaps();
+    }
   }
 
   private async trackSwaps(): Promise<void> {

@@ -8,6 +8,7 @@ import { TokenPriceService } from './token-price.service';
 import * as whitelist from 'src/utils/files/whitelist.json';
 import * as synthetics from 'src/utils/files/synthetics.json';
 import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import { CRON_DISABLED, IS_WORKER_INSTANCE } from 'src/constants/constants';
 
 const DENOMINATOR = FPNumber.fromNatural(10 ** 18);
 const DAI_ADDRESS =
@@ -26,10 +27,12 @@ export class TokenPriceSync {
     private readonly tokenPriceService: TokenPriceService,
     private readonly soraClient: SoraClient,
   ) {
-    this.loadTokens();
+    if (IS_WORKER_INSTANCE) {
+      this.loadTokens();
+    }
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_MINUTE, { disabled: CRON_DISABLED })
   async fetchTokenPrices(): Promise<void> {
     this.logger.log('Start fetching tokens prices.');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

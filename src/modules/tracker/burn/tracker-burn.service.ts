@@ -6,6 +6,7 @@ import { TrackerBurn } from './entity/tracker-burn.entity';
 import { TRACKED_TOKENS } from '../tracker.constants';
 import { plainToInstance } from 'class-transformer';
 import { TrackerBurningGraphPointDto } from './dto/tracker-block.dto';
+import { IS_WORKER_INSTANCE } from 'src/constants/constants';
 
 @Injectable()
 export class TrackerBurnService {
@@ -17,7 +18,9 @@ export class TrackerBurnService {
     @InjectRepository(TrackerBurn)
     private readonly trackerBurnRepository: Repository<TrackerBurn>,
   ) {
-    TRACKED_TOKENS.forEach((token) => this.cacheBurningChartData(token));
+    if (IS_WORKER_INSTANCE) {
+      TRACKED_TOKENS.forEach((token) => this.cacheBurningChartData(token));
+    }
   }
 
   public async getBurningChartData(

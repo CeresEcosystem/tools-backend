@@ -6,6 +6,7 @@ import { UserDevice } from './entity/user-device.entity';
 import { Cron } from '@nestjs/schedule';
 import { OneSignalClient } from '../one-signal-client/one-signal-client';
 import { CronExpression } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import { CRON_DISABLED } from 'src/constants/constants';
 
 const DEVIATION_THRESHOLD = 4.5;
 
@@ -84,7 +85,7 @@ export class PriceNotifService {
     }
   }
 
-  @Cron(CronExpression.EVERY_2_MINUTES)
+  @Cron(CronExpression.EVERY_2_MINUTES, { disabled: CRON_DISABLED })
   public async checkPriceDifferences(): Promise<void> {
     this.logger.log('Start prices comparison');
     const allRelevantPrices =

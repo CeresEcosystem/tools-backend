@@ -6,6 +6,7 @@ import { catchError, firstValueFrom, retry } from 'rxjs';
 import { TrackerSupplyRepository } from './tracker-supply.repository';
 import { TokenPrice } from '../../token-price/entity/token-price.entity';
 import { TokenPriceService } from '../../token-price/token-price.service';
+import { CRON_DISABLED } from 'src/constants/constants';
 
 const SORA_SUPPLY_URL = 'https://mof.sora.org/qty/';
 
@@ -19,7 +20,7 @@ export class TrackerSupplySync {
     private readonly tokenPriceService: TokenPriceService,
   ) {}
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_HOUR, { disabled: CRON_DISABLED })
   async syncTrackerSupply(): Promise<void> {
     this.logger.log('Start fetching token supplies from SORA API.');
 

@@ -8,6 +8,7 @@ import {
   ChronoPriceAgg,
 } from './entity/chrono-price-agg.entity';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { CRON_DISABLED } from 'src/constants/constants';
 
 const MONTH_IN_SECONDS = 30 * 24 * 60 * 60;
 const RESOLUTIONS = ['5m', '15m', '30m', '60m', '1D'];
@@ -35,7 +36,7 @@ export class ChronoPriceCacheService {
     private readonly aggPriceRepo: Repository<ChronoPriceAgg>,
   ) {}
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_MINUTE, { disabled: CRON_DISABLED })
   private async cachePrices(): Promise<void> {
     if (this.cachingInProgress) {
       this.logger.log('Caching already in progress, aborting.');

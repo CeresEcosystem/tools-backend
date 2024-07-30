@@ -3,6 +3,7 @@ import { PairLiquidityChangeDataDto } from './dto/pair-liquidity-change-data.dto
 import { PairLiquidityChangeDataDtoToEntityMapper } from './mapper/pair-liquidity-change-data-dto-to-entity.mapper';
 import { PairsLiquidityService } from './pairs-liquidity.service';
 import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import { IS_WORKER_INSTANCE } from 'src/constants/constants';
 
 @Injectable()
 export class PairsLiquidityListener {
@@ -13,7 +14,9 @@ export class PairsLiquidityListener {
     private readonly soraClient: SoraClient,
     private readonly mapper: PairLiquidityChangeDataDtoToEntityMapper,
   ) {
-    this.runListener();
+    if (IS_WORKER_INSTANCE) {
+      this.runListener();
+    }
   }
 
   private async runListener(): Promise<void> {

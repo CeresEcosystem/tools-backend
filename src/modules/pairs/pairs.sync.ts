@@ -10,7 +10,7 @@ import { TokenPrice } from '../token-price/entity/token-price.entity';
 
 import { PairBcDto } from './dto/pair-bc.dto';
 import { PairsService } from './pairs.service';
-import { XOR_ADDRESS, XSTUSD_ADDRESS } from '../../constants/constants';
+import { CRON_DISABLED, XOR_ADDRESS, XSTUSD_ADDRESS } from '../../constants/constants';
 
 import * as whitelist from '../../utils/files/whitelist.json';
 import * as synthetics from 'src/utils/files/synthetics.json';
@@ -42,7 +42,7 @@ export class PairsSync {
     this.getPairs();
   }
 
-  @Cron(CronExpression.EVERY_3_MINUTES)
+  @Cron(CronExpression.EVERY_3_MINUTES, { disabled: CRON_DISABLED })
   async fetchLiquidityPairs(): Promise<void> {
     this.logger.log('Start fetching pairs data.');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -106,7 +106,7 @@ export class PairsSync {
     this.logger.log('Fetching of pairs data was successful!');
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, { disabled: CRON_DISABLED })
   async fetchPairsVolume(): Promise<void> {
     this.logger.log('Start fetching pairs volume changes.');
 

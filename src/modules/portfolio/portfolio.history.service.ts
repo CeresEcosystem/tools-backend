@@ -12,6 +12,7 @@ import { PortfolioChartQuery } from './dto/portfolio-chart-query.dto';
 import { PortfolioChartDto } from './dto/portfolio-chart.dto';
 import { isNumberString } from 'class-validator';
 import { PORTFOLIO_VALUE_HISTORY_QUERY } from './portfolio.const';
+import { CRON_DISABLED } from 'src/constants/constants';
 
 const BATCH_SIZE = 200;
 
@@ -42,7 +43,7 @@ export class PortfolioHistoryService {
     return this.dataSource.query(PORTFOLIO_VALUE_HISTORY_QUERY, params);
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_5_MINUTES, { disabled: CRON_DISABLED })
   public async storePortfolioTotalValues(): Promise<void> {
     this.logger.log(
       'Start portfolio value calculation for all registered accounts',

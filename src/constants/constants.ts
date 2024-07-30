@@ -72,3 +72,6 @@ export const SYMBOLS_AND_GECKO_IDS = {
 export const COIN_GECKO_TOKEN_SYMBOLS = Object.keys(SYMBOLS_AND_GECKO_IDS);
 
 export const COIN_GECKO_TOKEN_IDS = Object.values(SYMBOLS_AND_GECKO_IDS);
+
+export const IS_WORKER_INSTANCE = process.env.WORKER_INSTANCE === 'true';
+export const CRON_DISABLED = !IS_WORKER_INSTANCE;

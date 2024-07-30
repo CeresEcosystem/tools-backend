@@ -6,6 +6,7 @@ import { TokenPriceService } from '../token-price/token-price.service';
 import {
   COIN_GECKO_TOKEN_IDS,
   COIN_GECKO_TOKEN_SYMBOLS,
+  CRON_DISABLED,
 } from 'src/constants/constants';
 import { TokenMarketCapDto } from './dto/token-market-cap.dto';
 
@@ -19,7 +20,7 @@ export class MarketCapService {
     private readonly tokenPriceService: TokenPriceService,
   ) {}
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_MINUTE, { disabled: CRON_DISABLED })
   private async updateMarketCap(): Promise<void> {
     this.logger.log('Start updating market caps');
     const marketCaps = await this.getMarketCaps();

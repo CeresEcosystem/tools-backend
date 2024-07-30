@@ -6,6 +6,7 @@ import { SummaryPeriod, TrackerSummary } from './entity/tracker-summary.entity';
 import { TRACKED_TOKENS } from '../tracker.constants';
 import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 import { TrackerBurnDto } from './dto/tracker-block.dto';
+import { IS_WORKER_INSTANCE } from 'src/constants/constants';
 
 const SUMMARY_PERIODS = [
   { type: SummaryPeriod.DAY, lookBack: 14_400 }, // Last 24 hours
@@ -25,7 +26,9 @@ export class TrackerSummaryService {
     private readonly trackerSummaryRepository: Repository<TrackerSummary>,
     private readonly soraClient: SoraClient,
   ) {
-    TRACKED_TOKENS.forEach((token) => this.cacheBurningSummaryData(token));
+    if (IS_WORKER_INSTANCE) {
+      TRACKED_TOKENS.forEach((token) => this.cacheBurningSummaryData(token));
+    }
   }
 
   public async getBurningSummaryData(

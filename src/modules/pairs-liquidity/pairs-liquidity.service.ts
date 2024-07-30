@@ -16,6 +16,7 @@ import {
   PageOptionsDto,
   SoraClient,
 } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import { CRON_DISABLED } from 'src/constants/constants';
 
 @Injectable()
 export class PairsLiquidityService {
@@ -116,7 +117,7 @@ export class PairsLiquidityService {
     return liquidityProviders;
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_HOUR, { disabled: CRON_DISABLED })
   async updatePairsLiquidity(): Promise<void> {
     this.logger.log('Start updating pairs liquidity');
 

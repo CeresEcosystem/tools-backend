@@ -3,6 +3,7 @@ import { TokenPriceService } from '../token-price/token-price.service';
 import { RelevantPrices } from './entity/relevant-prices.entity';
 import { RelevantPricesRepository } from './relevant-prices.repository';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { CRON_DISABLED } from 'src/constants/constants';
 
 @Injectable()
 export class RelevantPricesInit implements OnModuleInit {
@@ -33,7 +34,7 @@ export class RelevantPricesInit implements OnModuleInit {
     });
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_NOON)
+  @Cron(CronExpression.EVERY_DAY_AT_NOON, { disabled: CRON_DISABLED })
   public async addNewTokenIfExists(): Promise<void> {
     const allTokens = await this.tokenPriceService.findAll();
     const allRelevantTokens = await this.relevantPricesRepo.findAll();

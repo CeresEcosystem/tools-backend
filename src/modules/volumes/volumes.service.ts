@@ -17,6 +17,7 @@ import { TokenVolumeDto } from './dto/token-volume.dto';
 import { SwapDto } from '../swaps/dto/swap.dto';
 import { TokenPrice } from '../token-price/entity/token-price.entity';
 import { subtractMinutes } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
+import { CRON_DISABLED } from 'src/constants/constants';
 
 const VOLUME_INTERVAL_MINUTES = 5;
 
@@ -60,7 +61,7 @@ export class VolumesService {
     };
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_5_MINUTES, { disabled: CRON_DISABLED })
   private async persistTokenVolumes(): Promise<void> {
     this.logger.log('Calculating token volumes');
 

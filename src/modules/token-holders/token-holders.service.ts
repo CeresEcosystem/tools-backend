@@ -14,6 +14,7 @@ import {
   SoraClient,
 } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 import { PortfolioRegisteredAccountService } from '../portfolio/portfolio.reg-acc.service';
+import { CRON_DISABLED } from 'src/constants/constants';
 
 const KEY =
   '0x99971b5749ac43e0235e41b0d37869188ee7418a6531173d60d1f6a82d8f4d51';
@@ -42,7 +43,7 @@ export class TokenHoldersService {
     return this.holderRepo.findHoldersAndBalances(pageOptions, assetId);
   }
 
-  @Cron(CronExpression.EVERY_30_MINUTES)
+  @Cron(CronExpression.EVERY_30_MINUTES, { disabled: CRON_DISABLED })
   private async upsertHolderTokensAndBalances(): Promise<void> {
     this.logger.log('Start updating holders balances.');
 

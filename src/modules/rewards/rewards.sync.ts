@@ -3,6 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { RewardsService } from './rewards.service';
 import { PairsService } from '../pairs/pairs.service';
 import { TokenPriceService } from '../token-price/token-price.service';
+import { CRON_DISABLED } from 'src/constants/constants';
 
 const DOUBLE_POOLS = ['DAI', 'PSWAP', 'ETH', 'VAL', 'XST', 'TBCD'];
 
@@ -16,7 +17,7 @@ export class RewardsSync {
     private readonly rewardsService: RewardsService,
   ) {}
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_5_MINUTES, { disabled: CRON_DISABLED })
   async calculateFarmingRewards(): Promise<void> {
     this.logger.log('Start calculating farming rewards.');
 
