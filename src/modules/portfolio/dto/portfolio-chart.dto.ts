@@ -1,4 +1,4 @@
 export interface PortfolioChartDto {
-  timestamp: number[];
-  value: number[];
+  time: number;
+  value: number;
 }

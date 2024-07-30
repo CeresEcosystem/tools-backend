@@ -44,7 +44,7 @@ export class PortfolioController {
   public getPortfolioValueHistory(
     @Param('accountId', AccountIdValidator) accountId: string,
     @Query() queryParams: PortfolioChartQuery,
-  ): Promise<PortfolioChartDto> {
+  ): Promise<PortfolioChartDto[]> {
     return this.portfolioHistoryService.getChartData(accountId, queryParams);
   }
 

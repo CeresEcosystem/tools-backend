@@ -28,10 +28,10 @@ export class PortfolioHistoryService {
     private readonly dataSource: DataSource,
   ) {}
 
-  public async getChartData(
+  public getChartData(
     accountId: string,
     queryParams: PortfolioChartQuery,
-  ): Promise<PortfolioChartDto> {
+  ): Promise<PortfolioChartDto[]> {
     const params = this.buildQueryParams(
       accountId,
       queryParams.resolution,
@@ -39,15 +39,7 @@ export class PortfolioHistoryService {
       queryParams.to,
     );
 
-    const [tokenPrices] = await this.dataSource.query(
-      PORTFOLIO_VALUE_HISTORY_QUERY,
-      params,
-    );
-
-    return {
-      timestamp: tokenPrices.timestamp,
-      value: tokenPrices.value,
-    };
+    return this.dataSource.query(PORTFOLIO_VALUE_HISTORY_QUERY, params);
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
