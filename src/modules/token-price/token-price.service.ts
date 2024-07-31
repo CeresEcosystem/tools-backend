@@ -23,7 +23,7 @@ export class TokenPriceService {
   }
 
   public findByToken(token: string): Promise<TokenPrice> {
-    return this.tokenPriceRepository.findOneByOrFail({ token });
+    return this.tokenPriceRepository.findOneBy({ token });
   }
 
   public findByAssetId(assetId: string): Promise<TokenPrice> {
