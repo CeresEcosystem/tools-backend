@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
 env:
   runInfo: ${{ github.run_id }}-${{ github.run_number }}
 jobs:
@@ -41,10 +41,22 @@ jobs:
           port: 22
           debug: true
           script: |
-            ansible-playbook ansible-recipes/deploy-tools-backend.yml
+            ansible-playbook ansible-recipes/deploy-tools-backend-prod.yml
           echo: Production deploy finished!
 
-      #Staging goes here...
+      #Staging deployment
+      - name: Deploying to the Staging environment.
+        if: github.ref == 'refs/heads/develop'
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.JUMP_BOX }}
+          username: root
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: 22
+          debug: true
+          script: |
+            ansible-playbook ansible-recipes/deploy-tools-backend-testnet.yml
+          echo: Staging deploy finished!
 
       #Cleaning up
       - name: Clean up the IP whitelist
