@@ -1,4 +1,4 @@
-import { ValidationPipe } from '@nestjs/common';
+import { INestApplication, LogLevel, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder, OpenAPIObject } from '@nestjs/swagger';
@@ -10,6 +10,8 @@ import {
 } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
 const DEV_ENV = 'dev';
+const STANDARD_LOG_LEVELS: LogLevel[] = ['log', 'warn', 'error'];
+const DEBUG_LOG_LEVELS: LogLevel[] = ['debug', 'verbose'];
 
 const INTERCEPTOR_URL_THRESHOLDS = [
   {
@@ -39,15 +41,7 @@ async function bootstrap(): Promise<void> {
     bufferLogs: true, // waits for TelegramLogger to be instantiated
   });
 
-  // https://docs.nestjs.com/techniques/logger#dependency-injection
-  // Use TelegramLogger only if env variables are set
-  if (
-    process.env.TELEGRAM_BOT_TOKEN &&
-    process.env.TELEGRAM_ERROR_CHAT_ID &&
-    process.env.TELEGRAM_WARN_CHAT_ID
-  ) {
-    app.useLogger(app.get(TelegramLogger));
-  }
+  setupLogger(app);
 
   app.enableCors();
 
@@ -73,6 +67,24 @@ async function bootstrap(): Promise<void> {
   }
 
   await app.listen(process.env.PORT);
+}
+
+function setupLogger(app: INestApplication): void {
+  // https://docs.nestjs.com/techniques/logger#dependency-injection
+  // Use TelegramLogger only if env variables are set
+  if (
+    process.env.TELEGRAM_BOT_TOKEN &&
+    process.env.TELEGRAM_ERROR_CHAT_ID &&
+    process.env.TELEGRAM_WARN_CHAT_ID
+  ) {
+    app.useLogger(app.get(TelegramLogger));
+  } else {
+    app.useLogger(
+      process.env.LOG_DEBUG
+        ? STANDARD_LOG_LEVELS.concat(DEBUG_LOG_LEVELS)
+        : STANDARD_LOG_LEVELS,
+    );
+  }
 }
 
 function buildSwaggerConfig(): Omit<OpenAPIObject, 'paths'> {
