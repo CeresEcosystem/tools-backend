@@ -10,7 +10,7 @@ import { TokenPrice } from '../token-price/entity/token-price.entity';
 
 import { PairBcDto } from './dto/pair-bc.dto';
 import { PairsService } from './pairs.service';
-import { CRON_DISABLED, XOR_ADDRESS, XSTUSD_ADDRESS } from '../../constants/constants';
+import { CRON_DISABLED, XOR_ADDRESS, XSTUSD_ADDRESS, KUSD_ADDRESS } from '../../constants/constants';
 
 import * as whitelist from '../../utils/files/whitelist.json';
 import * as synthetics from 'src/utils/files/synthetics.json';
@@ -24,6 +24,11 @@ const BASE_ASSETS = [
     symbol: 'XSTUSD',
     name: 'SORA Synthetic USD (XSTUSD)',
     address: XSTUSD_ADDRESS,
+  },
+  {
+    symbol: 'KUSD',
+    name: 'Kensetsu USD (KUSD)',
+    address: KUSD_ADDRESS,
   },
 ];
 const DENOMINATOR = FPNumber.fromNatural(10 ** 18);
