@@ -20,6 +20,7 @@ import {
 } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 import { convertAddress } from 'src/utils/address-convertor.helper';
 import { QueryFailedError } from 'typeorm';
+import { IS_WORKER_INSTANCE } from 'src/constants/constants';
 
 const ASSETS_TRANSFER_SECTION = 'assets';
 const PARACHAIN_TRANSFER_SECTION = 'parachainBridgeApp';
@@ -82,20 +83,22 @@ export class TransfersListener {
     private readonly soraEventListener: SoraEventListener,
     private readonly tokenPriceService: TokenPriceService,
   ) {
-    this.runListeners();
+    if (IS_WORKER_INSTANCE) {
+      this.runListeners();
 
-    this.soraEventListener.subscribe(
-      ASSETS_TRANSFER_SECTION,
-      this.processAssetsTransferEvent.bind(this),
-    );
-    this.soraEventListener.subscribe(
-      PARACHAIN_TRANSFER_SECTION,
-      this.processParachainTransferEvent.bind(this),
-    );
-    this.soraEventListener.subscribe(
-      SUBSTRATE_TRANSFER_SECTION,
-      this.processSubstrateTransferEvent.bind(this),
-    );
+      this.soraEventListener.subscribe(
+        ASSETS_TRANSFER_SECTION,
+        this.processAssetsTransferEvent.bind(this),
+      );
+      this.soraEventListener.subscribe(
+        PARACHAIN_TRANSFER_SECTION,
+        this.processParachainTransferEvent.bind(this),
+      );
+      this.soraEventListener.subscribe(
+        SUBSTRATE_TRANSFER_SECTION,
+        this.processSubstrateTransferEvent.bind(this),
+      );
+    }
   }
 
   private runListeners(): void {

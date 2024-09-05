@@ -9,13 +9,13 @@ import {
   PageWithSummaryDto,
 } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
 
-// Deprecated
+/** @deprecated */
 @Controller('kensetsu')
 @ApiTags('Kensetsu Controller')
 export class KensetsuController {
   constructor(private readonly tokenBurnService: TokenBurnService) {}
 
-  // Deprecated
+  /** @deprecated */
   @Get('/burns')
   public getKensetsuBurns(
     @Query() searchOptions: SearchOptionsDto,
