@@ -8,7 +8,11 @@ import { TokenPriceService } from './token-price.service';
 import * as whitelist from 'src/utils/files/whitelist.json';
 import * as synthetics from 'src/utils/files/synthetics.json';
 import { SoraClient } from '@ceresecosystem/ceres-lib/packages/ceres-backend-common';
-import { CRON_DISABLED, IS_WORKER_INSTANCE } from 'src/constants/constants';
+import {
+  CRON_DISABLED,
+  IS_WORKER_INSTANCE,
+  XOR_ADDRESS,
+} from 'src/constants/constants';
 
 const DENOMINATOR = FPNumber.fromNatural(10 ** 18);
 const DAI_ADDRESS =
@@ -50,6 +54,28 @@ export class TokenPriceSync {
         const price = new FPNumber(data.value).div(DENOMINATOR).toNumber();
 
         pricesToUpsert.push({ ...token, price });
+      } else if (token.symbol === 'ETH') {
+        const xor = await this.tokenPriceService.findByToken('XOR');
+
+        await soraApi.rpc.liquidityProxy.quote(
+          0,
+          token.assetId,
+          XOR_ADDRESS,
+          FPNumber.fromNatural(0.01).toCodecString(),
+          'WithDesiredInput',
+          ['OrderBook'],
+          'AllowSelected',
+          (result) => {
+            const value = result.isNone
+              ? { amount: 0, fee: {}, rewards: [], amountWithoutImpact: 0 }
+              : result.unwrap();
+
+            let price = new FPNumber(value.amount).toNumber();
+            price = Number((xor.price * price * 100).toFixed(4));
+
+            pricesToUpsert.push({ ...token, price });
+          },
+        );
       } else {
         // Get price via token liquidity
 
