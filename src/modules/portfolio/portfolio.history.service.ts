@@ -43,7 +43,9 @@ export class PortfolioHistoryService {
     return this.dataSource.query(PORTFOLIO_VALUE_HISTORY_QUERY, params);
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES, { disabled: CRON_DISABLED })
+  @Cron(CronExpression.EVERY_5_MINUTES, {
+    disabled: CRON_DISABLED || Boolean(process.env.PORTFOLIO_HISTORY_DISABLED),
+  })
   public async storePortfolioTotalValues(): Promise<void> {
     this.logger.log(
       'Start portfolio value calculation for all registered accounts',
