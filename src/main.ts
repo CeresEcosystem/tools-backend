@@ -22,7 +22,7 @@ const INTERCEPTOR_URL_THRESHOLDS = [
   {
     url: '/api/portfolio',
     warn: 10000,
-    error: 20000,
+    error: 30000,
   },
   {
     url: '/api/tracker',
@@ -33,6 +33,16 @@ const INTERCEPTOR_URL_THRESHOLDS = [
     url: '/api/trading/history',
     warn: 5000,
     error: 15000,
+  },
+  {
+    url: '/api/pairs-liquidity/providers',
+    warn: 5000,
+    error: 15000,
+  },
+  {
+    url: '/api/reserves/',
+    warn: 10000,
+    error: 30000,
   },
 ];
 
