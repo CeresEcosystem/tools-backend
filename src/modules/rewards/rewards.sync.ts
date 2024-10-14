@@ -22,10 +22,11 @@ export class RewardsSync {
     this.logger.log('Start calculating farming rewards.');
 
     const pairs = await this.pairsService.findAll();
-    const { price: xorPrice } = await this.tokenPriceService.findByToken('XOR');
-    const { price: pswapPrice } = await this.tokenPriceService.findByToken(
-      'PSWAP',
+    const { price: xorPrice } = await this.tokenPriceService.findByTokenOrFail(
+      'XOR',
     );
+    const { price: pswapPrice } =
+      await this.tokenPriceService.findByTokenOrFail('PSWAP');
 
     let baseAssetLiquidity = 0;
 

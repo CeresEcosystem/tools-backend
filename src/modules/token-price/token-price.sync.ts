@@ -55,7 +55,8 @@ export class TokenPriceSync {
 
         pricesToUpsert.push({ ...token, price });
       } else if (token.symbol === 'ETH') {
-        const xor = await this.tokenPriceService.findByToken('XOR');
+        const { price: xorPrice } =
+          await this.tokenPriceService.findByTokenOrFail('XOR');
 
         await soraApi.rpc.liquidityProxy.quote(
           0,
@@ -71,7 +72,7 @@ export class TokenPriceSync {
               : result.unwrap();
 
             let price = new FPNumber(value.amount).toNumber();
-            price = Number((xor.price * price * 100).toFixed(4));
+            price = Number((xorPrice * price * 100).toFixed(4));
 
             pricesToUpsert.push({ ...token, price });
           },

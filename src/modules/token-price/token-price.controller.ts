@@ -32,7 +32,7 @@ export class TokenPriceController {
     return this.cacheManager.wrap(
       `${CACHE_KEYS.PRICES}-${token}`,
       async () => {
-        const { price } = await this.tokenPriceService.findByToken(token);
+        const { price } = await this.tokenPriceService.findByTokenOrFail(token);
 
         return new Big(price).toFixed();
       },

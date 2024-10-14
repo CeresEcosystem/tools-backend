@@ -350,7 +350,9 @@ export class TransfersListener {
           ethProvider,
         );
         const symbol = await tokenContract.symbol();
-        const { assetId } = await this.tokenPriceService.findByToken(symbol);
+        const { assetId } = await this.tokenPriceService.findByTokenOrFail(
+          symbol,
+        );
         decimals = await tokenContract.decimals();
         asset = assetId;
       }
